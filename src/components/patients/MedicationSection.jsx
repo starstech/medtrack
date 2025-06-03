@@ -33,6 +33,7 @@ import {
 import { usePatients } from '../../hooks/usePatients'
 import { MEDICATION_FREQUENCIES, MEDICATION_FORMS } from '../../utils/mockData'
 import dayjs from 'dayjs'
+import './MedicationSection.css'
 
 const { Title, Text } = Typography
 const { Option } = Select

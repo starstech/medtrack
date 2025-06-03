@@ -39,6 +39,7 @@ import {
 import { usePatients } from '../../hooks/usePatients'
 import { LOG_TYPES, SEVERITY_LEVELS } from '../../utils/mockData'
 import dayjs from 'dayjs'
+import './DailyLogs.css'
 
 const { Title, Text } = Typography
 const { Option } = Select

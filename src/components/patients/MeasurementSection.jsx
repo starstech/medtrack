@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { 
   Card, 
-  List, 
   Button, 
   Space, 
   Typography, 
@@ -18,7 +17,8 @@ import {
   message,
   Statistic,
   Avatar,
-  Dropdown
+  Dropdown,
+  Pagination
 } from 'antd'
 import { 
   ExperimentOutlined,
@@ -36,6 +36,7 @@ import {
 import { usePatients } from '../../hooks/usePatients'
 import { MEASUREMENT_TYPES } from '../../utils/mockData'
 import dayjs from 'dayjs'
+import './MeasurementSection.css'
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -52,6 +53,11 @@ const MeasurementSection = ({ patient }) => {
   const filteredMeasurements = selectedType === 'all' 
     ? measurements 
     : measurements.filter(m => m.type === selectedType)
+
+  // Sort measurements by date (newest first)
+  const sortedMeasurements = filteredMeasurements.sort((a, b) => 
+    new Date(b.recordedAt) - new Date(a.recordedAt)
+  )
 
   // Get unique measurement types from data
   const availableTypes = [...new Set(measurements.map(m => m.type))]
@@ -148,180 +154,77 @@ const MeasurementSection = ({ patient }) => {
     }
   ]
 
-  const renderMeasurementCard = (measurement) => {
+  const renderMeasurementItem = (measurement) => {
     const typeInfo = getMeasurementTypeInfo(measurement.type)
     const trend = getMeasurementTrend(measurement.type, measurement.value)
     
     return (
-      <List.Item className="measurement-list-item">
-        <Card 
-          className="measurement-card"
-          size="small"
-        >
-          <div className="measurement-content">
-            <div className="measurement-header">
-              <Space>
-                <Avatar 
-                  icon={<ExperimentOutlined />}
-                  style={{ backgroundColor: '#1890ff' }}
-                />
-                <div className="measurement-title">
-                  <Title level={5} className="measurement-type">
-                    {typeInfo.label}
-                  </Title>
-                  <Text type="secondary" size="small">
-                    {dayjs(measurement.recordedAt).format('MMM D, YYYY h:mm A')}
-                  </Text>
-                </div>
-              </Space>
-              
-              <Dropdown
-                menu={{ items: getMenuItems(measurement) }}
-                placement="bottomRight"
-                trigger={['click']}
-              >
-                <Button type="text" icon={<MoreOutlined />} size="small" />
-              </Dropdown>
-            </div>
-
-            <div className="measurement-value-section">
-              <Row gutter={16} align="middle">
-                <Col flex="auto">
-                  <div className="measurement-value">
-                    <Text strong className="value-text">
-                      {measurement.value} {typeInfo.unit}
-                    </Text>
-                    {trend && (
-                      <Space size="small" className="trend-info">
-                        {trend.direction === 'up' ? (
-                          <RiseOutlined style={{ color: '#52c41a' }} />
-                        ) : trend.direction === 'down' ? (
-                          <FallOutlined style={{ color: '#ff4d4f' }} />
-                        ) : null}
-                        {trend.direction !== 'same' && (
-                          <Text 
-                            size="small" 
-                            type="secondary"
-                            style={{ 
-                              color: trend.direction === 'up' ? '#52c41a' : '#ff4d4f' 
-                            }}
-                          >
-                            {trend.direction === 'up' ? '+' : '-'}{trend.change} ({trend.percent}%)
-                          </Text>
-                        )}
-                      </Space>
+      <div key={measurement.id} className="measurement-list-item">
+        <div className="measurement-item">
+          <div className="measurement-primary">
+            <div className="measurement-name-row">
+              <Text strong className="measurement-name">
+                {typeInfo.label}
+              </Text>
+              <div className="measurement-value">
+                <Text strong className="value-text">
+                  {measurement.value} {typeInfo.unit}
+                </Text>
+                {trend && (
+                  <span className="trend-info">
+                    {trend.direction === 'up' ? (
+                      <RiseOutlined style={{ color: '#52c41a', fontSize: '12px' }} />
+                    ) : trend.direction === 'down' ? (
+                      <FallOutlined style={{ color: '#ff4d4f', fontSize: '12px' }} />
+                    ) : null}
+                    {trend.direction !== 'same' && (
+                      <Text 
+                        size="small" 
+                        style={{ 
+                          color: trend.direction === 'up' ? '#52c41a' : '#ff4d4f',
+                          fontSize: '11px',
+                          marginLeft: '4px'
+                        }}
+                      >
+                        {trend.percent}%
+                      </Text>
                     )}
-                  </div>
-                </Col>
-                
-                <Col>
-                  <Button 
-                    type="text" 
-                    icon={<LineChartOutlined />} 
-                    size="small"
-                    onClick={() => {
-                      // TODO: Show trend chart
-                      message.info('Trend chart coming soon!')
-                    }}
-                  >
-                    Trend
-                  </Button>
-                </Col>
-              </Row>
-            </div>
-
-            <div className="measurement-details">
-              <Row gutter={[16, 8]}>
-                <Col xs={24} sm={12}>
-                  <div className="detail-item">
-                    <UserOutlined className="detail-icon" />
-                    <Text type="secondary" size="small">Recorded by: </Text>
-                    <Text size="small">{measurement.recordedBy}</Text>
-                  </div>
-                </Col>
-                
-                <Col xs={24} sm={12}>
-                  <div className="detail-item">
-                    <CalendarOutlined className="detail-icon" />
-                    <Text type="secondary" size="small">
-                      {dayjs(measurement.recordedAt).fromNow()}
-                    </Text>
-                  </div>
-                </Col>
-                
-                {measurement.notes && (
-                  <Col xs={24}>
-                    <div className="detail-item">
-                      <Text type="secondary" size="small">Notes: </Text>
-                      <Text size="small">{measurement.notes}</Text>
-                    </div>
-                  </Col>
-                )}
-              </Row>
-            </div>
-          </div>
-        </Card>
-      </List.Item>
-    )
-  }
-
-  const renderMeasurementStats = () => {
-    if (measurements.length === 0) return null
-
-    const recentMeasurements = measurements.filter(m => 
-      dayjs().diff(dayjs(m.recordedAt), 'days') <= 7
-    ).length
-
-    const typeCounts = availableTypes.map(type => ({
-      type,
-      count: measurements.filter(m => m.type === type).length,
-      label: getMeasurementTypeInfo(type).label
-    })).sort((a, b) => b.count - a.count)
-
-    return (
-      <Card 
-        title="Measurement Overview"
-        className="measurement-stats-card"
-        size="small"
-      >
-        <Row gutter={16}>
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Total Measurements"
-              value={measurements.length}
-              prefix={<ExperimentOutlined />}
-            />
-          </Col>
-          
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="This Week"
-              value={recentMeasurements}
-              prefix={<CalendarOutlined />}
-            />
-          </Col>
-          
-          <Col xs={12} sm={6}>
-            <Statistic
-              title="Measurement Types"
-              value={availableTypes.length}
-              prefix={<TrophyOutlined />}
-            />
-          </Col>
-          
-          <Col xs={12} sm={6}>
-            <div className="most-tracked">
-              <Text type="secondary" size="small">Most Tracked</Text>
-              <div>
-                <Text strong>{typeCounts[0]?.label || 'None'}</Text>
-                {typeCounts[0] && (
-                  <Text type="secondary" size="small"> ({typeCounts[0].count})</Text>
+                  </span>
                 )}
               </div>
             </div>
-          </Col>
-        </Row>
-      </Card>
+            
+            <div className="measurement-details-row">
+              <Text type="secondary" size="small">
+                {dayjs(measurement.recordedAt).format('MMM D, YYYY h:mm A')} • by {measurement.recordedBy}
+                {measurement.notes && ` • ${measurement.notes}`}
+              </Text>
+            </div>
+          </div>
+
+          <div className="measurement-actions">
+            <Button
+              size="small"
+              type="text"
+              icon={<LineChartOutlined />}
+              onClick={() => message.info('Trend chart coming soon!')}
+              className="list-action-btn"
+            />
+            <Dropdown
+              menu={{ items: getMenuItems(measurement) }}
+              placement="bottomLeft"
+              trigger={['click']}
+            >
+              <Button 
+                size="small" 
+                type="text" 
+                icon={<MoreOutlined />} 
+                className="list-action-btn"
+              />
+            </Dropdown>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -436,76 +339,63 @@ const MeasurementSection = ({ patient }) => {
 
   return (
     <div className="measurement-section">
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {renderMeasurementStats()}
-
-        <div className="measurement-group">
-          <div className="measurement-group-header">
-            <div className="group-title">
-              <Space>
-                <ExperimentOutlined />
-                <span>Measurements ({filteredMeasurements.length})</span>
-              </Space>
-            </div>
-            <Space>
-              <Select
-                value={selectedType}
-                onChange={setSelectedType}
-                style={{ width: 150 }}
-                size="small"
-              >
-                <Option value="all">All Types</Option>
-                {availableTypes.map(type => (
-                  <Option key={type} value={type}>
-                    {getMeasurementTypeInfo(type).label}
-                  </Option>
-                ))}
-              </Select>
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
-                size="small"
-              >
-                Record
-              </Button>
-            </Space>
+      <div className="measurement-group">
+        <div className="measurement-group-header">
+          <div className="group-title">
+            <ExperimentOutlined />
+            <span>Measurements ({filteredMeasurements.length})</span>
           </div>
-
-          {filteredMeasurements.length > 0 ? (
-            <List
-              dataSource={filteredMeasurements.sort((a, b) => 
-                new Date(b.recordedAt) - new Date(a.recordedAt)
-              )}
-              renderItem={renderMeasurementCard}
-              className="measurements-list"
-              pagination={{
-                pageSize: 10,
-                showSizeChanger: false,
-                showQuickJumper: true
-              }}
-            />
-          ) : (
-            <Empty
-              image={<ExperimentOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-              description={
-                selectedType === 'all' 
-                  ? "No measurements recorded yet"
-                  : `No ${getMeasurementTypeInfo(selectedType).label.toLowerCase()} measurements`
-              }
-              style={{ padding: '40px 0' }}
+          <Space>
+            <Select
+              value={selectedType}
+              onChange={(value) => setSelectedType(value)}
+              style={{ width: 150 }}
+              size="small"
             >
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
-              >
-                Record First Measurement
-              </Button>
-            </Empty>
-          )}
+              <Option value="all">All Types</Option>
+              {availableTypes.map(type => (
+                <Option key={type} value={type}>
+                  {getMeasurementTypeInfo(type).label}
+                </Option>
+              ))}
+            </Select>
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />}
+              onClick={() => setAddModalVisible(true)}
+              size="small"
+            >
+              Record
+            </Button>
+          </Space>
         </div>
-      </Space>
+
+        {filteredMeasurements.length > 0 ? (
+          <div className="measurement-list-container">
+            <div className="measurements-list">
+              {sortedMeasurements.map(renderMeasurementItem)}
+            </div>
+          </div>
+        ) : (
+          <Empty
+            image={<ExperimentOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
+            description={
+              selectedType === 'all' 
+                ? "No measurements recorded yet"
+                : `No ${getMeasurementTypeInfo(selectedType).label.toLowerCase()} measurements`
+            }
+            style={{ padding: '40px 0' }}
+          >
+            <Button 
+              type="primary" 
+              icon={<PlusOutlined />}
+              onClick={() => setAddModalVisible(true)}
+            >
+              Record First Measurement
+            </Button>
+          </Empty>
+        )}
+      </div>
 
       {renderAddMeasurementModal()}
     </div>

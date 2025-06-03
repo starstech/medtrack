@@ -1,0 +1,177 @@
+/* Daily Logs Section - Clean Design */
+.daily-logs-section {
+  width: 100%;
+}
+
+.logs-controls-group {
+  margin-bottom: 24px;
+}
+
+.logs-controls-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.logs-group {
+  margin-bottom: 32px;
+}
+
+.logs-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.logs-content {
+  width: 100%;
+}
+
+.logs-list .ant-list-item {
+  border: none !important;
+  padding: 0 0 16px 0;
+}
+
+.log-card {
+  border-radius: 6px !important;
+  border: 1px solid #f5f5f5;
+  transition: all 0.2s ease;
+  margin-bottom: 8px;
+}
+
+.log-card:hover {
+  border-color: #d9d9d9;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
+}
+
+.log-card.log-positive {
+  border-left: 4px solid #52c41a;
+}
+
+.log-card.log-normal {
+  border-left: 4px solid #1890ff;
+}
+
+.log-card.log-mild {
+  border-left: 4px solid #fa8c16;
+}
+
+.log-card.log-moderate {
+  border-left: 4px solid #ff7a45;
+}
+
+.log-card.log-severe {
+  border-left: 4px solid #ff4d4f;
+}
+
+.log-content {
+  width: 100%;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.log-title-section {
+  flex: 1;
+  min-width: 0;
+}
+
+.log-title {
+  margin: 0 0 4px 0 !important;
+  font-size: 16px !important;
+  font-weight: 600;
+  color: #262626;
+}
+
+.log-description {
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.log-footer .ant-row {
+  margin: 0;
+}
+
+.log-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.meta-icon {
+  color: #1890ff;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.log-tags {
+  margin-top: 8px;
+}
+
+.log-tags .ant-tag {
+  margin: 2px 4px 2px 0;
+}
+
+/* Timeline View */
+.logs-timeline {
+  padding: 16px 0;
+}
+
+.timeline-log-item {
+  padding: 8px 0;
+}
+
+.timeline-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 8px;
+  gap: 12px;
+}
+
+.timeline-log-title {
+  margin: 0 !important;
+  font-size: 16px !important;
+  font-weight: 600;
+  color: #262626;
+}
+
+.timeline-log-time {
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.timeline-log-description {
+  margin-bottom: 8px;
+  line-height: 1.5;
+}
+
+.timeline-log-tags {
+  margin-top: 8px;
+}
+
+.timeline-log-tags .ant-tag {
+  margin: 2px 4px 2px 0;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 767px) {
+  .timeline-log-header {
+    align-items: flex-start;
+  }
+  
+  .log-title-section {
+    width: 100%;
+  }
+} 
