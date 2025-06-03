@@ -136,31 +136,33 @@
     margin-bottom: 4px;
   }
   
-  /* Medication Section */
+  /* Medication Section - Compact Design */
   .medication-section {
     width: 100%;
   }
   
   .medications-card {
-    border-radius: 12px !important;
+    border-radius: 8px !important;
     border: 1px solid #f0f0f0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04) !important;
+    margin-bottom: 16px;
   }
   
   .medications-list .ant-list-item {
     border: none !important;
-    padding: 0 0 16px 0;
+    padding: 0 0 12px 0;
   }
   
   .medication-card {
-    border-radius: 8px !important;
-    border: 1px solid #f0f0f0;
-    transition: all 0.3s ease;
+    border-radius: 6px !important;
+    border: 1px solid #f5f5f5;
+    transition: all 0.2s ease;
+    margin-bottom: 8px;
   }
   
   .medication-card:hover {
-    border-color: #1890ff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    border-color: #d9d9d9;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08) !important;
   }
   
   .medication-content {
@@ -168,50 +170,42 @@
   }
   
   .medication-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 12px;
-    gap: 12px;
+    margin-bottom: 8px;
   }
   
   .medication-title {
-    flex: 1;
-    min-width: 0;
+    width: 100%;
   }
   
   .medication-name {
-    margin: 0 0 4px 0 !important;
-    font-size: 16px !important;
+    font-size: 14px !important;
     font-weight: 600;
     color: #262626;
+    margin: 0;
   }
   
-  .status-tag {
-    flex-shrink: 0;
-    font-weight: 500;
+  .medication-details {
+    margin-bottom: 12px;
   }
   
   .medication-details .ant-row {
     margin: 0;
   }
   
-  .detail-item {
+  .medication-instructions {
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border-left: 2px solid #1890ff;
+  }
+  
+  .medication-actions {
     display: flex;
+    gap: 8px;
+    justify-content: flex-end;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 8px;
-  }
-  
-  .detail-icon {
-    color: #1890ff;
-    font-size: 12px;
-    flex-shrink: 0;
-  }
-  
-  .medication-dates {
-    margin-top: 12px;
-    padding-top: 12px;
+    padding-top: 8px;
     border-top: 1px solid #f5f5f5;
   }
   
@@ -224,7 +218,11 @@
   }
   
   .inactive-medications {
-    opacity: 0.7;
+    opacity: 0.8;
+  }
+  
+  .inactive-medications .medication-card {
+    background: #fcfcfc;
   }
   
   /* Measurement Section */

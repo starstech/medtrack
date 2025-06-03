@@ -157,103 +157,44 @@ const MedicationSection = ({ patient }) => {
         <Card 
           className="medication-card"
           size="small"
-          actions={[
-            <Button
-              key="edit"
-              type="text"
-              icon={<EditOutlined />}
-              onClick={() => handleEditMedication(medication)}
-            >
-              Edit
-            </Button>,
-            <Dropdown
-              key="more"
-              menu={{ items: getMenuItems(medication) }}
-              placement="bottomRight"
-              trigger={['click']}
-            >
-              <Button type="text" icon={<MoreOutlined />}>
-                More
-              </Button>
-            </Dropdown>
-          ]}
         >
           <div className="medication-content">
             <div className="medication-header">
-              <Space>
-                <Avatar 
-                  icon={<MedicineBoxOutlined />}
-                  style={{ backgroundColor: status.color === 'green' ? '#52c41a' : '#fa8c16' }}
-                />
-                <div className="medication-title">
-                  <Title level={5} className="medication-name">
+              <div className="medication-title">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <Text strong className="medication-name">
                     {medication.name}
-                  </Title>
-                  <Text type="secondary">
-                    {medication.dosage} {medication.form}
                   </Text>
+                  <Tag color={status.color} size="small">
+                    {status.text}
+                  </Tag>
                 </div>
-              </Space>
-              <Tag color={status.color} className="status-tag">
-                {status.text}
-              </Tag>
+                <Text type="secondary" size="small">
+                  {medication.dosage} {medication.form} • {MEDICATION_FREQUENCIES.find(f => f.value === medication.frequency)?.label || medication.frequency}
+                </Text>
+              </div>
             </div>
 
             <div className="medication-details">
-              <Row gutter={[16, 8]}>
+              <Row gutter={[12, 4]}>
                 <Col xs={24} sm={12}>
-                  <div className="detail-item">
-                    <ClockCircleOutlined className="detail-icon" />
-                    <Text type="secondary" size="small">Frequency: </Text>
-                    <Text size="small">
-                      {MEDICATION_FREQUENCIES.find(f => f.value === medication.frequency)?.label || medication.frequency}
-                    </Text>
-                  </div>
+                  <Text type="secondary" size="small">Dr. {medication.prescribedBy}</Text>
                 </Col>
-                
                 <Col xs={24} sm={12}>
-                  <div className="detail-item">
-                    <CalendarOutlined className="detail-icon" />
-                    <Text type="secondary" size="small">Duration: </Text>
-                    <Text size="small">{medication.duration}</Text>
-                  </div>
+                  <Text type="secondary" size="small">
+                    {dayjs(medication.startDate).format('MMM D')} - {medication.endDate ? dayjs(medication.endDate).format('MMM D, YYYY') : 'Ongoing'}
+                  </Text>
                 </Col>
-                
-                <Col xs={24}>
-                  <div className="detail-item">
-                    <Text type="secondary" size="small">Prescribed by: </Text>
-                    <Text size="small">{medication.prescribedBy}</Text>
-                  </div>
-                </Col>
-                
-                {medication.instructions && (
-                  <Col xs={24}>
-                    <div className="detail-item">
-                      <Text type="secondary" size="small">Instructions: </Text>
-                      <Text size="small">{medication.instructions}</Text>
-                    </div>
-                  </Col>
-                )}
               </Row>
 
-              <div className="medication-dates">
-                <Space size="large">
-                  <div>
-                    <Text type="secondary" size="small">Start: </Text>
-                    <Text size="small">{dayjs(medication.startDate).format('MMM D, YYYY')}</Text>
-                  </div>
-                  {medication.endDate && (
-                    <div>
-                      <Text type="secondary" size="small">End: </Text>
-                      <Text size="small">{dayjs(medication.endDate).format('MMM D, YYYY')}</Text>
-                    </div>
-                  )}
-                </Space>
-              </div>
+              {medication.instructions && (
+                <div className="medication-instructions">
+                  <Text size="small" type="secondary">{medication.instructions}</Text>
+                </div>
+              )}
 
               {medication.doses && medication.doses.length > 0 && (
                 <div className="recent-doses">
-                  <Text type="secondary" size="small">Recent doses: </Text>
                   <Space size="small">
                     {medication.doses.slice(0, 3).map(dose => (
                       <Tag 
@@ -267,6 +208,27 @@ const MedicationSection = ({ patient }) => {
                   </Space>
                 </div>
               )}
+            </div>
+
+            <div className="medication-actions">
+              <Button
+                size="small"
+                type="text"
+                icon={<EditOutlined />}
+                onClick={() => handleEditMedication(medication)}
+                className="card-action-btn"
+              >
+                Edit
+              </Button>
+              <Dropdown
+                menu={{ items: getMenuItems(medication) }}
+                placement="bottomRight"
+                trigger={['click']}
+              >
+                <Button size="small" type="text" icon={<MoreOutlined />} className="card-action-btn">
+                  More
+                </Button>
+              </Dropdown>
             </div>
           </div>
         </Card>
