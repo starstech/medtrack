@@ -19,6 +19,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import dayjs from 'dayjs'
+import './AddPatientModal.css'
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -123,12 +124,33 @@ const AddPatientModal = ({ visible, onClose }) => {
       }
       open={visible}
       onCancel={handleClose}
-      footer={null}
-      width={600}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="add-patient-form"
+        >
+          {loading ? 'Adding Patient...' : 'Add Patient'}
+        </Button>
+      ]}
+      width={800}
       destroyOnHidden
       className="add-patient-modal"
+      centered
     >
       <Form
+        id="add-patient-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
@@ -314,27 +336,6 @@ const AddPatientModal = ({ visible, onClose }) => {
           >
             <Input placeholder="Enter phone number (e.g., +1-555-0123)" />
           </Form.Item>
-        </div>
-
-        {/* Form Actions */}
-        <div className="form-actions">
-          <Space>
-            <Button
-              onClick={handleClose}
-              size="large"
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              size="large"
-            >
-              {loading ? 'Adding Patient...' : 'Add Patient'}
-            </Button>
-          </Space>
         </div>
       </Form>
     </Modal>

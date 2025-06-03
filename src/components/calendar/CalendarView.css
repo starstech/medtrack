@@ -287,22 +287,22 @@
   /* Appointment Modal */
   .appointment-modal .ant-modal-header {
     border-bottom: 1px solid #f0f0f0;
-    padding: 16px 24px;
+    padding: 20px 24px;
   }
   
   .appointment-modal .ant-modal-body {
-    padding: 24px;
+    padding: 16px 20px;
   }
   
   .appointment-form {
-    max-height: 70vh;
+    max-height: 60vh;
     overflow-y: auto;
     padding-right: 8px;
   }
   
   .form-section {
-    margin-bottom: 32px;
-    padding-bottom: 24px;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
     border-bottom: 1px solid #f5f5f5;
   }
   
@@ -347,7 +347,7 @@
   
   .reminder-checkboxes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;
     gap: 8px;
   }
   
@@ -367,18 +367,6 @@
   .reminder-checkboxes .ant-checkbox-wrapper-checked {
     border-color: #1890ff;
     background: #e6f7ff;
-  }
-  
-  .form-actions {
-    border-top: 1px solid #f0f0f0;
-    padding-top: 24px;
-    margin-top: 24px;
-    text-align: right;
-  }
-  
-  .form-actions .ant-btn {
-    margin-left: 8px;
-    min-width: 120px;
   }
   
   /* Empty States */
@@ -478,25 +466,17 @@
     }
     
     .appointment-modal {
-      margin: 16px;
-      max-width: calc(100vw - 32px);
+      margin: 8px;
+      max-width: calc(100vw - 16px);
+      width: calc(100vw - 16px) !important;
     }
     
     .appointment-form {
-      max-height: 60vh;
+      max-height: 75vh;
     }
     
     .reminder-checkboxes {
       grid-template-columns: 1fr;
-    }
-    
-    .form-actions {
-      text-align: center;
-    }
-    
-    .form-actions .ant-btn {
-      margin: 0 4px;
-      min-width: 100px;
     }
   }
   

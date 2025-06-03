@@ -1,0 +1,164 @@
+/* Add Patient Modal - Consistent with App Design */
+
+.add-patient-modal .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.add-patient-modal .ant-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.add-patient-modal .ant-modal-body {
+  padding: 24px 32px;
+}
+
+/* Internal Scrolling - Like AppointmentModal */
+.add-patient-form {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.form-section .ant-typography h5 {
+  color: #262626;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+/* Form Elements */
+.add-patient-form .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+}
+
+.add-patient-form .ant-input,
+.add-patient-form .ant-select-selector,
+.add-patient-form .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 14px;
+}
+
+.add-patient-form .ant-input:focus,
+.add-patient-form .ant-input-focused,
+.add-patient-form .ant-select-focused .ant-select-selector,
+.add-patient-form .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Dynamic Field Sections */
+.dynamic-field-section {
+  margin-bottom: 20px;
+}
+
+.dynamic-field-section > .ant-typography {
+  margin-bottom: 12px;
+  display: inline;
+}
+
+.dynamic-field {
+  margin-bottom: 8px;
+}
+
+.dynamic-field .ant-input {
+  border-radius: 6px;
+}
+
+.dynamic-field .ant-btn {
+  color: #ff4d4f;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+}
+
+.dynamic-field .ant-btn:hover {
+  color: #ff7875;
+  background: #fff2f0;
+}
+
+/* Add Buttons */
+.ant-btn-dashed {
+  border-radius: 6px !important;
+  border-color: #d9d9d9 !important;
+  color: #595959 !important;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.ant-btn-dashed:hover {
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+  background: #f6ffed !important;
+}
+
+/* Scrollbar Styling */
+.add-patient-form::-webkit-scrollbar {
+  width: 6px;
+}
+
+.add-patient-form::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.add-patient-form::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+.add-patient-form::-webkit-scrollbar-thumb:hover {
+  background: #bfbfbf;
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .add-patient-modal {
+    margin: 8px;
+    max-width: calc(100vw - 16px);
+    width: calc(100vw - 16px) !important;
+  }
+  
+  .add-patient-modal .ant-modal-body {
+    padding: 16px 20px;
+  }
+  
+  .add-patient-form {
+    max-height: 55vh;
+  }
+  
+  .form-section {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+  }
+}
+
+@media (max-width: 576px) {
+  .add-patient-modal .ant-modal-header {
+    padding: 16px 20px;
+  }
+  
+  .dynamic-field-section {
+    margin-bottom: 16px;
+  }
+} 

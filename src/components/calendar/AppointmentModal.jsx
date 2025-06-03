@@ -130,12 +130,34 @@ const AppointmentModal = ({ visible, onClose, patients, selectedPatient }) => {
       }
       open={visible}
       onCancel={handleClose}
-      footer={null}
-      width={700}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          icon={<CalendarOutlined />}
+          form="appointment-form"
+        >
+          {loading ? 'Scheduling...' : 'Schedule Appointment'}
+        </Button>
+      ]}
+      width={900}
       className="appointment-modal"
       destroyOnClose
+      centered
     >
       <Form
+        id="appointment-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
@@ -358,28 +380,6 @@ const AppointmentModal = ({ visible, onClose, patients, selectedPatient }) => {
               showCount
             />
           </Form.Item>
-        </div>
-
-        {/* Form Actions */}
-        <div className="form-actions">
-          <Space>
-            <Button
-              onClick={handleClose}
-              size="large"
-              disabled={loading}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-              size="large"
-              icon={<CalendarOutlined />}
-            >
-              {loading ? 'Scheduling...' : 'Schedule Appointment'}
-            </Button>
-          </Space>
         </div>
       </Form>
     </Modal>

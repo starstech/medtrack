@@ -114,10 +114,29 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
       }
       open={visible}
       onCancel={onClose}
-      footer={null}
-      width={480}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={onClose}
+          size="large"
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="mark-dose-form"
+        >
+          {dose.status === 'pending' ? 'Mark Dose' : 'Update Record'}
+        </Button>
+      ]}
+      width={600}
       className="mark-dose-modal"
       destroyOnClose
+      centered
     >
       {/* Dose Information Card */}
       <Card size="small" className="dose-info-card">
@@ -163,6 +182,7 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
 
       {/* Form */}
       <Form
+        id="mark-dose-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
@@ -219,22 +239,6 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
             maxLength={500}
             showCount
           />
-        </Form.Item>
-
-        {/* Actions */}
-        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-          <Space>
-            <Button onClick={onClose}>
-              Cancel
-            </Button>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={loading}
-            >
-              {dose.status === 'pending' ? 'Mark Dose' : 'Update Record'}
-            </Button>
-          </Space>
         </Form.Item>
       </Form>
     </Modal>
