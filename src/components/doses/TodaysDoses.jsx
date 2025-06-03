@@ -17,11 +17,10 @@ import './TodaysDoses.css'
 
 const { Text, Title } = Typography
 
-const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
+const TodaysDoses = ({ doses, selectedPatient, statusFilter, viewMode }) => {
   const { markDose } = usePatients()
   const [selectedDose, setSelectedDose] = useState(null)
   const [markDoseModalVisible, setMarkDoseModalVisible] = useState(false)
-  const [viewMode, setViewMode] = useState('timeline')
 
   // Group doses by time periods for timeline view
   const groupedDoses = useMemo(() => {
@@ -185,46 +184,6 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
 
   return (
     <div className="todays-doses">
-      {/* View Controls */}
-      <div className="view-controls">
-        <div className="view-toggle-container">
-          <Segmented
-            value={viewMode}
-            onChange={setViewMode}
-            options={[
-              {
-                label: (
-                  <Space>
-                    <ClockCircleOutlined />
-                    <span>Timeline</span>
-                  </Space>
-                ),
-                value: 'timeline'
-              },
-              {
-                label: (
-                  <Space>
-                    <UnorderedListOutlined />
-                    <span>List</span>
-                  </Space>
-                ),
-                value: 'list'
-              }
-            ]}
-            className="view-toggle"
-          />
-        </div>
-        
-        <div className="view-description-container">
-          <Text type="secondary" size="small" className="view-description">
-            {viewMode === 'timeline' 
-              ? 'Organized by urgency and time periods'
-              : 'Simple chronological list of all doses'
-            }
-          </Text>
-        </div>
-      </div>
-
       {/* Content Container */}
       <div className="doses-container">
         <div className="doses-content">

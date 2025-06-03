@@ -43,6 +43,59 @@
   animation: slideInUp 0.5s ease-out;
 }
 
+/* View Controls Card */
+.view-controls-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.view-controls-card .ant-card-body {
+  padding: 16px !important;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1;
+}
+
+.view-controls-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.view-controls-header {
+  margin-bottom: 8px;
+}
+
+.view-toggle .ant-segmented {
+  background: #fafafa !important;
+  border-radius: 8px !important;
+  padding: 2px !important;
+}
+
+.view-toggle .ant-segmented-item {
+  border-radius: 6px !important;
+  font-weight: 500;
+  padding: 6px 12px !important;
+  transition: all 0.3s ease;
+}
+
+.view-toggle .ant-segmented-item-selected {
+  background: #fff !important;
+  color: #1890ff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.view-description {
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
 .stat-card {
   border-radius: 12px !important;
   border: 1px solid #f0f0f0 !important;
@@ -149,6 +202,20 @@
   .stat-card .ant-statistic-content-value {
     font-size: 24px !important;
   }
+  
+  /* View Controls Card - Mobile */
+  .view-controls-card .ant-card-body {
+    padding: 12px !important;
+  }
+  
+  .view-toggle .ant-segmented-item {
+    padding: 5px 10px !important;
+    font-size: 13px;
+  }
+  
+  .view-description {
+    font-size: 11px;
+  }
 }
 
 @media (min-width: 768px) {
@@ -160,6 +227,11 @@
   .filters-card .ant-card-body {
     padding: 24px;
   }
+  
+  /* View Controls Card - Desktop */
+  .view-controls-card .ant-card-body {
+    padding: 20px !important;
+  }
 }
 
 @media (max-width: 576px) {
@@ -170,5 +242,19 @@
   
   .stat-card .ant-card-body {
     padding: 16px;
+  }
+  
+  /* Very small screens */
+  .view-controls-card .ant-card-body {
+    padding: 10px !important;
+  }
+  
+  .view-toggle .ant-segmented-item {
+    padding: 4px 8px !important;
+    font-size: 12px;
+  }
+  
+  .view-description {
+    font-size: 10px;
   }
 } 

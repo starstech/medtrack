@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { Typography, Button, Space, Select, Row, Col, Alert, Card, Statistic } from 'antd'
+import { Typography, Button, Space, Select, Row, Col, Alert, Card, Statistic, Segmented } from 'antd'
 import { 
   ClockCircleOutlined, 
   CheckCircleOutlined, 
   ExclamationCircleOutlined,
   MedicineBoxOutlined,
-  EyeOutlined
+  EyeOutlined,
+  UnorderedListOutlined
 } from '@ant-design/icons'
 import TodaysDoses from '../components/doses/TodaysDoses'
 import { usePatients } from '../hooks/usePatients'
@@ -19,6 +20,7 @@ const TodaysDosesPage = () => {
   const { patients, loading, getTodaysDoses } = usePatients()
   const [selectedPatient, setSelectedPatient] = useState('all')
   const [statusFilter, setStatusFilter] = useState('all')
+  const [viewMode, setViewMode] = useState('timeline')
 
   if (loading) {
     return <LoadingSpinner message="Loading today's doses..." />
@@ -85,11 +87,11 @@ const TodaysDosesPage = () => {
         />
       )}
 
-      {/* Stats Overview */}
+      {/* Stats Overview with View Controls */}
       {totalDoses > 0 && (
         <div className="stats-overview">
-          <Row gutter={[16, 16]}>
-            <Col xs={12} sm={6}>
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={12} sm={6} lg={4}>
               <Card className="stat-card">
                 <Statistic
                   title="Completed"
@@ -99,7 +101,7 @@ const TodaysDosesPage = () => {
                 />
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={6} lg={4}>
               <Card className="stat-card">
                 <Statistic
                   title="Pending"
@@ -109,7 +111,7 @@ const TodaysDosesPage = () => {
                 />
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={6} lg={4}>
               <Card className="stat-card">
                 <Statistic
                   title="Overdue"
@@ -119,7 +121,7 @@ const TodaysDosesPage = () => {
                 />
               </Card>
             </Col>
-            <Col xs={12} sm={6}>
+            <Col xs={12} sm={6} lg={4}>
               <Card className="stat-card">
                 <Statistic
                   title="Total"
@@ -127,6 +129,46 @@ const TodaysDosesPage = () => {
                   prefix={<MedicineBoxOutlined />}
                   valueStyle={{ color: '#1890ff' }}
                 />
+              </Card>
+            </Col>
+            <Col xs={24} sm={12} lg={8}>
+              <Card className="stat-card view-controls-card">
+                <div className="view-controls-content">
+                  <div className="view-controls-header">
+                    <Text strong>View Options</Text>
+                  </div>
+                  <Segmented
+                    value={viewMode}
+                    onChange={setViewMode}
+                    options={[
+                      {
+                        label: (
+                          <Space>
+                            <ClockCircleOutlined />
+                            <span>Timeline</span>
+                          </Space>
+                        ),
+                        value: 'timeline'
+                      },
+                      {
+                        label: (
+                          <Space>
+                            <UnorderedListOutlined />
+                            <span>List</span>
+                          </Space>
+                        ),
+                        value: 'list'
+                      }
+                    ]}
+                    className="view-toggle"
+                  />
+                  <Text type="secondary" size="small" className="view-description">
+                    {viewMode === 'timeline' 
+                      ? 'Organized by urgency and time periods'
+                      : 'Simple chronological list of all doses'
+                    }
+                  </Text>
+                </div>
               </Card>
             </Col>
           </Row>
@@ -208,6 +250,7 @@ const TodaysDosesPage = () => {
         doses={filteredDoses}
         selectedPatient={selectedPatient}
         statusFilter={statusFilter}
+        viewMode={viewMode}
       />
     </div>
   )
