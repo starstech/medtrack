@@ -123,6 +123,34 @@
     font-weight: 500;
   }
   
+  /* Selected Patient Stat Card */
+  .selected-patient-stat-card {
+    text-align: center;
+  }
+
+  .selected-patient-stat-card .stat-header {
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .selected-patient-stat-card .ant-avatar {
+    transition: all 0.3s ease;
+  }
+
+  .selected-patient-stat-card:hover .ant-avatar {
+    transform: scale(1.1);
+  }
+
+  .selected-patient-stat-card .ant-tag {
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+
+  .selected-patient-stat-card .ant-tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
   /* Patient Selector */
   .patient-selector-card {
     border-radius: 12px !important;
@@ -342,12 +370,21 @@
     }
     
     .stat-icon {
-      font-size: 24px;
-      padding: 12px;
+      font-size: 20px;
+      padding: 10px;
     }
     
     .stat-title {
-      font-size: 13px;
+      font-size: 12px;
+    }
+
+    .stat-card .ant-statistic-content-value {
+      font-size: 24px !important;
+    }
+
+    .stat-description {
+      font-size: 12px;
+      line-height: 1.3;
     }
   }
   
@@ -358,6 +395,39 @@
     
     .dashboard-stats {
       margin-bottom: 40px;
+    }
+
+    .stat-icon {
+      font-size: 22px;
+      padding: 11px;
+    }
+    
+    .stat-title {
+      font-size: 13px;
+    }
+
+    .stat-card .ant-statistic-content-value {
+      font-size: 26px !important;
+    }
+
+    .stat-description {
+      font-size: 13px;
+      line-height: 1.4;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .stat-icon {
+      font-size: 24px;
+      padding: 12px;
+    }
+
+    .stat-card .ant-statistic-content-value {
+      font-size: 28px !important;
+    }
+
+    .stat-description {
+      font-size: 13px;
     }
   }
   

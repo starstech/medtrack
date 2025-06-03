@@ -1,6 +1,6 @@
 import { Row, Col, Typography, Space, Card } from 'antd'
 import StatsCards from '../components/dashboard/StatsCards'
-import { PatientDropdown, AddPatientButton, SelectedPatientCard } from '../components/dashboard/PatientSelector'
+import { PatientDropdown, AddPatientButton } from '../components/dashboard/PatientSelector'
 import RecentActivity from '../components/dashboard/RecentActivity'
 import MedicationOverview from '../components/dashboard/MedicationOverview'
 import { usePatients } from '../hooks/usePatients'
@@ -46,10 +46,9 @@ const DashboardPage = () => {
             </Space>
           </Col>
           <Col xs={24} lg={8}>
-            <Space direction="vertical" size={16} style={{ width: '100%', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
               <AddPatientButton />
-              <SelectedPatientCard />
-            </Space>
+            </div>
           </Col>
         </Row>
       </div>
