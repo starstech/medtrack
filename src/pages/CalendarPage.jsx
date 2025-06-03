@@ -51,6 +51,14 @@ const CalendarPage = () => {
     setCurrentDate(date)
   }
 
+  const handleYearChange = (year) => {
+    setCurrentDate(currentDate.year(year))
+  }
+
+  const handleMonthChange = (month) => {
+    setCurrentDate(currentDate.month(month))
+  }
+
   const handleAddAppointment = () => {
     setAppointmentModalVisible(true)
   }
@@ -59,20 +67,30 @@ const CalendarPage = () => {
     setAppointmentModalVisible(false)
   }
 
+  // Generate year options (current year ± 5 years)
+  const currentYear = dayjs().year()
+  const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
+  
+  // Month options
+  const monthOptions = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ]
+
   return (
     <div className="calendar-page">
-      {/* Filters, Stats and Controls Combined */}
+      {/* Filters and Controls */}
       <div className="calendar-filters">
         <Row gutter={[16, 16]} align="middle">
           {/* Patient Filter */}
-          <Col xs={24} sm={12} md={8}>
+          <Col xs={24} sm={8} md={6}>
             <Space>
               <FilterOutlined />
               <Text strong>Patient:</Text>
               <Select
                 value={selectedPatient}
                 onChange={handlePatientChange}
-                style={{ width: 200 }}
+                style={{ width: 160 }}
                 size="large"
               >
                 <Option value="all">All Patients</Option>
@@ -85,19 +103,64 @@ const CalendarPage = () => {
             </Space>
           </Col>
 
-          {/* View Type Controls */}
-          <Col xs={24} sm={12} md={8}>
+          {/* Date Selectors */}
+          <Col xs={24} sm={8} md={6}>
             <Space>
-              <Text strong>View:</Text>
-              <CalendarControls
-                viewType={viewType}
-                onViewChange={handleViewChange}
-              />
+              <Select
+                value={currentDate.year()}
+                onChange={handleYearChange}
+                style={{ width: 100 }}
+                size="large"
+              >
+                {yearOptions.map(year => (
+                  <Option key={year} value={year}>
+                    {year}
+                  </Option>
+                ))}
+              </Select>
+              <Select
+                value={currentDate.month()}
+                onChange={handleMonthChange}
+                style={{ width: 110 }}
+                size="large"
+              >
+                {monthOptions.map((month, index) => (
+                  <Option key={index} value={index}>
+                    {month}
+                  </Option>
+                ))}
+              </Select>
             </Space>
           </Col>
-          
-          {/* Stats and Add Button */}
-          <Col xs={24} sm={24} md={8}>
+
+          {/* View Type Controls and Add Button */}
+          <Col xs={24} sm={8} md={12}>
+            <div className="view-and-actions">
+              <Space size="large">
+                <Space>
+                  <Text strong>View:</Text>
+                  <CalendarControls
+                    viewType={viewType}
+                    onViewChange={handleViewChange}
+                  />
+                </Space>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddAppointment}
+                  size="large"
+                  className="add-appointment-btn"
+                >
+                  <span className="desktop-only">Add Appointment</span>
+                </Button>
+              </Space>
+            </div>
+          </Col>
+        </Row>
+
+        {/* Stats Row Below */}
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          <Col xs={24}>
             <div className="calendar-stats">
               <Space size="large">
                 <div className="calendar-stat">
@@ -108,15 +171,6 @@ const CalendarPage = () => {
                   <Badge count={filteredUpcoming.length} color="#52c41a" />
                   <Text type="secondary">Upcoming (7 days)</Text>
                 </div>
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={handleAddAppointment}
-                  size="large"
-                  className="add-appointment-btn"
-                >
-                  <span className="desktop-only">Add Appointment</span>
-                </Button>
               </Space>
             </div>
           </Col>

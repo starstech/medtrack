@@ -14,10 +14,18 @@
     margin-bottom: 24px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
+
+  /* View and Actions Container */
+  .calendar-page .view-and-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    width: 100%;
+  }
   
   .calendar-page .calendar-stats {
     display: flex;
-    justify-content: flex-end;
+    justify-content: flex-start;
     align-items: center;
     gap: 24px;
   }
@@ -98,7 +106,22 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     min-height: 600px;
   }
-  
+
+  /* COMPLETELY HIDE Calendar Header */
+  .calendar-page .calendar-content .ant-picker-calendar-header {
+    display: none !important;
+  }
+
+  /* Remove any top padding/margin from calendar body */
+  .calendar-page .calendar-content .ant-picker-calendar {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .calendar-page .calendar-content .ant-picker-body {
+    padding: 0 !important;
+  }
+
   /* Loading States */
   .calendar-page .loading-container {
     min-height: 400px;
@@ -133,6 +156,13 @@
     .calendar-page .calendar-filters {
       padding: 16px;
     }
+
+    .calendar-page .view-and-actions {
+      justify-content: flex-start;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 12px;
+    }
     
     .calendar-page .calendar-stats {
       justify-content: flex-start;
@@ -144,7 +174,6 @@
       width: 100%;
       justify-content: center;
       height: 48px;
-      margin-top: 12px;
     }
     
     .calendar-page .view-control-btn .desktop-only {
@@ -157,6 +186,17 @@
     
     .calendar-page .calendar-content {
       min-height: 500px;
+    }
+  }
+
+  @media (max-width: 576px) {
+    /* Stack all filter controls vertically on small screens */
+    .calendar-page .calendar-filters .ant-row .ant-col {
+      margin-bottom: 12px;
+    }
+    
+    .calendar-page .calendar-filters .ant-row .ant-col:last-child {
+      margin-bottom: 0;
     }
   }
   
