@@ -149,90 +149,76 @@ const MedicationSection = ({ patient }) => {
     return { color: 'green', text: 'Active' }
   }
 
-  const renderMedicationCard = (medication) => {
+  const renderMedicationItem = (medication) => {
     const status = getMedicationStatus(medication)
     
     return (
-      <List.Item className="medication-list-item">
-        <Card 
-          className="medication-card"
-          size="small"
-        >
-          <div className="medication-content">
-            <div className="medication-header">
-              <div className="medication-title">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                  <Text strong className="medication-name">
-                    {medication.name}
-                  </Text>
-                  <Tag color={status.color} size="small">
-                    {status.text}
-                  </Tag>
-                </div>
-                <Text type="secondary" size="small">
-                  {medication.dosage} {medication.form} • {MEDICATION_FREQUENCIES.find(f => f.value === medication.frequency)?.label || medication.frequency}
+      <div className="medication-list-item" key={medication.id}>
+        <div className="medication-item">
+          <div className="medication-primary">
+            <div className="medication-name-row">
+              <Text strong className="medication-name">
+                {medication.name}
+              </Text>
+              <Tag color={status.color} size="small" className="medication-status">
+                {status.text}
+              </Tag>
+            </div>
+            
+            <div className="medication-details-row">
+              <Text type="secondary" size="small">
+                {medication.dosage} {medication.form} • {MEDICATION_FREQUENCIES.find(f => f.value === medication.frequency)?.label || medication.frequency} • Dr. {medication.prescribedBy}
+              </Text>
+            </div>
+            
+            {medication.instructions && (
+              <div className="medication-notes">
+                <Text size="small" type="secondary">
+                  {medication.instructions}
                 </Text>
               </div>
-            </div>
+            )}
 
-            <div className="medication-details">
-              <Row gutter={[12, 4]}>
-                <Col xs={24} sm={12}>
-                  <Text type="secondary" size="small">Dr. {medication.prescribedBy}</Text>
-                </Col>
-                <Col xs={24} sm={12}>
-                  <Text type="secondary" size="small">
-                    {dayjs(medication.startDate).format('MMM D')} - {medication.endDate ? dayjs(medication.endDate).format('MMM D, YYYY') : 'Ongoing'}
-                  </Text>
-                </Col>
-              </Row>
-
-              {medication.instructions && (
-                <div className="medication-instructions">
-                  <Text size="small" type="secondary">{medication.instructions}</Text>
-                </div>
-              )}
-
-              {medication.doses && medication.doses.length > 0 && (
-                <div className="recent-doses">
-                  <Space size="small">
-                    {medication.doses.slice(0, 3).map(dose => (
-                      <Tag 
-                        key={dose.id}
-                        color={dose.status === 'taken' ? 'green' : dose.status === 'missed' ? 'red' : 'orange'}
-                        size="small"
-                      >
-                        {dayjs(dose.scheduledTime).format('MMM D')} - {dose.status}
-                      </Tag>
-                    ))}
-                  </Space>
-                </div>
-              )}
-            </div>
-
-            <div className="medication-actions">
-              <Button
-                size="small"
-                type="text"
-                icon={<EditOutlined />}
-                onClick={() => handleEditMedication(medication)}
-                className="card-action-btn"
-              >
-                Edit
-              </Button>
-              <Dropdown
-                menu={{ items: getMenuItems(medication) }}
-                placement="bottomRight"
-                trigger={['click']}
-              >
-                <Button size="small" type="text" icon={<MoreOutlined />} className="card-action-btn">
-                  More
-                </Button>
-              </Dropdown>
-            </div>
+            {medication.doses && medication.doses.length > 0 && (
+              <div className="medication-doses">
+                <Space size="small">
+                  {medication.doses.slice(0, 2).map(dose => (
+                    <Tag 
+                      key={dose.id}
+                      color={dose.status === 'taken' ? 'green' : dose.status === 'missed' ? 'red' : 'orange'}
+                      size="small"
+                    >
+                      {dayjs(dose.scheduledTime).format('MMM D')} {dose.status}
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
           </div>
-        </Card>
-      </List.Item>
+          
+          <div className="medication-actions">
+            <Button
+              size="small"
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => handleEditMedication(medication)}
+              className="list-action-btn"
+            />
+            <Dropdown
+              menu={{ items: getMenuItems(medication) }}
+              placement="bottomLeft"
+              trigger={['click']}
+            >
+              <Button 
+                size="small" 
+                type="text" 
+                icon={<MoreOutlined />} 
+                className="list-action-btn"
+              />
+            </Dropdown>
+          </div>
+        </div>
+      </div>
     )
   }
 
@@ -381,65 +367,77 @@ const MedicationSection = ({ patient }) => {
     <div className="medication-section">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Active Medications */}
-        <Card
-          title={
-            <Space>
-              <MedicineBoxOutlined />
-              <span>Active Medications ({activeMedications.length})</span>
-            </Space>
-          }
-          extra={
+        <div className="medication-group">
+          <div className="medication-group-header">
+            <div className="group-title">
+              <Space>
+                <MedicineBoxOutlined />
+                <span>Active Medications ({activeMedications.length})</span>
+              </Space>
+            </div>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => setAddModalVisible(true)}
+              size="small"
             >
               Add Medication
             </Button>
-          }
-          className="medications-card"
-        >
-          {activeMedications.length > 0 ? (
-            <List
-              dataSource={activeMedications}
-              renderItem={renderMedicationCard}
-              className="medications-list"
-            />
-          ) : (
-            <Empty
-              image={<MedicineBoxOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-              description="No active medications"
-              style={{ padding: '40px 0' }}
-            >
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
-              >
-                Add First Medication
-              </Button>
-            </Empty>
-          )}
-        </Card>
+          </div>
+
+          <div className="medication-list-container">
+            {activeMedications.length > 0 ? (
+              <div className="medications-list active-medications-list">
+                {activeMedications.map(medication => renderMedicationItem(medication))}
+              </div>
+            ) : (
+              <div className="empty-medication-list">
+                <Empty
+                  image={<MedicineBoxOutlined style={{ fontSize: 32, color: '#d9d9d9' }} />}
+                  description="No active medications"
+                  style={{ padding: '32px 16px' }}
+                >
+                  <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />}
+                    onClick={() => setAddModalVisible(true)}
+                    size="small"
+                  >
+                    Add First Medication
+                  </Button>
+                </Empty>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Inactive Medications */}
-        {inactiveMedications.length > 0 && (
-          <Card
-            title={
+        <div className="medication-group inactive-medications">
+          <div className="medication-group-header">
+            <div className="group-title">
               <Space>
                 <ExclamationCircleOutlined />
                 <span>Inactive Medications ({inactiveMedications.length})</span>
               </Space>
-            }
-            className="medications-card inactive-medications"
-          >
-            <List
-              dataSource={inactiveMedications}
-              renderItem={renderMedicationCard}
-              className="medications-list"
-            />
-          </Card>
-        )}
+            </div>
+          </div>
+
+          <div className="medication-list-container">
+            {inactiveMedications.length > 0 ? (
+              <div className="medications-list inactive-medications-list">
+                {inactiveMedications.map(medication => renderMedicationItem(medication))}
+              </div>
+            ) : (
+              <div className="empty-medication-list">
+                <Empty
+                  image={<ExclamationCircleOutlined style={{ fontSize: 32, color: '#d9d9d9' }} />}
+                  description="No inactive medications"
+                  style={{ padding: '32px 16px' }}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </Space>
 
       {renderAddMedicationModal()}

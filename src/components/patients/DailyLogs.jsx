@@ -489,12 +489,19 @@ const DailyLogs = ({ patient }) => {
     <div className="daily-logs-section">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* View Controls */}
-        <Card size="small" className="logs-controls">
-          <Row gutter={[16, 16]} align="middle">
-            <Col xs={24} sm={8}>
+        <div className="logs-controls-group">
+          <div className="logs-controls-header">
+            <div className="group-title">
+              <Space>
+                <FilterOutlined />
+                <span>View Options</span>
+              </Space>
+            </div>
+            <Space wrap>
               <Segmented
                 value={viewMode}
                 onChange={setViewMode}
+                size="small"
                 options={[
                   {
                     label: 'List',
@@ -508,61 +515,56 @@ const DailyLogs = ({ patient }) => {
                   }
                 ]}
               />
-            </Col>
-            
-            <Col xs={24} sm={16}>
-              <Space wrap>
-                <Select
-                  value={selectedType}
-                  onChange={setSelectedType}
-                  style={{ width: 120 }}
-                  size="small"
-                >
-                  <Option value="all">All Types</Option>
-                  {availableTypes.map(type => (
-                    <Option key={type} value={type}>
-                      {getLogTypeInfo(type).label}
-                    </Option>
-                  ))}
-                </Select>
-                
-                <Select
-                  value={selectedSeverity}
-                  onChange={setSelectedSeverity}
-                  style={{ width: 120 }}
-                  size="small"
-                >
-                  <Option value="all">All Severity</Option>
-                  {availableSeverities.map(severity => (
-                    <Option key={severity} value={severity}>
-                      {getSeverityInfo(severity).label}
-                    </Option>
-                  ))}
-                </Select>
-              </Space>
-            </Col>
-          </Row>
-        </Card>
+              <Select
+                value={selectedType}
+                onChange={setSelectedType}
+                style={{ width: 120 }}
+                size="small"
+              >
+                <Option value="all">All Types</Option>
+                {availableTypes.map(type => (
+                  <Option key={type} value={type}>
+                    {getLogTypeInfo(type).label}
+                  </Option>
+                ))}
+              </Select>
+              
+              <Select
+                value={selectedSeverity}
+                onChange={setSelectedSeverity}
+                style={{ width: 120 }}
+                size="small"
+              >
+                <Option value="all">All Severity</Option>
+                {availableSeverities.map(severity => (
+                  <Option key={severity} value={severity}>
+                    {getSeverityInfo(severity).label}
+                  </Option>
+                ))}
+              </Select>
+            </Space>
+          </div>
+        </div>
 
         {/* Main Content */}
-        <Card
-          title={
-            <Space>
-              <FileTextOutlined />
-              <span>Daily Logs ({filteredLogs.length})</span>
-            </Space>
-          }
-          extra={
+        <div className="logs-group">
+          <div className="logs-group-header">
+            <div className="group-title">
+              <Space>
+                <FileTextOutlined />
+                <span>Daily Logs ({filteredLogs.length})</span>
+              </Space>
+            </div>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => setAddModalVisible(true)}
+              size="small"
             >
               Add Log
             </Button>
-          }
-          className="logs-card"
-        >
+          </div>
+
           {filteredLogs.length > 0 ? (
             <div className="logs-content">
               {viewMode === 'timeline' ? (
@@ -590,7 +592,7 @@ const DailyLogs = ({ patient }) => {
               </Button>
             </Empty>
           )}
-        </Card>
+        </div>
       </Space>
 
       {renderAddLogModal()}

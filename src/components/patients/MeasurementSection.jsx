@@ -439,14 +439,14 @@ const MeasurementSection = ({ patient }) => {
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {renderMeasurementStats()}
 
-        <Card
-          title={
-            <Space>
-              <ExperimentOutlined />
-              <span>Measurements ({filteredMeasurements.length})</span>
-            </Space>
-          }
-          extra={
+        <div className="measurement-group">
+          <div className="measurement-group-header">
+            <div className="group-title">
+              <Space>
+                <ExperimentOutlined />
+                <span>Measurements ({filteredMeasurements.length})</span>
+              </Space>
+            </div>
             <Space>
               <Select
                 value={selectedType}
@@ -465,13 +465,13 @@ const MeasurementSection = ({ patient }) => {
                 type="primary" 
                 icon={<PlusOutlined />}
                 onClick={() => setAddModalVisible(true)}
+                size="small"
               >
                 Record
               </Button>
             </Space>
-          }
-          className="measurements-card"
-        >
+          </div>
+
           {filteredMeasurements.length > 0 ? (
             <List
               dataSource={filteredMeasurements.sort((a, b) => 
@@ -504,7 +504,7 @@ const MeasurementSection = ({ patient }) => {
               </Button>
             </Empty>
           )}
-        </Card>
+        </div>
       </Space>
 
       {renderAddMeasurementModal()}

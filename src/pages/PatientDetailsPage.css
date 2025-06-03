@@ -76,7 +76,7 @@
 
 /* Clean Tab Navigation - Compact & Centered */
 .patient-tabs .ant-tabs-nav {
-  margin: 0;
+  margin: 0 0 24px 0;
   background: #fff;
   border-bottom: 1px solid #f0f0f0;
   padding: 0 24px;
@@ -112,22 +112,19 @@
   position: relative;
 }
 
-/* Simple underline indicator */
 .patient-tabs .ant-tabs-ink-bar {
-  background: #1890ff;
-  height: 2px;
+  background: #1890ff !important;
+  height: 2px !important;
 }
 
-/* Content Area */
+.patient-tabs .ant-tabs-content {
+  background: transparent;
+  padding: 0;
+}
+
 .patient-tabs .ant-tabs-content-holder {
-  padding: 24px;
-  background: #fff;
-  min-height: 300px;
-}
-
-.patient-tabs .ant-tabs-tabpane {
-  outline: none;
-  animation: fadeInUp 0.4s ease-out;
+  padding: 0;
+  background: transparent;
 }
 
 /* Patient Not Found */
@@ -180,17 +177,6 @@
   from {
     opacity: 0;
     transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
   }
   to {
     opacity: 1;
