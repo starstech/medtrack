@@ -8,23 +8,6 @@
   overflow-x: hidden;
 }
 
-/* Overdue Alert */
-.overdue-alert {
-  margin-bottom: 24px;
-  border-radius: 8px !important;
-  border: 1px solid #ffccc7 !important;
-  animation: slideInUp 0.5s ease-out;
-}
-
-.overdue-alert .ant-alert-message {
-  font-weight: 600;
-  color: #cf1322;
-}
-
-.overdue-alert .ant-alert-description {
-  color: #a8071a;
-}
-
 /* View All Button - Dashboard Style */
 .view-all-btn {
   opacity: 0.8;

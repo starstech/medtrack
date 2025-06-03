@@ -3,9 +3,7 @@ import { Typography, Button, Space, Select, Badge, Row, Col } from 'antd'
 import { 
   CalendarOutlined, 
   PlusOutlined, 
-  FilterOutlined,
-  LeftOutlined,
-  RightOutlined
+  FilterOutlined
 } from '@ant-design/icons'
 import CalendarView from '../components/calendar/CalendarView'
 import CalendarControls from '../components/calendar/CalendarControls'
@@ -16,7 +14,7 @@ import LoadingSpinner from '../components/common/LoadingSpinner'
 import dayjs from 'dayjs'
 import './CalendarPage.css'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 const { Option } = Select
 
 const CalendarPage = () => {
@@ -53,30 +51,6 @@ const CalendarPage = () => {
     setCurrentDate(date)
   }
 
-  const handlePrevPeriod = () => {
-    if (viewType === 'month') {
-      setCurrentDate(currentDate.subtract(1, 'month'))
-    } else if (viewType === 'week') {
-      setCurrentDate(currentDate.subtract(1, 'week'))
-    } else {
-      setCurrentDate(currentDate.subtract(1, 'day'))
-    }
-  }
-
-  const handleNextPeriod = () => {
-    if (viewType === 'month') {
-      setCurrentDate(currentDate.add(1, 'month'))
-    } else if (viewType === 'week') {
-      setCurrentDate(currentDate.add(1, 'week'))
-    } else {
-      setCurrentDate(currentDate.add(1, 'day'))
-    }
-  }
-
-  const handleToday = () => {
-    setCurrentDate(dayjs())
-  }
-
   const handleAddAppointment = () => {
     setAppointmentModalVisible(true)
   }
@@ -85,96 +59,12 @@ const CalendarPage = () => {
     setAppointmentModalVisible(false)
   }
 
-  const getDateRangeText = () => {
-    if (viewType === 'month') {
-      return currentDate.format('MMMM YYYY')
-    } else if (viewType === 'week') {
-      const startOfWeek = currentDate.startOf('week')
-      const endOfWeek = currentDate.endOf('week')
-      return `${startOfWeek.format('MMM D')} - ${endOfWeek.format('MMM D, YYYY')}`
-    } else {
-      return currentDate.format('dddd, MMMM D, YYYY')
-    }
-  }
-
   return (
     <div className="calendar-page">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="header-content">
-          <Space direction="vertical" size="small">
-            <Title level={2} className="page-title">
-              Calendar
-            </Title>
-            <Text type="secondary" className="page-subtitle">
-              Manage appointments and schedules
-            </Text>
-          </Space>
-        </div>
-        
-        <div className="header-actions">
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={handleAddAppointment}
-            size="large"
-            className="add-appointment-btn"
-          >
-            <span className="desktop-only">Add Appointment</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Calendar Controls */}
-      <div className="calendar-controls-section">
-        <Row gutter={[16, 16]} align="middle">
-          {/* Date Navigation */}
-          <Col xs={24} sm={12} md={8}>
-            <Space size="small">
-              <Button 
-                icon={<LeftOutlined />} 
-                onClick={handlePrevPeriod}
-                size="large"
-              />
-              <Button 
-                onClick={handleToday}
-                size="large"
-                className="today-btn"
-              >
-                Today
-              </Button>
-              <Button 
-                icon={<RightOutlined />} 
-                onClick={handleNextPeriod}
-                size="large"
-              />
-            </Space>
-          </Col>
-
-          {/* Date Range Display */}
-          <Col xs={24} sm={12} md={8}>
-            <div className="date-range-display">
-              <Text strong className="date-range-text">
-                {getDateRangeText()}
-              </Text>
-            </div>
-          </Col>
-
-          {/* View Type Controls */}
-          <Col xs={24} sm={24} md={8}>
-            <div className="calendar-view-controls">
-              <CalendarControls
-                viewType={viewType}
-                onViewChange={handleViewChange}
-              />
-            </div>
-          </Col>
-        </Row>
-      </div>
-
-      {/* Filters and Quick Stats */}
+      {/* Filters, Stats and Controls Combined */}
       <div className="calendar-filters">
         <Row gutter={[16, 16]} align="middle">
+          {/* Patient Filter */}
           <Col xs={24} sm={12} md={8}>
             <Space>
               <FilterOutlined />
@@ -194,8 +84,20 @@ const CalendarPage = () => {
               </Select>
             </Space>
           </Col>
+
+          {/* View Type Controls */}
+          <Col xs={24} sm={12} md={8}>
+            <Space>
+              <Text strong>View:</Text>
+              <CalendarControls
+                viewType={viewType}
+                onViewChange={handleViewChange}
+              />
+            </Space>
+          </Col>
           
-          <Col xs={24} sm={12} md={16}>
+          {/* Stats and Add Button */}
+          <Col xs={24} sm={24} md={8}>
             <div className="calendar-stats">
               <Space size="large">
                 <div className="calendar-stat">
@@ -206,6 +108,15 @@ const CalendarPage = () => {
                   <Badge count={filteredUpcoming.length} color="#52c41a" />
                   <Text type="secondary">Upcoming (7 days)</Text>
                 </div>
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={handleAddAppointment}
+                  size="large"
+                  className="add-appointment-btn"
+                >
+                  <span className="desktop-only">Add Appointment</span>
+                </Button>
               </Space>
             </div>
           </Col>

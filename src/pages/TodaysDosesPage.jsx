@@ -11,6 +11,7 @@ import {
 import TodaysDoses from '../components/doses/TodaysDoses'
 import { usePatients } from '../hooks/usePatients'
 import LoadingSpinner from '../components/common/LoadingSpinner'
+import dayjs from 'dayjs'
 import './TodaysDosesPage.css'
 
 const { Text } = Typography
@@ -60,33 +61,6 @@ const TodaysDosesPage = () => {
 
   return (
     <div className="todays-doses-page">
-      {/* Critical Alert for Overdue */}
-      {overdueDoses > 0 && (
-        <Alert
-          message="Overdue Doses"
-          description={
-            <Space>
-              <Text>
-                {overdueDoses} dose{overdueDoses > 1 ? 's are' : ' is'} overdue and need{overdueDoses === 1 ? 's' : ''} attention.
-              </Text>
-            </Space>
-          }
-          type="warning"
-          showIcon
-          className="overdue-alert"
-          action={
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
-              onClick={() => setStatusFilter('pending')}
-              className="view-all-btn"
-            >
-              View Overdue
-            </Button>
-          }
-        />
-      )}
-
       {/* Stats Overview with View Controls */}
       {totalDoses > 0 && (
         <div className="stats-overview">
@@ -112,9 +86,13 @@ const TodaysDosesPage = () => {
               </Card>
             </Col>
             <Col xs={12} sm={6} lg={4}>
-              <Card className="stat-card">
+              <Card 
+                className="stat-card"
+                onClick={overdueDoses > 0 ? () => setStatusFilter('pending') : undefined}
+                style={{ cursor: overdueDoses > 0 ? 'pointer' : 'default' }}
+              >
                 <Statistic
-                  title="Overdue"
+                  title={overdueDoses > 0 ? "⚠️ Overdue" : "Overdue"}
                   value={overdueDoses}
                   prefix={<ExclamationCircleOutlined />}
                   valueStyle={{ color: '#ff4d4f' }}
@@ -135,7 +113,7 @@ const TodaysDosesPage = () => {
               <Card className="stat-card view-controls-card">
                 <div className="view-controls-content">
                   <div className="view-controls-header">
-                    <Text strong>View Options</Text>
+                    <Text strong>{dayjs().format('dddd, MMMM D, YYYY')}</Text>
                   </div>
                   <Segmented
                     value={viewMode}

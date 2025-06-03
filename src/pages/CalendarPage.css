@@ -5,41 +5,35 @@
     min-height: calc(100vh - 64px);
   }
   
-  /* Page Header */
-  .calendar-page .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+  /* Calendar Filters - Now contains everything */
+  .calendar-page .calendar-filters {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 20px;
     margin-bottom: 24px;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
   
-  .calendar-page .header-content {
-    flex: 1;
-    min-width: 0;
+  .calendar-page .calendar-stats {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 24px;
   }
   
-  .calendar-page .header-actions {
-    flex-shrink: 0;
+  .calendar-page .calendar-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
   
-  .calendar-page .page-title {
-    color: #262626 !important;
-    font-size: 24px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    line-height: 1.2;
+  .calendar-page .calendar-stat .ant-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  
-  .calendar-page .page-subtitle {
-    font-size: 14px;
-    color: #8c8c8c !important;
-    margin: 4px 0 0 0;
-    line-height: 1.4;
-  }
-  
+
   /* Add Appointment Button */
   .calendar-page .add-appointment-btn {
     border-radius: 8px !important;
@@ -60,56 +54,6 @@
   .calendar-page .add-appointment-btn:focus {
     outline: 2px solid rgba(24, 144, 255, 0.3);
     outline-offset: 2px;
-  }
-  
-  /* Calendar Controls Section */
-  .calendar-page .calendar-controls-section {
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  /* Date Navigation */
-  .calendar-page .today-btn {
-    min-width: 60px;
-    border: 1px solid #d9d9d9 !important;
-    border-radius: 6px !important;
-    height: 44px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-  }
-  
-  .calendar-page .today-btn:hover {
-    border-color: #1890ff !important;
-    color: #1890ff !important;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(24, 144, 255, 0.2);
-  }
-  
-  .calendar-page .today-btn:focus {
-    border-color: #1890ff !important;
-    color: #1890ff !important;
-    outline: 2px solid rgba(24, 144, 255, 0.2);
-    outline-offset: 2px;
-  }
-  
-  /* Date Range Display */
-  .calendar-page .date-range-display {
-    text-align: center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 44px;
-  }
-  
-  .calendar-page .date-range-text {
-    font-size: 18px;
-    color: #262626;
-    font-weight: 600;
-    white-space: nowrap;
   }
   
   /* Calendar View Controls */
@@ -145,35 +89,6 @@
     transform: translateY(-1px);
   }
   
-  /* Calendar Filters */
-  .calendar-page .calendar-filters {
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  .calendar-page .calendar-stats {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    gap: 24px;
-  }
-  
-  .calendar-page .calendar-stat {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  
-  .calendar-page .calendar-stat .ant-badge {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-  }
-  
   /* Calendar Content */
   .calendar-page .calendar-content {
     background: #fff;
@@ -191,22 +106,6 @@
     align-items: center;
     justify-content: center;
     background: #fafafa;
-  }
-  
-  /* Navigation Buttons */
-  .calendar-page .ant-btn[class*="icon"] {
-    border-radius: 6px;
-    transition: all 0.3s ease;
-    height: 44px;
-    width: 44px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .calendar-page .ant-btn[class*="icon"]:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
   
   /* Filter Controls */
@@ -231,52 +130,21 @@
   
   /* Responsive Design */
   @media (max-width: 767px) {
-    .calendar-page .page-header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    
-    .calendar-page .header-actions {
-      width: 100%;
-    }
-    
-    .calendar-page .add-appointment-btn {
-      width: 100%;
-      justify-content: center;
-      height: 48px;
-    }
-    
-    .calendar-page .page-title {
-      font-size: 20px !important;
-    }
-    
-    .calendar-page .page-subtitle {
-      font-size: 13px;
-    }
-    
-    .calendar-page .calendar-controls-section,
     .calendar-page .calendar-filters {
       padding: 16px;
-    }
-    
-    .calendar-page .date-range-display {
-      text-align: left;
-      justify-content: flex-start;
-    }
-    
-    .calendar-page .date-range-text {
-      font-size: 16px;
-    }
-    
-    .calendar-page .calendar-view-controls {
-      justify-content: flex-start;
     }
     
     .calendar-page .calendar-stats {
       justify-content: flex-start;
       gap: 16px;
       flex-wrap: wrap;
+    }
+    
+    .calendar-page .add-appointment-btn {
+      width: 100%;
+      justify-content: center;
+      height: 48px;
+      margin-top: 12px;
     }
     
     .calendar-page .view-control-btn .desktop-only {
@@ -293,25 +161,12 @@
   }
   
   @media (min-width: 768px) {
-    .calendar-page .page-title {
-      font-size: 28px !important;
-    }
-    
-    .calendar-page .page-subtitle {
-      font-size: 16px;
-    }
-    
-    .calendar-page .date-range-text {
-      font-size: 20px;
-    }
-    
     .calendar-page .calendar-content {
       min-height: 700px;
     }
   }
   
   @media (min-width: 1024px) {
-    .calendar-page .calendar-controls-section,
     .calendar-page .calendar-filters {
       padding: 24px;
     }
@@ -363,8 +218,6 @@
   
   /* Print Styles */
   @media print {
-    .calendar-page .page-header .header-actions,
-    .calendar-page .calendar-controls-section,
     .calendar-page .calendar-filters {
       display: none;
     }
@@ -381,7 +234,6 @@
       border: 2px solid #1890ff;
     }
     
-    .calendar-page .today-btn:hover,
     .calendar-page .add-appointment-btn:hover {
       border-width: 2px;
     }
@@ -390,7 +242,6 @@
   /* Reduced Motion */
   @media (prefers-reduced-motion: reduce) {
     .calendar-page .add-appointment-btn,
-    .calendar-page .today-btn,
     .calendar-page .view-control-btn,
     .calendar-page .ant-btn {
       transition: none;
