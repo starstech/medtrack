@@ -1,0 +1,113 @@
+.todays-doses-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.page-header {
+  margin-bottom: 24px;
+}
+
+.header-content {
+  padding: 24px 0;
+}
+
+.page-title {
+  margin-bottom: 4px !important;
+  color: #1f1f1f;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #5c5c5c;
+}
+
+.doses-overview {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.progress-section {
+  padding-right: 24px;
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.stat-mini {
+  display: flex;
+  align-items: center;
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-radius: 8px;
+  height: 100%;
+}
+
+.stat-icon {
+  font-size: 24px;
+  margin-right: 12px;
+}
+
+.stat-icon.success {
+  color: #52c41a;
+}
+
+.stat-icon.warning {
+  color: #faad14;
+}
+
+.stat-icon.danger {
+  color: #ff4d4f;
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-number {
+  font-size: 20px;
+  line-height: 1;
+  margin-bottom: 4px;
+}
+
+.overdue-alert {
+  margin-bottom: 24px;
+}
+
+.doses-filters {
+  background-color: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filter-summary {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 100%;
+}
+
+.doses-content {
+  margin-bottom: 40px;
+}
+
+@media (max-width: 768px) {
+  .progress-section {
+    padding-right: 0;
+    margin-bottom: 16px;
+  }
+  
+  .filter-summary {
+    justify-content: flex-start;
+    margin-top: 8px;
+  }
+} 

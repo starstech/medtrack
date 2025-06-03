@@ -517,30 +517,3 @@ const CaregiverManagement = () => {
 }
 
 export default CaregiverManagement
-                  <div className="invitation-content">
-                    <div className="invitation-info">
-                      <Space>
-                        <Avatar icon={<MailOutlined />} size="small" />
-                        <div>
-                          <Text strong>{invite.email}</Text>
-                          <br />
-                          <Text type="secondary" size="small">
-                            Invited to care for {invite.patientName} as {invite.role} caregiver
-                          </Text>
-                          <br />
-                          <Text type="secondary" size="small">
-                            Sent {new Date(invite.sentAt).toLocaleDateString()}
-                          </Text>
-                        </div>
-                      </Space>
-                    </div>
-                    
-                    <Space>
-                      <div className="invitation-status">
-                        {getStatusIcon(invite.status)}
-                        <Text size="small">{invite.status}</Text>
-                      </div>
-                      <Dropdown
-                        menu={{ items: getInviteMenuItems(invite) }}
-                        placement="bottomRight"
-                        trigger={['click']}
