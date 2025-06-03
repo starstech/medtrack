@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Layout, Menu, Button, Avatar, Badge, Dropdown, Typography, Space } from 'antd'
 import {
   MenuFoldOutlined,
@@ -28,6 +28,94 @@ const AppLayout = ({ children }) => {
   const { user, logout } = useAuth()
   const { getUnreadCount } = useNotifications()
   const { selectedPatient, patients } = usePatients()
+
+  // Add custom styles to the document head
+  useEffect(() => {
+    const style = document.createElement('style')
+    style.textContent = `
+      .custom-menu .ant-menu-inline .ant-menu-item {
+        margin: 4px 16px !important;
+        border-radius: 8px !important;
+        height: 44px !important;
+        line-height: 44px !important;
+        padding: 0 16px !important;
+        transition: all 0.3s ease !important;
+        color: rgba(0, 0, 0, 0.65) !important;
+        font-weight: 500 !important;
+        position: relative !important;
+        width: calc(100% - 32px) !important;
+        box-sizing: border-box !important;
+      }
+      
+      .custom-menu .ant-menu-inline .ant-menu-item:hover {
+        background: rgba(24, 144, 255, 0.08) !important;
+        color: #1890ff !important;
+        transform: translateX(4px) !important;
+      }
+      
+      .custom-menu .ant-menu-inline .ant-menu-item-selected {
+        background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(114, 46, 209, 0.1)) !important;
+        color: #1890ff !important;
+        font-weight: 600 !important;
+        border-left: 4px solid #1890ff !important;
+        padding-left: 12px !important;
+        width: calc(100% - 32px) !important;
+        box-sizing: border-box !important;
+      }
+      
+      .custom-menu .ant-menu-inline .ant-menu-item-selected:hover {
+        background: linear-gradient(135deg, rgba(24, 144, 255, 0.15), rgba(114, 46, 209, 0.15)) !important;
+      }
+      
+      .custom-menu .ant-menu .ant-menu-item .ant-menu-item-icon {
+        font-size: 18px !important;
+        margin-right: 12px !important;
+        transition: all 0.3s ease !important;
+      }
+      
+      .custom-menu .ant-menu-inline .ant-menu-item:hover .ant-menu-item-icon,
+      .custom-menu .ant-menu-inline .ant-menu-item-selected .ant-menu-item-icon {
+        color: #1890ff !important;
+        transform: scale(1.1) !important;
+      }
+      
+      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item {
+        margin: 4px 12px !important;
+        padding: 0 !important;
+        justify-content: center !important;
+        text-align: center !important;
+        width: calc(100% - 24px) !important;
+      }
+      
+      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item-selected {
+        padding: 0 !important;
+        border-left: none !important;
+        position: relative !important;
+        width: calc(100% - 24px) !important;
+      }
+      
+      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item-selected::after {
+        content: '' !important;
+        position: absolute !important;
+        left: 50% !important;
+        bottom: 8px !important;
+        transform: translateX(-50%) !important;
+        width: 6px !important;
+        height: 6px !important;
+        background: #1890ff !important;
+        border-radius: 50% !important;
+      }
+      
+      .custom-menu.ant-layout-sider-collapsed .ant-menu .ant-menu-item .ant-menu-item-icon {
+        margin-right: 0 !important;
+      }
+    `
+    document.head.appendChild(style)
+    
+    return () => {
+      document.head.removeChild(style)
+    }
+  }, [])
 
   const menuItems = [
     {
@@ -105,7 +193,8 @@ const AppLayout = ({ children }) => {
         collapsible 
         collapsed={collapsed} 
         onCollapse={setCollapsed} 
-        width={240}
+        width={280}
+        className="custom-menu"
         style={{
           position: 'sticky',
           top: 0,
@@ -167,60 +256,6 @@ const AppLayout = ({ children }) => {
             }}
           />
         </div>
-
-        {/* Custom Menu Styles */}
-        <style jsx>{`
-          .ant-menu-inline .ant-menu-item {
-            margin: 4px 16px !important;
-            border-radius: 8px !important;
-            height: 44px !important;
-            line-height: 44px !important;
-            padding: 0 16px !important;
-            transition: all 0.3s ease !important;
-            color: rgba(0, 0, 0, 0.65) !important;
-            font-weight: 500 !important;
-          }
-          
-          .ant-menu-inline .ant-menu-item:hover {
-            background: rgba(24, 144, 255, 0.08) !important;
-            color: #1890ff !important;
-            transform: translateX(4px) !important;
-          }
-          
-          .ant-menu-inline .ant-menu-item-selected {
-            background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(114, 46, 209, 0.1)) !important;
-            color: #1890ff !important;
-            font-weight: 600 !important;
-            border-right: 3px solid #1890ff !important;
-          }
-          
-          .ant-menu-inline .ant-menu-item-selected:hover {
-            background: linear-gradient(135deg, rgba(24, 144, 255, 0.15), rgba(114, 46, 209, 0.15)) !important;
-          }
-          
-          .ant-menu .ant-menu-item .ant-menu-item-icon {
-            font-size: 18px !important;
-            margin-right: 12px !important;
-            transition: all 0.3s ease !important;
-          }
-          
-          .ant-menu-inline .ant-menu-item:hover .ant-menu-item-icon,
-          .ant-menu-inline .ant-menu-item-selected .ant-menu-item-icon {
-            color: #1890ff !important;
-            transform: scale(1.1) !important;
-          }
-          
-          .ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item {
-            margin: 4px 12px !important;
-            padding: 0 !important;
-            justify-content: center !important;
-            text-align: center !important;
-          }
-          
-          .ant-layout-sider-collapsed .ant-menu .ant-menu-item .ant-menu-item-icon {
-            margin-right: 0 !important;
-          }
-        `}</style>
       </Sider>
       
       <Layout>

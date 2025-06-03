@@ -13,13 +13,30 @@ const theme = {
     colorError: '#ff4d4f',
     colorInfo: '#13c2c2',
     
-    // Typography
-    fontSize: 14,
-    fontSizeHeading1: 38,
-    fontSizeHeading2: 30,
-    fontSizeHeading3: 24,
-    fontSizeHeading4: 20,
-    fontSizeHeading5: 16,
+    // Modern Typography with Inter Font
+    fontFamily: '"Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    fontFamilyCode: '"JetBrains Mono", "Fira Code", "SF Mono", Monaco, Consolas, "Courier New", monospace',
+    
+    // Beautiful typography scale
+    fontSize: 14, // Perfect base size for interfaces
+    fontSizeHeading1: 36, // Hero titles
+    fontSizeHeading2: 28, // Section titles
+    fontSizeHeading3: 22, // Subsection titles
+    fontSizeHeading4: 18, // Card titles
+    fontSizeHeading5: 16, // Small headings
+    fontSizeSM: 12, // Captions
+    fontSizeXS: 11, // Small text
+    
+    // Optimized line heights for readability
+    lineHeight: 1.5, // Perfect for body text
+    lineHeightHeading1: 1.2,
+    lineHeightHeading2: 1.3,
+    lineHeightHeading3: 1.4,
+    lineHeightHeading4: 1.4,
+    lineHeightHeading5: 1.5,
+    
+    // Font weights for hierarchy
+    fontWeightStrong: 600, // Semibold for emphasis
     
     // Spacing and sizing
     borderRadius: 6,
@@ -39,10 +56,10 @@ const theme = {
     colorBorder: '#e8eaed',
     colorBorderSecondary: '#f0f2f5',
     
-    // Text colors
-    colorText: '#1f2937',
-    colorTextSecondary: '#6b7280',
-    colorTextTertiary: '#9ca3af',
+    // Text colors for excellent readability
+    colorText: '#2d3748', // Rich dark gray
+    colorTextSecondary: '#718096', // Medium gray
+    colorTextTertiary: '#a0aec0', // Light gray
     
     // Box shadows for depth
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
@@ -129,6 +146,11 @@ const theme = {
       inkBarColor: '#1890ff',
       cardBg: '#ffffff',
     },
+    Typography: {
+      titleMarginTop: 0,
+      titleMarginBottom: 8,
+      fontWeightStrong: 600,
+    }
   },
   algorithm: [
     // You can add dark theme algorithm here if needed
