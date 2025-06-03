@@ -1,0 +1,500 @@
+/* Pages Styles - Mobile First */
+
+/* Common Page Styles */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 24px;
+    gap: 16px;
+  }
+  
+  .header-content {
+    flex: 1;
+  }
+  
+  .header-actions {
+    flex-shrink: 0;
+  }
+  
+  .page-title {
+    color: #262626 !important;
+    font-size: 24px !important;
+    font-weight: 700 !important;
+    margin: 0 !important;
+    line-height: 1.2;
+  }
+  
+  .page-subtitle {
+    font-size: 14px;
+    color: #8c8c8c !important;
+    margin: 0;
+  }
+  
+  /* Patients Page */
+  .patients-page {
+    padding: 0;
+  }
+  
+  .patients-controls {
+    margin-bottom: 24px;
+  }
+  
+  .patients-search .ant-input {
+    border-radius: 8px;
+    border: 2px solid #f0f0f0;
+    font-size: 16px;
+  }
+  
+  .patients-search .ant-input:focus,
+  .patients-search .ant-input-focused {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+  }
+  
+  .patients-summary {
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 48px;
+  }
+  
+  .add-patient-btn {
+    border-radius: 8px !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+  
+  .add-patient-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  }
+  
+  /* Patient Details Page */
+  .patient-details-page {
+    padding: 0;
+  }
+  
+  .patient-not-found {
+    padding: 40px 0;
+  }
+  
+  .back-button {
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 8px !important;
+  }
+  
+  .back-button:hover {
+    border-color: #1890ff !important;
+    color: #1890ff !important;
+  }
+  
+  .edit-button {
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 8px !important;
+  }
+  
+  .edit-button:hover {
+    border-color: #1890ff !important;
+    color: #1890ff !important;
+  }
+  
+  .patient-tabs-container {
+    margin-top: 8px;
+  }
+  
+  .patient-tabs .ant-tabs-nav {
+    margin-bottom: 24px;
+  }
+  
+  .patient-tabs .ant-tabs-tab {
+    padding: 12px 16px !important;
+    font-size: 16px !important;
+    font-weight: 500;
+  }
+  
+  /* Today's Doses Page */
+  .todays-doses-page {
+    padding: 0;
+  }
+  
+  .doses-overview {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  .progress-section {
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    padding: 16px;
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .stat-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+    height: 100%;
+  }
+  
+  .stat-icon {
+    font-size: 18px;
+    padding: 6px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .stat-icon.success {
+    color: #52c41a;
+    background: rgba(82, 196, 26, 0.1);
+  }
+  
+  .stat-icon.warning {
+    color: #fa8c16;
+    background: rgba(250, 140, 22, 0.1);
+  }
+  
+  .stat-icon.danger {
+    color: #ff4d4f;
+    background: rgba(255, 77, 79, 0.1);
+  }
+  
+  .stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
+  .stat-number {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1;
+  }
+  
+  .overdue-alert {
+    margin-bottom: 24px;
+    border-radius: 8px;
+  }
+  
+  .doses-filters {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+  }
+  
+  .filter-summary {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 48px;
+  }
+  
+  /* Calendar Page */
+  .calendar-page {
+    padding: 0;
+  }
+  
+  .calendar-controls-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+  }
+  
+  .today-btn {
+    min-width: 60px;
+    border: 1px solid #d9d9d9 !important;
+    border-radius: 6px !important;
+  }
+  
+  .today-btn:hover {
+    border-color: #1890ff !important;
+    color: #1890ff !important;
+  }
+  
+  .date-range-display {
+    text-align: center;
+  }
+  
+  .date-range-text {
+    font-size: 18px;
+    color: #262626;
+  }
+  
+  .calendar-view-controls {
+    display: flex;
+    justify-content: flex-end;
+  }
+  
+  .calendar-filters {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+  }
+  
+  .calendar-stats {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+  
+  .calendar-stat {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .add-appointment-btn {
+    border-radius: 8px !important;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+  
+  .add-appointment-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  }
+  
+  /* Profile Page */
+  .profile-page {
+    padding: 0;
+  }
+  
+  .profile-overview-card {
+    margin-bottom: 24px;
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  .profile-overview {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  
+  .profile-avatar {
+    flex-shrink: 0;
+  }
+  
+  .avatar-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    color: #8c8c8c;
+  }
+  
+  .profile-info {
+    flex: 1;
+  }
+  
+  .profile-name {
+    margin: 0 0 4px 0 !important;
+    font-size: 24px !important;
+    font-weight: 600 !important;
+  }
+  
+  .profile-email {
+    font-size: 16px;
+    color: #595959 !important;
+    margin-bottom: 4px;
+    display: block;
+  }
+  
+  .profile-role {
+    color: #8c8c8c !important;
+  }
+  
+  .profile-tabs-container {
+    background: #fff;
+    border: 1px solid #f0f0f0;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  
+  .profile-tabs .ant-tabs-nav {
+    margin: 0;
+    padding: 0 24px;
+    background: #fafafa;
+  }
+  
+  .profile-tabs .ant-tabs-tab {
+    padding: 16px 20px !important;
+    font-size: 16px !important;
+    font-weight: 500;
+  }
+  
+  .profile-tabs .ant-tabs-content-holder {
+    padding: 24px;
+  }
+  
+  .tab-label {
+    margin-left: 8px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 767px) {
+    .page-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 16px;
+    }
+    
+    .header-actions {
+      width: 100%;
+    }
+    
+    .add-patient-btn,
+    .add-appointment-btn {
+      width: 100%;
+    }
+    
+    .page-title {
+      font-size: 20px !important;
+    }
+    
+    .patients-summary {
+      justify-content: flex-start;
+      text-align: left;
+    }
+    
+    .filter-summary {
+      justify-content: flex-start;
+    }
+    
+    .calendar-stats {
+      justify-content: flex-start;
+    }
+    
+    .calendar-view-controls {
+      justify-content: flex-start;
+    }
+    
+    .date-range-display {
+      text-align: left;
+    }
+    
+    .date-range-text {
+      font-size: 16px;
+    }
+    
+    .profile-overview {
+      flex-direction: column;
+      text-align: center;
+    }
+    
+    .profile-tabs .ant-tabs-tab .tab-label {
+      display: none;
+    }
+    
+    .back-button .desktop-only,
+    .edit-button .desktop-only,
+    .add-patient-btn .desktop-only,
+    .add-appointment-btn .desktop-only {
+      display: none;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .page-title {
+      font-size: 28px !important;
+    }
+    
+    .page-subtitle {
+      font-size: 16px;
+    }
+    
+    .avatar-placeholder {
+      width: 100px;
+      height: 100px;
+      font-size: 40px;
+    }
+    
+    .profile-name {
+      font-size: 28px !important;
+    }
+    
+    .profile-email {
+      font-size: 18px;
+    }
+  }
+  
+  /* Loading and Empty States */
+  .ant-empty {
+    padding: 40px 20px;
+  }
+  
+  .ant-empty-description {
+    color: #8c8c8c;
+    font-size: 14px;
+  }
+  
+  /* Card Styles */
+  .ant-card {
+    border-radius: 12px;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+  
+  .ant-card:hover {
+    border-color: #d9d9d9;
+  }
+  
+  /* Button Styles */
+  .ant-btn-large {
+    height: 48px;
+    padding: 8px 20px;
+    font-size: 16px;
+    border-radius: 8px;
+  }
+  
+  .ant-btn-primary {
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+  }
+  
+  .ant-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(24, 144, 255, 0.4);
+  }
+  
+  /* Form Controls */
+  .ant-select-large .ant-select-selector {
+    height: 48px;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 2px solid #f0f0f0;
+  }
+  
+  .ant-select-large .ant-select-selector:hover,
+  .ant-select-focused .ant-select-selector {
+    border-color: #1890ff;
+    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+  }

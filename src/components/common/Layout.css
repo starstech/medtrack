@@ -1,0 +1,298 @@
+/* Layout Styles - Mobile First */
+
+/* Main App Layout */
+.app-layout {
+    min-height: 100vh;
+    background: #f5f5f5;
+  }
+  
+  .main-layout {
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+  }
+  
+  .main-content {
+    padding: 0;
+    background: #f5f5f5;
+    min-height: calc(100vh - 64px);
+  }
+  
+  .content-wrapper {
+    padding: 16px;
+    max-width: 100%;
+  }
+  
+  /* Header Styles */
+  .app-header {
+    background: #fff;
+    border-bottom: 1px solid #f0f0f0;
+    padding: 0 16px;
+    height: 64px;
+    line-height: 64px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .menu-button {
+    color: #595959;
+    border: none;
+    box-shadow: none;
+  }
+  
+  .menu-button:hover,
+  .menu-button:focus {
+    color: #1890ff;
+    background: rgba(24, 144, 255, 0.08);
+  }
+  
+  .page-title {
+    font-size: 18px;
+    color: #262626;
+    font-weight: 600;
+  }
+  
+  .notification-button,
+  .user-button {
+    color: #595959;
+    border: none;
+    box-shadow: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .notification-button:hover,
+  .notification-button:focus,
+  .user-button:hover,
+  .user-button:focus {
+    color: #1890ff;
+    background: rgba(24, 144, 255, 0.08);
+  }
+  
+  .user-name {
+    font-weight: 500;
+    color: #595959;
+  }
+  
+  /* Mobile Sidebar */
+  .mobile-sidebar .ant-drawer-body {
+    padding: 0;
+  }
+  
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 999;
+  }
+  
+  /* Desktop Sidebar */
+  .desktop-sidebar {
+    position: fixed;
+    left: 0;
+    top: 64px;
+    bottom: 0;
+    width: 280px;
+    background: #fff;
+    border-right: 1px solid #f0f0f0;
+    overflow-y: auto;
+    z-index: 99;
+  }
+  
+  /* Sidebar Content */
+  .sidebar-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .sidebar-header {
+    padding: 20px 24px 16px;
+  }
+  
+  .app-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  
+  .brand-icon {
+    font-size: 28px;
+    color: #1890ff;
+  }
+  
+  .brand-text {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .brand-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: #262626;
+    line-height: 1.2;
+  }
+  
+  .brand-subtitle {
+    font-size: 12px;
+    color: #8c8c8c;
+    line-height: 1;
+  }
+  
+  /* Current Patient Info */
+  .current-patient {
+    padding: 0 24px;
+  }
+  
+  .current-patient-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 8px;
+  }
+  
+  .patient-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #f6ffed;
+    border: 1px solid #b7eb8f;
+    border-radius: 8px;
+  }
+  
+  .patient-icon {
+    font-size: 20px;
+    color: #52c41a;
+  }
+  
+  /* Sidebar Menu */
+  .sidebar-menu {
+    border: none;
+    background: transparent;
+    padding: 0 16px;
+  }
+  
+  .sidebar-menu .ant-menu-item {
+    margin: 4px 0;
+    border-radius: 8px;
+    height: 44px;
+    line-height: 44px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .sidebar-menu .ant-menu-item-selected {
+    background: #e6f7ff;
+    color: #1890ff;
+    font-weight: 600;
+  }
+  
+  .sidebar-menu .ant-menu-item:hover {
+    background: #f5f5f5;
+  }
+  
+  .sidebar-menu .ant-menu-item .anticon {
+    font-size: 18px;
+  }
+  
+  /* Patient Summary */
+  .patient-summary {
+    padding: 0 24px;
+    margin-top: auto;
+  }
+  
+  .summary-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    display: block;
+    margin-bottom: 12px;
+  }
+  
+  .summary-stats {
+    display: flex;
+    justify-content: space-around;
+    padding: 16px 0;
+  }
+  
+  .stat-item {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .stat-item .ant-typography {
+    margin: 0;
+  }
+  
+  /* Responsive Design */
+  @media (min-width: 768px) {
+    .main-layout {
+      margin-left: 280px;
+    }
+    
+    .content-wrapper {
+      padding: 24px 32px;
+      max-width: none;
+    }
+    
+    .app-header {
+      padding: 0 32px;
+    }
+  }
+  
+  @media (min-width: 1200px) {
+    .content-wrapper {
+      padding: 32px 40px;
+    }
+  }
+  
+  /* Loading Spinner */
+  .loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: #f5f5f5;
+  }
+  
+  /* Touch-friendly adjustments for mobile */
+  @media (max-width: 767px) {
+    .header-right .ant-btn {
+      min-width: 44px;
+      height: 44px;
+    }
+    
+    .sidebar-menu .ant-menu-item {
+      height: 48px;
+      line-height: 48px;
+      font-size: 16px;
+    }
+    
+    .sidebar-menu .ant-menu-item .anticon {
+      font-size: 20px;
+    }
+  }

@@ -1,0 +1,685 @@
+/* Patient Details Components Styles - Mobile First */
+
+/* Patient Details Overview */
+.patient-details {
+    width: 100%;
+  }
+  
+  .patient-info-card {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px;
+  }
+  
+  .patient-avatar-section {
+    text-align: center;
+  }
+  
+  .patient-avatar-large {
+    background: #f0f0f0;
+    color: #8c8c8c;
+    margin-bottom: 16px;
+  }
+  
+  .patient-name-section {
+    text-align: center;
+  }
+  
+  .patient-name {
+    margin: 8px 0 4px 0 !important;
+    color: #262626;
+  }
+  
+  .info-item {
+    margin-bottom: 16px;
+  }
+  
+  .info-label {
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    display: block;
+  }
+  
+  .info-value {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .info-icon {
+    color: #1890ff;
+    font-size: 14px;
+  }
+  
+  .medical-section {
+    margin-bottom: 16px;
+  }
+  
+  .section-title {
+    font-size: 14px;
+    color: #262626;
+    margin-bottom: 8px;
+    display: block;
+  }
+  
+  .tags-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  
+  .medical-tag {
+    border-radius: 4px !important;
+    font-size: 12px;
+  }
+  
+  .allergy-tag {
+    border-radius: 4px !important;
+    font-size: 12px;
+  }
+  
+  .tag-icon {
+    font-size: 10px;
+    margin-right: 4px;
+  }
+  
+  .caregivers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  
+  .caregiver-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: #fafafa;
+    border: 1px solid #f0f0f0;
+    border-radius: 8px;
+  }
+  
+  .caregiver-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .caregiver-contact {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #8c8c8c;
+  }
+  
+  .contact-icon {
+    font-size: 12px;
+  }
+  
+  .stats-card .ant-statistic {
+    text-align: center;
+  }
+  
+  .stat-item {
+    text-align: center;
+    padding: 8px;
+  }
+  
+  .stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1890ff;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  
+  /* Medication Section */
+  .medication-section {
+    width: 100%;
+  }
+  
+  .medications-card {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .medications-list .ant-list-item {
+    border: none !important;
+    padding: 0 0 16px 0;
+  }
+  
+  .medication-card {
+    border-radius: 8px !important;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+  
+  .medication-card:hover {
+    border-color: #1890ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .medication-content {
+    width: 100%;
+  }
+  
+  .medication-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  
+  .medication-title {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .medication-name {
+    margin: 0 0 4px 0 !important;
+    font-size: 16px !important;
+    font-weight: 600;
+    color: #262626;
+  }
+  
+  .status-tag {
+    flex-shrink: 0;
+    font-weight: 500;
+  }
+  
+  .medication-details .ant-row {
+    margin: 0;
+  }
+  
+  .detail-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 8px;
+  }
+  
+  .detail-icon {
+    color: #1890ff;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  
+  .medication-dates {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #f5f5f5;
+  }
+  
+  .recent-doses {
+    margin-top: 8px;
+  }
+  
+  .recent-doses .ant-tag {
+    margin: 2px 4px 2px 0;
+  }
+  
+  .inactive-medications {
+    opacity: 0.7;
+  }
+  
+  /* Measurement Section */
+  .measurement-section {
+    width: 100%;
+  }
+  
+  .measurement-stats-card {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+    margin-bottom: 24px;
+  }
+  
+  .measurements-card {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .measurements-list .ant-list-item {
+    border: none !important;
+    padding: 0 0 16px 0;
+  }
+  
+  .measurement-card {
+    border-radius: 8px !important;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+  
+  .measurement-card:hover {
+    border-color: #1890ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .measurement-content {
+    width: 100%;
+  }
+  
+  .measurement-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  
+  .measurement-title {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .measurement-type {
+    margin: 0 0 4px 0 !important;
+    font-size: 16px !important;
+    font-weight: 600;
+    color: #262626;
+  }
+  
+  .measurement-value-section {
+    margin-bottom: 12px;
+  }
+  
+  .measurement-value {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .value-text {
+    font-size: 20px;
+    color: #262626;
+  }
+  
+  .trend-info {
+    display: flex;
+    align-items: center;
+  }
+  
+  .measurement-details .ant-row {
+    margin: 0;
+  }
+  
+  .most-tracked {
+    text-align: center;
+  }
+  
+  /* Daily Logs Section */
+  .daily-logs-section {
+    width: 100%;
+  }
+  
+  .logs-controls {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    margin-bottom: 24px;
+  }
+  
+  .logs-card {
+    border-radius: 12px !important;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  }
+  
+  .logs-content {
+    width: 100%;
+  }
+  
+  .logs-list .ant-list-item {
+    border: none !important;
+    padding: 0 0 16px 0;
+  }
+  
+  .log-card {
+    border-radius: 8px !important;
+    border: 1px solid #f0f0f0;
+    transition: all 0.3s ease;
+  }
+  
+  .log-card:hover {
+    border-color: #1890ff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .log-card.log-positive {
+    border-left: 4px solid #52c41a;
+  }
+  
+  .log-card.log-normal {
+    border-left: 4px solid #1890ff;
+  }
+  
+  .log-card.log-mild {
+    border-left: 4px solid #fa8c16;
+  }
+  
+  .log-card.log-moderate {
+    border-left: 4px solid #ff7a45;
+  }
+  
+  .log-card.log-severe {
+    border-left: 4px solid #ff4d4f;
+  }
+  
+  .log-content {
+    width: 100%;
+  }
+  
+  .log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+  }
+  
+  .log-title-section {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .log-title {
+    margin: 0 0 4px 0 !important;
+    font-size: 16px !important;
+    font-weight: 600;
+    color: #262626;
+  }
+  
+  .log-description {
+    margin-bottom: 12px;
+    line-height: 1.5;
+  }
+  
+  .log-footer .ant-row {
+    margin: 0;
+  }
+  
+  .log-meta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  
+  .meta-icon {
+    color: #1890ff;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  
+  .log-tags {
+    margin-top: 8px;
+  }
+  
+  .log-tags .ant-tag {
+    margin: 2px 4px 2px 0;
+  }
+  
+  /* Timeline View */
+  .logs-timeline {
+    padding: 16px 0;
+  }
+  
+  .timeline-log-item {
+    padding: 8px 0;
+  }
+  
+  .timeline-log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 12px;
+  }
+  
+  .timeline-log-title {
+    margin: 0 !important;
+    font-size: 16px !important;
+    font-weight: 600;
+    color: #262626;
+  }
+  
+  .timeline-log-time {
+    color: #8c8c8c;
+    margin-bottom: 8px;
+  }
+  
+  .timeline-log-description {
+    margin-bottom: 8px;
+    line-height: 1.5;
+  }
+  
+  .timeline-log-tags {
+    margin-top: 8px;
+  }
+  
+  .timeline-log-tags .ant-tag {
+    margin: 2px 4px 2px 0;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 767px) {
+    .patient-avatar-section {
+      margin-bottom: 24px;
+    }
+    
+    .medication-header,
+    .measurement-header,
+    .log-header,
+    .timeline-log-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .medication-title,
+    .measurement-title,
+    .log-title-section {
+      width: 100%;
+    }
+    
+    .status-tag {
+      align-self: flex-start;
+    }
+    
+    .measurement-value-section .ant-row {
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .timeline-log-header {
+      align-items: flex-start;
+    }
+    
+    .stat-number {
+      font-size: 20px;
+    }
+    
+    .value-text {
+      font-size: 18px;
+    }
+    
+    .info-value {
+      flex-wrap: wrap;
+    }
+    
+    .caregiver-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+    
+    .caregiver-contact {
+      margin-top: 4px;
+    }
+  }
+  
+  @media (min-width: 768px) {
+    .patient-avatar-section {
+      text-align: left;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .patient-name-section {
+      text-align: left;
+      margin-top: 16px;
+    }
+    
+    .medication-name,
+    .measurement-type,
+    .log-title,
+    .timeline-log-title {
+      font-size: 18px !important;
+    }
+    
+    .stat-number {
+      font-size: 28px;
+    }
+    
+    .value-text {
+      font-size: 24px;
+    }
+  }
+  
+  /* Empty States */
+  .ant-empty {
+    padding: 40px 20px;
+  }
+  
+  .ant-empty-description {
+    color: #8c8c8c;
+    font-size: 14px;
+  }
+  
+  /* Animation */
+  .medication-card,
+  .measurement-card,
+  .log-card {
+    animation: slideIn 0.3s ease-out;
+  }
+  
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  /* Loading States */
+  .medication-card.loading,
+  .measurement-card.loading,
+  .log-card.loading {
+    pointer-events: none;
+    opacity: 0.7;
+  }
+  
+  /* Form Modals */
+  .ant-modal {
+    border-radius: 12px;
+  }
+  
+  .ant-modal-header {
+    border-bottom: 1px solid #f0f0f0;
+  }
+  
+  .ant-modal-body {
+    padding: 24px;
+  }
+  
+  /* Buttons */
+  .ant-btn {
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  
+  .ant-btn-primary {
+    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.3);
+  }
+  
+  .ant-btn-primary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(24, 144, 255, 0.4);
+  }
+  
+  /* Progress and Statistics */
+  .ant-progress-line {
+    margin-bottom: 8px;
+  }
+  
+  .ant-statistic-content {
+    color: #262626;
+  }
+  
+  .ant-statistic-title {
+    color: #8c8c8c;
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+  }
+  
+  /* Tags */
+  .ant-tag {
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    border: none;
+  }
+  
+  /* Timeline */
+  .ant-timeline {
+    padding: 0;
+  }
+  
+  .ant-timeline-item-head {
+    background: #fff;
+    border: 2px solid #f0f0f0;
+  }
+  
+  .ant-timeline-item-content {
+    margin: 0 0 0 24px;
+    padding: 0 0 16px 16px;
+  }
+  
+  /* Pagination */
+  .ant-pagination {
+    text-align: center;
+    margin-top: 24px;
+  }
+  
+  .ant-pagination-item {
+    border-radius: 6px;
+  }
+  
+  .ant-pagination-item-active {
+    border-color: #1890ff;
+  }
+  
+  /* Segmented Controls */
+  .ant-segmented {
+    border-radius: 8px;
+    background: #f5f5f5;
+  }
+  
+  .ant-segmented-item {
+    border-radius: 6px;
+    font-weight: 500;
+  }
+  
+  .ant-segmented-item-selected {
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
