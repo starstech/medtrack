@@ -187,34 +187,33 @@ const DoseCard = ({ dose, onMarkDose, showPatient = false }) => {
             <Tag color={statusConfig.color} size="small" className="dose-status">
               {statusConfig.text}
             </Tag>
-            <Text type="secondary" size="small" className="dose-time">
-              {timeInfo.scheduled}
-            </Text>
           </div>
         </div>
         
         <div className="dose-details-row">
           <Text type="secondary" size="small">
-            {medication.dosage} {medication.form}
+            <span className="dose-label">Dosage:</span> {medication.dosage} {medication.form}
             {showPatient && patient && (
-              <> • {patient.name}</>
-            )}
-            {timeInfo.actual && (
-              <> • Actually taken: {timeInfo.actual}</>
+              <> • <span className="dose-label">Patient:</span> {patient.name}</>
             )}
           </Text>
         </div>
         
         <div className="dose-time-row">
           <Text type="secondary" size="small">
-            {timeInfo.relative}
+            <span className="dose-label">
+              {status === 'taken' && timeInfo.actual ? 'Taken at:' : 'Due at:'}
+            </span>{' '}
+            {status === 'taken' && timeInfo.actual ? timeInfo.actual : timeInfo.scheduled}
+            {' • '}
+            <span className="dose-relative-time">{timeInfo.relative}</span>
           </Text>
         </div>
         
         {notes && (
           <div className="dose-notes">
             <Text size="small" type="secondary">
-              {notes}
+              <span className="dose-label">Note:</span> {notes}
             </Text>
           </div>
         )}
