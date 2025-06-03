@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { 
   Card, 
   List, 
@@ -53,6 +53,8 @@ const DailyLogs = ({ patient }) => {
   const [viewMode, setViewMode] = useState('list') // 'list' or 'timeline'
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [isScrollable, setIsScrollable] = useState(false)
+  const containerRef = useRef(null)
 
   const logs = getPatientLogs(patient.id)
   
@@ -63,9 +65,31 @@ const DailyLogs = ({ patient }) => {
     return typeMatch && severityMatch
   })
 
+  // Sort logs by date (newest first)
+  const sortedLogs = filteredLogs.sort((a, b) => 
+    new Date(b.timestamp) - new Date(a.timestamp)
+  )
+
   // Get unique types and severities from data
   const availableTypes = [...new Set(logs.map(log => log.type))]
   const availableSeverities = [...new Set(logs.map(log => log.severity))]
+
+  // Check if container is scrollable
+  useEffect(() => {
+    const checkScrollable = () => {
+      if (containerRef.current) {
+        const { scrollHeight, clientHeight } = containerRef.current
+        setIsScrollable(scrollHeight > clientHeight)
+      }
+    }
+
+    checkScrollable()
+    window.addEventListener('resize', checkScrollable)
+
+    return () => {
+      window.removeEventListener('resize', checkScrollable)
+    }
+  }, [sortedLogs])
 
   const handleAddLog = async (values) => {
     setLoading(true)
@@ -139,119 +163,103 @@ const DailyLogs = ({ patient }) => {
     }
   ]
 
-  const renderLogCard = (log) => {
+  const renderLogItem = (log) => {
     const typeInfo = getLogTypeInfo(log.type)
     const severityInfo = getSeverityInfo(log.severity)
     
     return (
-      <Col xs={24} md={12}>
-        <List.Item className="log-list-item">
-          <Card 
-            className={`log-card log-${log.severity}`}
-            size="small"
-            bodyStyle={{ padding: 16 }}
-          >
-            <div className="log-content">
-              <div className="log-header">
-                <Space>
-                  <Avatar 
-                    icon={<FileTextOutlined />}
-                    style={{ backgroundColor: typeInfo.color }}
-                    size="default"
-                  />
-                  <div className="log-title-section">
-                    <Title level={5} className="log-title">
-                      {log.title}
-                    </Title>
-                    <Text type="secondary" size="small">
-                      {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
-                    </Text>
-                  </div>
-                </Space>
-                
-                <Space>
-                  <Tag color={typeInfo.color} size="small">
-                    {typeInfo.label}
+      <div key={log.id} className="log-list-item">
+        <div className="log-item">
+          <div className="log-icon">
+            <Avatar 
+              icon={<FileTextOutlined />}
+              style={{ backgroundColor: typeInfo.color }}
+              size="default"
+            />
+          </div>
+          <div className="log-primary">
+            <div className="log-name-row">
+              <Text strong className="log-title">
+                {log.title}
+              </Text>
+              <div className="log-tags-row">
+                <Tag color={typeInfo.color} size="small">
+                  {typeInfo.label}
+                </Tag>
+                <Tag color={severityInfo.color} size="small">
+                  {severityInfo.label}
+                </Tag>
+                {log.followUpRequired && (
+                  <Tag color="orange" size="small">
+                    <ExclamationCircleOutlined />
+                    Follow-up
                   </Tag>
-                  <Tag color={severityInfo.color} size="small">
-                    {severityInfo.label}
-                  </Tag>
-                  {log.followUpRequired && (
-                    <Tag color="orange" size="small">
-                      <ExclamationCircleOutlined />
-                      Follow-up
-                    </Tag>
-                  )}
-                  <Dropdown
-                    menu={{ items: getMenuItems(log) }}
-                    placement="bottomRight"
-                    trigger={['click']}
-                  >
-                    <Button type="text" icon={<MoreOutlined />} size="small" />
-                  </Dropdown>
-                </Space>
-              </div>
-
-              <div className="log-description">
-                <Text>{log.description}</Text>
-              </div>
-
-              <div className="log-footer">
-                <Row gutter={[16, 8]}>
-                  <Col xs={24} sm={12}>
-                    <div className="log-meta">
-                      <UserOutlined className="meta-icon" />
-                      <Text type="secondary" size="small">
-                        Recorded by {log.recordedBy}
-                      </Text>
-                    </div>
-                  </Col>
-                  
-                  <Col xs={24} sm={12}>
-                    <div className="log-meta">
-                      <ClockCircleOutlined className="meta-icon" />
-                      <Text type="secondary" size="small">
-                        {dayjs(log.timestamp).fromNow()}
-                      </Text>
-                    </div>
-                  </Col>
-                  
-                  {log.tags && log.tags.length > 0 && (
-                    <Col xs={24}>
-                      <div className="log-tags">
-                        <Text type="secondary" size="small">Tags: </Text>
-                        <Space size={4} wrap>
-                          {log.tags.map((tag, index) => (
-                            <Tag key={index} size="small" color="default">
-                              {tag}
-                            </Tag>
-                          ))}
-                        </Space>
-                      </div>
-                    </Col>
-                  )}
-                </Row>
+                )}
               </div>
             </div>
-          </Card>
-        </List.Item>
-      </Col>
+            
+            <div className="log-details-row">
+              <Text type="secondary" size="small">
+                {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')} • by {log.recordedBy} • {dayjs(log.timestamp).fromNow()}
+              </Text>
+            </div>
+            
+            <div className="log-description">
+              <Text>{log.description}</Text>
+            </div>
+
+            {log.tags && log.tags.length > 0 && (
+              <div className="log-tags">
+                <Space size={4} wrap>
+                  {log.tags.map((tag, index) => (
+                    <Tag key={index} size="small" color="default">
+                      {tag}
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
+          </div>
+
+          <div className="log-actions">
+            <Button
+              size="small"
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => message.info('Edit functionality coming soon!')}
+              className="list-action-btn"
+            />
+            <Dropdown
+              menu={{ items: getMenuItems(log) }}
+              placement="bottomLeft"
+              trigger={['click']}
+            >
+              <Button 
+                size="small" 
+                type="text" 
+                icon={<MoreOutlined />} 
+                className="list-action-btn"
+              />
+            </Dropdown>
+          </div>
+        </div>
+      </div>
     )
   }
 
   const renderListView = () => (
-    <div className="logs-list-view">
-      <List
-        grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
-        dataSource={filteredLogs}
-        renderItem={renderLogCard}
-      />
+    <div 
+      className={`log-list-container ${isScrollable ? 'has-scroll' : ''}`}
+      ref={containerRef}
+    >
+      <div className="logs-list">
+        {sortedLogs.map(renderLogItem)}
+      </div>
     </div>
   )
 
   const renderTimelineView = () => {
-    const timelineItems = filteredLogs
-      .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+    const timelineItems = sortedLogs
       .map(log => {
         const typeInfo = getLogTypeInfo(log.type)
         const severityInfo = getSeverityInfo(log.severity)
