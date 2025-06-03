@@ -143,97 +143,110 @@ const DailyLogs = ({ patient }) => {
     const severityInfo = getSeverityInfo(log.severity)
     
     return (
-      <List.Item className="log-list-item">
-        <Card 
-          className={`log-card log-${log.severity}`}
-          size="small"
-        >
-          <div className="log-content">
-            <div className="log-header">
-              <Space>
-                <Avatar 
-                  icon={<FileTextOutlined />}
-                  style={{ backgroundColor: typeInfo.color }}
-                  size="default"
-                />
-                <div className="log-title-section">
-                  <Title level={5} className="log-title">
-                    {log.title}
-                  </Title>
-                  <Text type="secondary" size="small">
-                    {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
-                  </Text>
-                </div>
-              </Space>
-              
-              <Space>
-                <Tag color={typeInfo.color} size="small">
-                  {typeInfo.label}
-                </Tag>
-                <Tag color={severityInfo.color} size="small">
-                  {severityInfo.label}
-                </Tag>
-                {log.followUpRequired && (
-                  <Tag color="orange" size="small">
-                    <ExclamationCircleOutlined />
-                    Follow-up
+      <Col xs={24} md={12}>
+        <List.Item className="log-list-item">
+          <Card 
+            className={`log-card log-${log.severity}`}
+            size="small"
+            bodyStyle={{ padding: 16 }}
+          >
+            <div className="log-content">
+              <div className="log-header">
+                <Space>
+                  <Avatar 
+                    icon={<FileTextOutlined />}
+                    style={{ backgroundColor: typeInfo.color }}
+                    size="default"
+                  />
+                  <div className="log-title-section">
+                    <Title level={5} className="log-title">
+                      {log.title}
+                    </Title>
+                    <Text type="secondary" size="small">
+                      {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
+                    </Text>
+                  </div>
+                </Space>
+                
+                <Space>
+                  <Tag color={typeInfo.color} size="small">
+                    {typeInfo.label}
                   </Tag>
-                )}
-                <Dropdown
-                  menu={{ items: getMenuItems(log) }}
-                  placement="bottomRight"
-                  trigger={['click']}
-                >
-                  <Button type="text" icon={<MoreOutlined />} size="small" />
-                </Dropdown>
-              </Space>
-            </div>
+                  <Tag color={severityInfo.color} size="small">
+                    {severityInfo.label}
+                  </Tag>
+                  {log.followUpRequired && (
+                    <Tag color="orange" size="small">
+                      <ExclamationCircleOutlined />
+                      Follow-up
+                    </Tag>
+                  )}
+                  <Dropdown
+                    menu={{ items: getMenuItems(log) }}
+                    placement="bottomRight"
+                    trigger={['click']}
+                  >
+                    <Button type="text" icon={<MoreOutlined />} size="small" />
+                  </Dropdown>
+                </Space>
+              </div>
 
-            <div className="log-description">
-              <Text>{log.description}</Text>
-            </div>
+              <div className="log-description">
+                <Text>{log.description}</Text>
+              </div>
 
-            <div className="log-footer">
-              <Row gutter={[16, 8]}>
-                <Col xs={24} sm={12}>
-                  <div className="log-meta">
-                    <UserOutlined className="meta-icon" />
-                    <Text type="secondary" size="small">
-                      Recorded by {log.recordedBy}
-                    </Text>
-                  </div>
-                </Col>
-                
-                <Col xs={24} sm={12}>
-                  <div className="log-meta">
-                    <ClockCircleOutlined className="meta-icon" />
-                    <Text type="secondary" size="small">
-                      {dayjs(log.timestamp).fromNow()}
-                    </Text>
-                  </div>
-                </Col>
-                
-                {log.tags && log.tags.length > 0 && (
-                  <Col xs={24}>
-                    <div className="log-tags">
-                      <Text type="secondary" size="small">Tags: </Text>
-                      <Space size={4} wrap>
-                        {log.tags.map((tag, index) => (
-                          <Tag key={index} size="small" color="default">
-                            {tag}
-                          </Tag>
-                        ))}
-                      </Space>
+              <div className="log-footer">
+                <Row gutter={[16, 8]}>
+                  <Col xs={24} sm={12}>
+                    <div className="log-meta">
+                      <UserOutlined className="meta-icon" />
+                      <Text type="secondary" size="small">
+                        Recorded by {log.recordedBy}
+                      </Text>
                     </div>
                   </Col>
-                )}
-              </Row>
+                  
+                  <Col xs={24} sm={12}>
+                    <div className="log-meta">
+                      <ClockCircleOutlined className="meta-icon" />
+                      <Text type="secondary" size="small">
+                        {dayjs(log.timestamp).fromNow()}
+                      </Text>
+                    </div>
+                  </Col>
+                  
+                  {log.tags && log.tags.length > 0 && (
+                    <Col xs={24}>
+                      <div className="log-tags">
+                        <Text type="secondary" size="small">Tags: </Text>
+                        <Space size={4} wrap>
+                          {log.tags.map((tag, index) => (
+                            <Tag key={index} size="small" color="default">
+                              {tag}
+                            </Tag>
+                          ))}
+                        </Space>
+                      </div>
+                    </Col>
+                  )}
+                </Row>
+              </div>
             </div>
-          </div>
-        </Card>
-      </List.Item>
+          </Card>
+        </List.Item>
+      </Col>
     )
   }
+
+  const renderListView = () => (
+    <div className="logs-list-view">
+      <List
+        grid={{ gutter: 16, xs: 1, sm: 1, md: 2, lg: 2, xl: 2, xxl: 2 }}
+        dataSource={filteredLogs}
+        renderItem={renderLogCard}
+      />
+    </div>
+  )
 
   const renderTimelineView = () => {
     const timelineItems = filteredLogs
@@ -555,18 +568,7 @@ const DailyLogs = ({ patient }) => {
               {viewMode === 'timeline' ? (
                 renderTimelineView()
               ) : (
-                <List
-                  dataSource={filteredLogs.sort((a, b) => 
-                    new Date(b.timestamp) - new Date(a.timestamp)
-                  )}
-                  renderItem={renderLogCard}
-                  className="logs-list"
-                  pagination={{
-                    pageSize: 10,
-                    showSizeChanger: false,
-                    showQuickJumper: true
-                  }}
-                />
+                renderListView()
               )}
             </div>
           ) : (

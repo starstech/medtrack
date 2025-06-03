@@ -1,19 +1,23 @@
-import { Card, Select, Button, Space, Typography, Avatar, Tag } from 'antd'
+import { Card, Select, Button, Space, Typography, Avatar, Tag, theme } from 'antd'
 import { 
   UserOutlined, 
   PlusOutlined, 
   TeamOutlined,
-  GlobalOutlined 
+  GlobalOutlined,
+  HeartOutlined,
+  CalendarOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { useNavigate } from 'react-router-dom'
+import dayjs from 'dayjs'
 
-const { Text } = Typography
+const { Text, Title } = Typography
 const { Option } = Select
 
 const PatientSelector = () => {
   const { patients, selectedPatient, selectPatient } = usePatients()
   const navigate = useNavigate()
+  const { token: { colorPrimary, colorBgContainer, borderRadius } } = theme.useToken()
 
   const handlePatientChange = (patientId) => {
     if (patientId === 'all') {
@@ -28,16 +32,7 @@ const PatientSelector = () => {
   }
 
   const getPatientAge = (dateOfBirth) => {
-    const today = new Date()
-    const birth = new Date(dateOfBirth)
-    let age = today.getFullYear() - birth.getFullYear()
-    const monthDiff = today.getMonth() - birth.getMonth()
-    
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
-      age--
-    }
-    
-    return age
+    return dayjs().diff(dayjs(dateOfBirth), 'year')
   }
 
   const getSelectedValue = () => {
@@ -45,101 +40,168 @@ const PatientSelector = () => {
   }
 
   return (
-    <Card className="patient-selector-card" bodyStyle={{ padding: '16px' }}>
-      <div className="patient-selector-header">
-        <Space align="center">
-          <TeamOutlined className="selector-icon" />
-          <Text strong>Patient View</Text>
-        </Space>
-      </div>
-
-      <div className="patient-selector-content">
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          {/* Patient Selector */}
-          <Select
-            value={getSelectedValue()}
-            onChange={handlePatientChange}
-            placeholder="Select a patient to view their data"
-            size="large"
-            style={{ width: '100%' }}
-            className="patient-select"
-          >
-            <Option value="all" key="all">
+    <div className="patient-selector">
+      <Select
+        value={getSelectedValue()}
+        onChange={handlePatientChange}
+        placeholder="Select a patient to view their data"
+        size="large"
+        style={{ 
+          width: selectedPatient ? '300px' : '240px',
+          transition: 'width 0.3s ease'
+        }}
+        dropdownStyle={{
+          padding: '8px',
+          borderRadius: borderRadius
+        }}
+        optionLabelProp="label"
+      >
+        <Option 
+          value="all" 
+          key="all" 
+          label={
+            <Space>
+              <GlobalOutlined />
+              <span>All Patients</span>
+            </Space>
+          }
+        >
+          <div className="patient-option">
+            <Space align="center">
+              <Avatar 
+                icon={<TeamOutlined />} 
+                style={{ 
+                  backgroundColor: `${colorPrimary}20`,
+                  color: colorPrimary
+                }}
+              />
+              <div>
+                <Text strong>All Patients Overview</Text>
+                <br />
+                <Text type="secondary">{patients.length} patients in care</Text>
+              </div>
+            </Space>
+          </div>
+        </Option>
+        
+        {patients.map(patient => (
+          <Option 
+            value={patient.id} 
+            key={patient.id}
+            label={
               <Space>
-                <GlobalOutlined />
-                <span>All Patients Overview</span>
+                <Avatar 
+                  size="small" 
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor: patient.id === selectedPatient?.id ? colorPrimary : `${colorPrimary}20`,
+                    color: patient.id === selectedPatient?.id ? colorBgContainer : colorPrimary
+                  }}
+                />
+                <span>{patient.name}</span>
               </Space>
-            </Option>
-            
-            {patients.map(patient => (
-              <Option value={patient.id} key={patient.id}>
-                <Space>
-                  <Avatar size="small" icon={<UserOutlined />} />
-                  <div>
-                    <div style={{ fontWeight: 500 }}>{patient.name}</div>
-                    <Text type="secondary" size="small">
-                      {getPatientAge(patient.dateOfBirth)} years old
+            }
+          >
+            <div className="patient-option">
+              <Space align="center">
+                <Avatar 
+                  icon={<UserOutlined />}
+                  style={{
+                    backgroundColor: patient.id === selectedPatient?.id ? colorPrimary : `${colorPrimary}20`,
+                    color: patient.id === selectedPatient?.id ? colorBgContainer : colorPrimary
+                  }}
+                />
+                <div>
+                  <Text strong>{patient.name}</Text>
+                  <br />
+                  <Space size={8}>
+                    <Text type="secondary">
+                      <CalendarOutlined /> {getPatientAge(patient.dateOfBirth)} years
                     </Text>
-                  </div>
-                </Space>
-              </Option>
-            ))}
-          </Select>
-
-          {/* Selected Patient Info */}
-          {selectedPatient && (
-            <div className="selected-patient-info">
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <div className="patient-details">
-                  <Space>
-                    <Avatar icon={<UserOutlined />} />
-                    <div>
-                      <Text strong>{selectedPatient.name}</Text>
-                      <br />
-                      <Text type="secondary" size="small">
-                        {getPatientAge(selectedPatient.dateOfBirth)} years old • {selectedPatient.gender}
+                    {patient.medicalConditions?.length > 0 && (
+                      <Text type="secondary">
+                        <HeartOutlined /> {patient.medicalConditions.length} conditions
                       </Text>
-                    </div>
+                    )}
                   </Space>
-                </div>
-
-                {/* Medical Conditions */}
-                {selectedPatient.medicalConditions?.length > 0 && (
-                  <div className="patient-conditions">
-                    <Text type="secondary" size="small">Conditions:</Text>
-                    <div style={{ marginTop: 4 }}>
-                      {selectedPatient.medicalConditions.map((condition, index) => (
-                        <Tag key={index} size="small" color="blue">
-                          {condition}
-                        </Tag>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Caregivers */}
-                <div className="patient-caregivers">
-                  <Text type="secondary" size="small">
-                    Caregivers: {selectedPatient.caregivers?.length || 0}
-                  </Text>
                 </div>
               </Space>
             </div>
-          )}
+          </Option>
+        ))}
+      </Select>
 
-          {/* Add Patient Button */}
-          <Button
-            type="dashed"
-            icon={<PlusOutlined />}
-            onClick={handleAddPatient}
-            block
-            className="add-patient-button"
-          >
-            Add New Patient
-          </Button>
-        </Space>
-      </div>
-    </Card>
+      {selectedPatient && (
+        <Card 
+          className="selected-patient-card"
+          style={{
+            marginTop: '16px',
+            borderRadius: borderRadius,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+          }}
+          bodyStyle={{ padding: '16px' }}
+          bordered={false}
+        >
+          <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Space align="start">
+              <Avatar 
+                size={64}
+                icon={<UserOutlined />}
+                style={{
+                  backgroundColor: colorPrimary,
+                  color: colorBgContainer
+                }}
+              />
+              <div>
+                <Title level={4} style={{ margin: 0 }}>{selectedPatient.name}</Title>
+                <Space split="•" style={{ color: 'rgba(0,0,0,0.45)' }}>
+                  <Text type="secondary">{getPatientAge(selectedPatient.dateOfBirth)} years</Text>
+                  <Text type="secondary">{selectedPatient.gender}</Text>
+                  {selectedPatient.caregivers?.length > 0 && (
+                    <Text type="secondary">{selectedPatient.caregivers.length} caregivers</Text>
+                  )}
+                </Space>
+              </div>
+            </Space>
+
+            {selectedPatient.medicalConditions?.length > 0 && (
+              <div>
+                <Text type="secondary" style={{ display: 'block', marginBottom: '8px' }}>
+                  Medical Conditions
+                </Text>
+                <Space size={[4, 8]} wrap>
+                  {selectedPatient.medicalConditions.map((condition, index) => (
+                    <Tag
+                      key={index}
+                      color="blue"
+                      style={{
+                        borderRadius: '12px',
+                        padding: '4px 12px'
+                      }}
+                    >
+                      {condition}
+                    </Tag>
+                  ))}
+                </Space>
+              </div>
+            )}
+          </Space>
+        </Card>
+      )}
+
+      <Button
+        type="dashed"
+        icon={<PlusOutlined />}
+        onClick={handleAddPatient}
+        style={{ 
+          marginTop: '16px',
+          width: '100%',
+          borderRadius: borderRadius
+        }}
+      >
+        Add New Patient
+      </Button>
+    </div>
   )
 }
 

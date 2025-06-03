@@ -1,0 +1,171 @@
+.recent-activity {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.activity-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-all-btn {
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.activity-timeline {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+/* Custom scrollbar for the timeline */
+.activity-timeline::-webkit-scrollbar {
+  width: 6px;
+}
+
+.activity-timeline::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.activity-timeline::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.activity-timeline::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Timeline item styling */
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding: 8px 0;
+  transition: all 0.3s ease;
+}
+
+.timeline-item:hover {
+  background: rgba(0, 0, 0, 0.02);
+  transform: translateX(4px);
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 0 -12px;
+}
+
+.timeline-content {
+  flex: 1;
+  margin-right: 16px;
+}
+
+.timeline-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.activity-title {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.activity-time {
+  font-size: 12px;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+.activity-description {
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 4px 0;
+  color: rgba(0, 0, 0, 0.65);
+}
+
+.activity-notes {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 6px;
+  font-style: italic;
+}
+
+.timeline-action {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.timeline-item:hover .timeline-action {
+  opacity: 1;
+}
+
+.timeline-action:hover {
+  transform: translateX(4px);
+}
+
+/* Empty state styling */
+.empty-activity {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .recent-activity {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .timeline-item:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .activity-notes {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .empty-activity {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .activity-timeline::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .activity-timeline::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+} 

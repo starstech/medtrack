@@ -1,4 +1,4 @@
-import { Row, Col, Card, Statistic, Space } from 'antd'
+import { Row, Col, Card, Statistic, Space, Progress, theme } from 'antd'
 import { 
   UserOutlined, 
   MedicineBoxOutlined, 
@@ -20,6 +20,10 @@ const StatsCards = () => {
     getTodaysDoses 
   } = usePatients()
 
+  const {
+    token: { colorPrimary, colorSuccess, colorWarning, colorInfo }
+  } = theme.useToken()
+
   // Filter data based on selected patient
   const filteredPatients = selectedPatient ? [selectedPatient] : patients
   const filteredMedications = selectedPatient 
@@ -38,6 +42,7 @@ const StatsCards = () => {
   
   const takenDoses = filteredTodaysDoses.filter(dose => dose.status === 'taken').length
   const pendingDoses = filteredTodaysDoses.filter(dose => dose.status === 'pending').length
+  const totalDoses = filteredTodaysDoses.length
   
   const recentMeasurements = filteredMeasurements.filter(measure => 
     dayjs().diff(dayjs(measure.recordedAt), 'days') <= 7
@@ -53,41 +58,46 @@ const StatsCards = () => {
       title: 'Total Patients',
       value: filteredPatients.length,
       icon: <UserOutlined />,
-      color: '#1890ff',
-      visible: !selectedPatient
+      color: colorPrimary,
+      visible: !selectedPatient,
+      description: 'Active patients under care'
     },
     {
       title: 'Active Medications',
       value: activeMedications,
       icon: <MedicineBoxOutlined />,
-      color: '#52c41a'
+      color: colorSuccess,
+      description: 'Currently prescribed medications'
     },
     {
-      title: 'Doses Taken Today',
-      value: takenDoses,
-      suffix: `/ ${filteredTodaysDoses.length}`,
+      title: 'Medication Adherence',
+      value: totalDoses ? Math.round((takenDoses / totalDoses) * 100) : 0,
       icon: <CheckCircleOutlined />,
-      color: '#52c41a'
+      color: colorSuccess,
+      suffix: '%',
+      showProgress: true,
+      description: `${takenDoses} of ${totalDoses} doses taken today`
     },
     {
       title: 'Pending Doses',
       value: pendingDoses,
       icon: <ClockCircleOutlined />,
-      color: '#fa8c16'
+      color: colorWarning,
+      description: 'Doses waiting to be taken'
     },
     {
       title: 'Recent Measurements',
       value: recentMeasurements,
-      prefix: 'Last 7 days',
       icon: <ExperimentOutlined />,
-      color: '#722ed1'
+      color: '#722ed1',
+      description: 'Recorded in the last 7 days'
     },
     {
       title: 'Upcoming Appointments',
       value: filteredAppointments.length,
-      prefix: 'Next 7 days',
       icon: <CalendarOutlined />,
-      color: '#13c2c2'
+      color: colorInfo,
+      description: 'Scheduled in the next 7 days'
     }
   ]
 
@@ -95,47 +105,61 @@ const StatsCards = () => {
 
   return (
     <div className="stats-cards">
-      <Row gutter={[12, 12]}>
+      <Row gutter={[16, 16]}>
         {visibleStats.map((stat, index) => (
           <Col 
             key={index} 
-            xs={12} 
+            xs={24} 
             sm={12} 
             md={8} 
-            lg={selectedPatient ? 8 : 6}
-            xl={selectedPatient ? 8 : 4}
+            lg={6}
           >
             <Card 
               className="stat-card" 
-              bodyStyle={{ padding: '16px 12px' }}
-              hoverable
+              bordered={false}
             >
-              <Space direction="vertical" size="small" style={{ width: '100%' }}>
-                <div className="stat-header">
-                  <div 
-                    className="stat-icon"
-                    style={{ color: stat.color }}
-                  >
-                    {stat.icon}
-                  </div>
-                </div>
-                
-                <Statistic
-                  value={stat.value}
-                  suffix={stat.suffix}
-                  prefix={stat.prefix}
-                  valueStyle={{ 
-                    fontSize: '20px', 
-                    fontWeight: 'bold',
+              <div className="stat-header">
+                <div 
+                  className="stat-icon"
+                  style={{ 
                     color: stat.color,
-                    lineHeight: 1.2
+                    background: `${stat.color}10`
                   }}
-                />
-                
-                <div className="stat-title">
-                  {stat.title}
+                >
+                  {stat.icon}
                 </div>
-              </Space>
+              </div>
+              
+              <Statistic
+                title={
+                  <div className="stat-title">
+                    {stat.title}
+                  </div>
+                }
+                value={stat.value}
+                suffix={stat.suffix}
+                valueStyle={{
+                  color: stat.color,
+                  fontSize: '28px',
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                  marginBottom: '8px'
+                }}
+              />
+
+              {stat.showProgress && (
+                <Progress 
+                  percent={stat.value} 
+                  strokeColor={stat.color}
+                  size="small"
+                  showInfo={false}
+                  style={{ marginBottom: '8px' }}
+                />
+              )}
+              
+              <div className="stat-description" style={{ color: 'rgba(0, 0, 0, 0.45)' }}>
+                {stat.description}
+              </div>
             </Card>
           </Col>
         ))}

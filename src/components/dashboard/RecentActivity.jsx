@@ -1,17 +1,19 @@
-import { Card, List, Avatar, Tag, Typography, Space, Button, Empty } from 'antd'
+import { Card, List, Avatar, Tag, Typography, Space, Button, Empty, Timeline, theme } from 'antd'
 import { 
   MedicineBoxOutlined,
   ExperimentOutlined,
   FileTextOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
-  EyeOutlined
+  EyeOutlined,
+  RightOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { LOG_TYPES, SEVERITY_LEVELS } from '../../utils/mockData'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import './RecentActivity.css'
 
 dayjs.extend(relativeTime)
 
@@ -26,6 +28,7 @@ const RecentActivity = () => {
     patients 
   } = usePatients()
   const navigate = useNavigate()
+  const { token: { colorPrimary, colorSuccess, colorWarning, colorInfo, borderRadius } } = theme.useToken()
 
   // Combine all activities and sort by timestamp
   const getAllActivities = () => {
@@ -54,8 +57,8 @@ const RecentActivity = () => {
             title: `Dose taken: ${medication.name}`,
             description: `${medication.dosage} ${medication.form}`,
             patient: patient,
-            icon: <CheckCircleOutlined />,
-            color: '#52c41a',
+            icon: <MedicineBoxOutlined />,
+            color: colorSuccess,
             notes: dose.notes
           })
         }
@@ -73,7 +76,7 @@ const RecentActivity = () => {
         description: `${measurement.value} ${measurement.unit}`,
         patient: patient,
         icon: <ExperimentOutlined />,
-        color: '#1890ff',
+        color: colorPrimary,
         notes: measurement.notes
       })
     })
@@ -94,7 +97,7 @@ const RecentActivity = () => {
           : log.description,
         patient: patient,
         icon: <FileTextOutlined />,
-        color: logType?.color || '#8c8c8c',
+        color: logType?.color || colorInfo,
         severity: log.severity,
         severityColor: severityLevel?.color,
         logType: log.type,
@@ -110,16 +113,6 @@ const RecentActivity = () => {
 
   const activities = getAllActivities()
 
-  const getActivityAvatar = (activity) => {
-    return (
-      <Avatar 
-        icon={activity.icon} 
-        style={{ backgroundColor: activity.color }}
-        size="default"
-      />
-    )
-  }
-
   const formatTimestamp = (timestamp) => {
     return dayjs(timestamp).fromNow()
   }
@@ -132,32 +125,9 @@ const RecentActivity = () => {
     }
   }
 
-  return (
-    <Card 
-      className="recent-activity-card"
-      title={
-        <Space>
-          <ClockCircleOutlined />
-          <Title level={4} style={{ margin: 0 }}>
-            Recent Activity
-          </Title>
-        </Space>
-      }
-      extra={
-        activities.length > 0 && (
-          <Button 
-            type="link" 
-            icon={<EyeOutlined />}
-            onClick={handleViewMore}
-            size="small"
-          >
-            View All
-          </Button>
-        )
-      }
-      bodyStyle={{ padding: '16px' }}
-    >
-      {activities.length === 0 ? (
+  if (activities.length === 0) {
+    return (
+      <div className="empty-activity">
         <Empty
           image={Empty.PRESENTED_IMAGE_SIMPLE}
           description={
@@ -168,66 +138,112 @@ const RecentActivity = () => {
               }
             </Text>
           }
-          style={{ padding: '24px 0' }}
         >
-          <Button type="primary" onClick={handleViewMore}>
+          <Button type="primary" onClick={handleViewMore} size="large">
             {selectedPatient ? 'Add Activity' : 'View Patients'}
           </Button>
         </Empty>
-      ) : (
-        <List
-          dataSource={activities}
-          renderItem={(activity) => (
-            <List.Item className="activity-item">
-              <List.Item.Meta
-                avatar={getActivityAvatar(activity)}
-                title={
-                  <Space size="small" wrap>
+      </div>
+    )
+  }
+
+  return (
+    <div className="recent-activity">
+      <div className="activity-header">
+        <Space>
+          <ClockCircleOutlined />
+          <Text strong style={{ fontSize: '16px' }}>Recent Activity</Text>
+        </Space>
+        <Button 
+          type="text"
+          icon={<EyeOutlined />}
+          onClick={handleViewMore}
+          className="view-all-btn"
+        >
+          View All
+        </Button>
+      </div>
+
+      <Timeline
+        className="activity-timeline"
+        items={activities.map(activity => ({
+          color: activity.color,
+          dot: (
+            <Avatar 
+              icon={activity.icon}
+              style={{ 
+                backgroundColor: activity.color,
+                border: '2px solid #fff',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              }}
+              size="small"
+            />
+          ),
+          children: (
+            <div className="timeline-item">
+              <div className="timeline-content">
+                <div className="timeline-header">
+                  <Space size={8} wrap>
                     <Text strong className="activity-title">
                       {activity.title}
                     </Text>
                     {!selectedPatient && (
-                      <Tag size="small" color="blue">
+                      <Tag 
+                        color="blue"
+                        style={{ 
+                          borderRadius: '12px',
+                          padding: '0 8px'
+                        }}
+                      >
                         {activity.patient?.name}
                       </Tag>
                     )}
                     {activity.severity && (
                       <Tag 
-                        size="small" 
                         color={activity.severityColor}
+                        style={{ 
+                          borderRadius: '12px',
+                          padding: '0 8px'
+                        }}
                       >
                         {activity.severity}
                       </Tag>
                     )}
-                    {activity.followUpRequired && (
-                      <Tag size="small" color="orange">
-                        Follow-up needed
-                      </Tag>
-                    )}
                   </Space>
-                }
-                description={
-                  <Space direction="vertical" size="small">
-                    <Text type="secondary" className="activity-description">
-                      {activity.description}
+                  <Text type="secondary" className="activity-time">
+                    {formatTimestamp(activity.timestamp)}
+                  </Text>
+                </div>
+                
+                <Text type="secondary" className="activity-description">
+                  {activity.description}
+                </Text>
+
+                {activity.notes && (
+                  <div className="activity-notes">
+                    <Text type="secondary" style={{ fontSize: '12px' }}>
+                      {activity.notes}
                     </Text>
-                    {activity.notes && (
-                      <Text type="secondary" size="small" italic>
-                        Note: {activity.notes}
-                      </Text>
-                    )}
-                    <Text type="secondary" size="small">
-                      {formatTimestamp(activity.timestamp)}
-                    </Text>
-                  </Space>
-                }
+                  </div>
+                )}
+              </div>
+
+              <Button 
+                type="text" 
+                size="small"
+                icon={<RightOutlined />}
+                className="timeline-action"
+                onClick={() => {
+                  if (activity.patient) {
+                    navigate(`/patients/${activity.patient.id}`)
+                  }
+                }}
               />
-            </List.Item>
-          )}
-          size="small"
-        />
-      )}
-    </Card>
+            </div>
+          )
+        }))}
+      />
+    </div>
   )
 }
 

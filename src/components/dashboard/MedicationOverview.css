@@ -1,0 +1,197 @@
+.medication-overview {
+  background: #fff;
+  border-radius: 12px;
+  padding: 24px;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.view-all-btn {
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.view-all-btn:hover {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.dose-progress {
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 24px;
+  transition: all 0.3s ease;
+}
+
+.dose-progress:hover {
+  background: rgba(0, 0, 0, 0.03);
+  transform: translateY(-2px);
+}
+
+.progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schedule-link {
+  padding: 0;
+  height: auto;
+  opacity: 0.8;
+  transition: all 0.3s ease;
+}
+
+.schedule-link:hover {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+.medications-list {
+  flex: 1;
+  overflow-y: auto;
+  padding-right: 16px;
+}
+
+.list-header {
+  margin-bottom: 16px;
+}
+
+.medication-item {
+  display: flex;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.medication-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.medication-info {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.medication-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.medication-details {
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.next-dose {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.medication-action {
+  opacity: 0;
+  transition: all 0.3s ease;
+}
+
+.medication-item:hover .medication-action {
+  opacity: 1;
+}
+
+.medication-action:hover {
+  transform: translateX(4px);
+}
+
+/* Custom scrollbar */
+.medications-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.medications-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.medications-list::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
+}
+
+.medications-list::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+/* Empty state */
+.empty-medications {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .medication-overview {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .dose-progress {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .dose-progress:hover {
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  .medication-item {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .empty-medications {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .medications-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .medications-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+} 

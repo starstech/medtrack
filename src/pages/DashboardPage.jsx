@@ -1,4 +1,4 @@
-import { Row, Col, Typography, Space } from 'antd'
+import { Row, Col, Typography, Space, Card } from 'antd'
 import StatsCards from '../components/dashboard/StatsCards'
 import PatientSelector from '../components/dashboard/PatientSelector'
 import RecentActivity from '../components/dashboard/RecentActivity'
@@ -28,43 +28,49 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <Space direction="vertical" size="small">
-          <Title level={2} className="dashboard-title">
-            {getGreeting()}, {user?.name || 'Caregiver'}!
-          </Title>
-          <Text type="secondary" className="dashboard-subtitle">
-            {selectedPatient 
-              ? `Managing care for ${selectedPatient.name}`
-              : `You're caring for ${patients.length} patient${patients.length !== 1 ? 's' : ''}`
-            }
-          </Text>
-        </Space>
+        <Row gutter={[24, 24]} align="middle" justify="space-between">
+          <Col>
+            <Space direction="vertical" size={4}>
+              <Title level={2} className="dashboard-title">
+                {getGreeting()}, {user?.name || 'Caregiver'}!
+              </Title>
+              <Text type="secondary" className="dashboard-subtitle">
+                {selectedPatient 
+                  ? `Managing care for ${selectedPatient.name}`
+                  : `You're caring for ${patients.length} patient${patients.length !== 1 ? 's' : ''}`
+                }
+              </Text>
+            </Space>
+          </Col>
+          <Col>
+            <PatientSelector />
+          </Col>
+        </Row>
       </div>
 
-      {/* Patient Selector */}
-      <div className="dashboard-section">
-        <PatientSelector />
-      </div>
-
-      {/* Stats Cards */}
-      <div className="dashboard-section">
+      <div className="dashboard-stats">
         <StatsCards />
       </div>
 
-      {/* Main Content Grid */}
-      <Row gutter={[16, 16]} className="dashboard-content">
-        <Col xs={24} lg={14}>
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            {/* Recent Activity */}
+      <Row gutter={[24, 24]} className="dashboard-content">
+        <Col xs={24} lg={16}>
+          <Card 
+            className="dashboard-card recent-activity-card"
+            title="Recent Activity"
+            bordered={false}
+          >
             <RecentActivity />
-          </Space>
+          </Card>
         </Col>
         
-        <Col xs={24} lg={10}>
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            {/* Medication Overview */}
+        <Col xs={24} lg={8}>
+          <Card 
+            className="dashboard-card medication-overview-card"
+            title="Medication Overview"
+            bordered={false}
+          >
             <MedicationOverview />
-          </Space>
+          </Card>
         </Col>
       </Row>
     </div>

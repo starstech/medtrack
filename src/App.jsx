@@ -2,7 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { PatientProvider } from './contexts/PatientContext'
 import { NotificationProvider } from './contexts/NotificationContext'
-import Layout from './components/common/Layout'
+import AppLayout from './components/common/Layout'
 import AuthPage from './pages/AuthPage'
 import DashboardPage from './pages/DashboardPage'
 import PatientsPage from './pages/PatientsPage'
@@ -11,13 +11,12 @@ import TodaysDosesPage from './pages/TodaysDosesPage'
 import CalendarPage from './pages/CalendarPage'
 import ProfilePage from './pages/ProfilePage'
 import { useAuth } from './hooks/useAuth'
-import './App.css'
 
 function AppContent() {
   const { user, loading } = useAuth()
 
   if (loading) {
-    return <div>Loading...</div>
+    return <div style={{ padding: '50px', textAlign: 'center' }}>Loading...</div>
   }
 
   if (!user) {
@@ -25,7 +24,7 @@ function AppContent() {
   }
 
   return (
-    <Layout>
+    <AppLayout>
       <Routes>
         <Route path="/" element={<DashboardPage />} />
         <Route path="/patients" element={<PatientsPage />} />
@@ -34,7 +33,7 @@ function AppContent() {
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/profile" element={<ProfilePage />} />
       </Routes>
-    </Layout>
+    </AppLayout>
   )
 }
 

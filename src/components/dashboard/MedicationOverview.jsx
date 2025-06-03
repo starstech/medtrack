@@ -1,15 +1,17 @@
-import { Card, List, Avatar, Tag, Typography, Space, Button, Progress, Empty } from 'antd'
+import { Card, List, Avatar, Tag, Typography, Space, Button, Progress, Empty, theme } from 'antd'
 import { 
   MedicineBoxOutlined,
   ClockCircleOutlined,
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   PlusOutlined,
-  EyeOutlined
+  EyeOutlined,
+  RightOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
+import './MedicationOverview.css'
 
 const { Text, Title } = Typography
 
@@ -21,6 +23,7 @@ const MedicationOverview = () => {
     getTodaysDoses 
   } = usePatients()
   const navigate = useNavigate()
+  const { token: { colorPrimary, colorSuccess, colorWarning, colorError } } = theme.useToken()
 
   // Filter medications based on selected patient
   const filteredMedications = selectedPatient 
@@ -94,171 +97,151 @@ const MedicationOverview = () => {
     navigate('/patients')
   }
 
+  if (filteredMedications.length === 0) {
+    return (
+      <div className="empty-medications">
+        <Empty
+          image={Empty.PRESENTED_IMAGE_SIMPLE}
+          description={
+            <Text type="secondary">
+              {selectedPatient 
+                ? `No active medications for ${selectedPatient.name}`
+                : 'No active medications found'
+              }
+            </Text>
+          }
+        >
+          <Button 
+            type="primary" 
+            icon={<PlusOutlined />}
+            onClick={handleAddMedication}
+            size="large"
+          >
+            Add Medication
+          </Button>
+        </Empty>
+      </div>
+    )
+  }
+
   return (
-    <Card 
-      className="medication-overview-card"
-      title={
+    <div className="medication-overview">
+      <div className="overview-header">
         <Space>
           <MedicineBoxOutlined />
-          <Title level={4} style={{ margin: 0 }}>
-            Medication Overview
-          </Title>
+          <Text strong style={{ fontSize: '16px' }}>Medication Overview</Text>
         </Space>
-      }
-      extra={
-        filteredMedications.length > 0 && (
+        <Button 
+          type="text"
+          icon={<EyeOutlined />}
+          onClick={handleViewAllMedications}
+          className="view-all-btn"
+        >
+          View All
+        </Button>
+      </div>
+
+      {totalToday > 0 && (
+        <div className="dose-progress">
+          <div className="progress-header">
+            <Text strong>Today's Progress</Text>
+            <Text type="secondary">{takenToday} of {totalToday} taken</Text>
+          </div>
+          
+          <Progress 
+            percent={completionPercentage}
+            strokeColor={{
+              '0%': colorError,
+              '50%': colorWarning,
+              '100%': colorSuccess,
+            }}
+            size="small"
+            style={{ margin: '12px 0' }}
+          />
+
           <Button 
             type="link" 
-            icon={<EyeOutlined />}
-            onClick={handleViewAllMedications}
-            size="small"
+            onClick={handleViewTodaysDoses}
+            icon={<RightOutlined />}
+            className="schedule-link"
           >
-            View All
+            View today's schedule
           </Button>
-        )
-      }
-      bodyStyle={{ padding: '16px' }}
-    >
-      <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* Today's Progress */}
-        {totalToday > 0 && (
-          <div className="dose-progress">
-            <Space direction="vertical" size="small" style={{ width: '100%' }}>
-              <div className="progress-header">
-                <Text strong>Today's Doses</Text>
-                <Text type="secondary">{takenToday} of {totalToday} taken</Text>
-              </div>
-              <Progress 
-                percent={completionPercentage}
-                strokeColor={{
-                  '0%': '#ff4d4f',
-                  '50%': '#fa8c16',
-                  '100%': '#52c41a',
-                }}
-                size="small"
-              />
-              <Button 
-                type="link" 
-                size="small"
-                onClick={handleViewTodaysDoses}
-                style={{ padding: 0, height: 'auto' }}
-              >
-                View today's schedule →
-              </Button>
-            </Space>
-          </div>
-        )}
+        </div>
+      )}
 
-        {/* Medications List */}
-        {filteredMedications.length === 0 ? (
-          <Empty
-            image={Empty.PRESENTED_IMAGE_SIMPLE}
-            description={
-              <Text type="secondary">
-                {selectedPatient 
-                  ? `No active medications for ${selectedPatient.name}`
-                  : 'No active medications found'
-                }
-              </Text>
-            }
-            style={{ padding: '24px 0' }}
-          >
-            <Button 
-              type="primary" 
-              icon={<PlusOutlined />}
-              onClick={handleAddMedication}
+      <div className="medications-list">
+        <div className="list-header">
+          <Text strong>Active Medications ({filteredMedications.length})</Text>
+        </div>
+        
+        {medicationsWithDoses.map((item, index) => {
+          const { medication, patient, doses } = item
+          const nextDose = getNextDoseTime(doses)
+          const status = getDoseStatus(doses)
+          
+          return (
+            <div 
+              key={medication.id} 
+              className="medication-item"
+              onClick={() => navigate(`/patients/${patient.id}`)}
             >
-              Add Medication
-            </Button>
-          </Empty>
-        ) : (
-          <div className="medications-list">
-            <Text strong style={{ marginBottom: 12, display: 'block' }}>
-              Active Medications ({filteredMedications.length})
-            </Text>
-            
-            <List
-              dataSource={medicationsWithDoses}
-              renderItem={(item) => {
-                const { medication, patient, doses } = item
-                const nextDose = getNextDoseTime(doses)
-                const status = getDoseStatus(doses)
-                
-                return (
-                  <List.Item className="medication-item">
-                    <List.Item.Meta
-                      avatar={
-                        <Avatar 
-                          icon={<MedicineBoxOutlined />}
-                          style={{ 
-                            backgroundColor: status.pending > 0 ? '#fa8c16' : '#52c41a' 
-                          }}
-                        />
-                      }
-                      title={
-                        <Space size="small" wrap>
-                          <Text strong>{medication.name}</Text>
-                          <Text type="secondary">
-                            {medication.dosage} {medication.form}
-                          </Text>
-                          {!selectedPatient && (
-                            <Tag size="small" color="blue">
-                              {patient.name}
-                            </Tag>
-                          )}
-                        </Space>
-                      }
-                      description={
-                        <Space direction="vertical" size="small">
-                          <Space size="small" wrap>
-                            <Tag 
-                              icon={<CheckCircleOutlined />} 
-                              color="success"
-                              size="small"
-                            >
-                              {status.taken} taken
-                            </Tag>
-                            {status.pending > 0 && (
-                              <Tag 
-                                icon={<ClockCircleOutlined />} 
-                                color="warning"
-                                size="small"
-                              >
-                                {status.pending} pending
-                              </Tag>
-                            )}
-                          </Space>
-                          
-                          {nextDose && (
-                            <Text type="secondary" size="small">
-                              Next dose: {formatTime(nextDose)}
-                            </Text>
-                          )}
-                          
-                          <Text type="secondary" size="small">
-                            {medication.frequency.replace('_', ' ')} • {medication.instructions}
-                          </Text>
-                        </Space>
-                      }
-                    />
-                  </List.Item>
-                )
-              }}
-              size="small"
-            />
+              <Space align="start" style={{ flex: 1 }}>
+                <Avatar 
+                  icon={<MedicineBoxOutlined />}
+                  style={{ 
+                    backgroundColor: status.pending > 0 ? colorWarning : colorSuccess,
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                  }}
+                />
+                <div className="medication-info">
+                  <div className="medication-header">
+                    <Text strong>{medication.name}</Text>
+                    {!selectedPatient && (
+                      <Tag 
+                        color="blue"
+                        style={{ 
+                          borderRadius: '12px',
+                          padding: '0 8px'
+                        }}
+                      >
+                        {patient.name}
+                      </Tag>
+                    )}
+                  </div>
+                  
+                  <Text type="secondary" className="medication-details">
+                    {medication.dosage} • {medication.frequency}
+                  </Text>
 
-            {/* Show remaining medications count */}
-            {filteredMedications.length > medicationsWithDoses.length && (
-              <div style={{ textAlign: 'center', marginTop: 16 }}>
-                <Text type="secondary" size="small">
-                  and {filteredMedications.length - medicationsWithDoses.length} more medications
-                </Text>
-              </div>
-            )}
-          </div>
-        )}
-      </Space>
-    </Card>
+                  {nextDose && (
+                    <div className="next-dose">
+                      <ClockCircleOutlined style={{ color: colorWarning }} />
+                      <Text type="secondary">Next dose at {formatTime(nextDose)}</Text>
+                    </div>
+                  )}
+
+                  <Progress 
+                    percent={(status.taken / status.total) * 100}
+                    size="small"
+                    strokeColor={colorSuccess}
+                    showInfo={false}
+                    style={{ marginTop: '8px' }}
+                  />
+                </div>
+              </Space>
+
+              <Button 
+                type="text" 
+                size="small"
+                icon={<RightOutlined />}
+                className="medication-action"
+              />
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }
 
