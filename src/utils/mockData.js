@@ -274,12 +274,32 @@ export const mockPatients = [
     {
       id: 'measure6',
       patientId: 'patient1',
-      type: 'urine_dipstick',
-      value: 'Normal',
+      type: 'urine_protein',
+      value: 'Trace',
       unit: '',
       recordedAt: '2024-06-03T09:00:00Z',
-      notes: 'All parameters within normal range',
+      notes: 'Routine urinalysis - trace protein normal for age',
       recordedBy: 'Sarah Johnson'
+    },
+    {
+      id: 'measure7',
+      patientId: 'patient2',
+      type: 'urine_protein',
+      value: '1+',
+      unit: '',
+      recordedAt: '2024-06-02T14:30:00Z',
+      notes: 'Mild proteinuria - recommend follow-up',
+      recordedBy: 'Lisa Wilson'
+    },
+    {
+      id: 'measure8',
+      patientId: 'patient3',
+      type: 'urine_protein',
+      value: '2+',
+      unit: '',
+      recordedAt: '2024-06-01T11:15:00Z',
+      notes: 'Moderate proteinuria - diabetes monitoring',
+      recordedBy: 'Maria Garcia'
     }
   ]
   
@@ -542,15 +562,69 @@ export const mockPatients = [
   ]
   
   export const MEASUREMENT_TYPES = [
-    { value: 'temperature', label: 'Temperature', unit: '°F' },
-    { value: 'weight', label: 'Weight', unit: 'lbs' },
-    { value: 'height', label: 'Height', unit: 'inches' },
-    { value: 'blood_pressure', label: 'Blood Pressure', unit: 'mmHg' },
-    { value: 'blood_glucose', label: 'Blood Glucose', unit: 'mg/dL' },
+    // Vital Signs
+    { value: 'temperature', label: 'Temperature', unit: '°C' },
     { value: 'heart_rate', label: 'Heart Rate', unit: 'bpm' },
+    { value: 'blood_pressure_systolic', label: 'Systolic Blood Pressure', unit: 'mmHg' },
+    { value: 'blood_pressure_diastolic', label: 'Diastolic Blood Pressure', unit: 'mmHg' },
+    { value: 'respiratory_rate', label: 'Respiratory Rate', unit: '/min' },
     { value: 'oxygen_saturation', label: 'Oxygen Saturation', unit: '%' },
-    { value: 'urine_dipstick', label: 'Urine Dipstick', unit: '' },
-    { value: 'peak_flow', label: 'Peak Flow', unit: 'L/min' }
+    
+    // Physical Measurements
+    { value: 'weight', label: 'Weight', unit: 'kg' },
+    { value: 'height', label: 'Height', unit: 'cm' },
+    
+    // Blood Tests - Glucose & Diabetes
+    { value: 'blood_glucose', label: 'Blood Glucose', unit: 'mg/dL' },
+    
+    // Blood Tests - Lipid Panel
+    { value: 'cholesterol_total', label: 'Total Cholesterol', unit: 'mg/dL' },
+    { value: 'cholesterol_ldl', label: 'LDL Cholesterol', unit: 'mg/dL' },
+    { value: 'cholesterol_hdl', label: 'HDL Cholesterol', unit: 'mg/dL' },
+    { value: 'triglycerides', label: 'Triglycerides', unit: 'mg/dL' },
+    
+    // Blood Tests - Complete Blood Count
+    { value: 'hemoglobin', label: 'Hemoglobin', unit: 'g/dL' },
+    { value: 'hematocrit', label: 'Hematocrit', unit: '%' },
+    { value: 'white_blood_cell_count', label: 'White Blood Cell Count', unit: '/μL' },
+    { value: 'red_blood_cell_count', label: 'Red Blood Cell Count', unit: 'million/μL' },
+    { value: 'platelet_count', label: 'Platelet Count', unit: '/μL' },
+    
+    // Urine Tests
+    { value: 'urine_protein', label: 'Urine Protein', unit: 'mg/dL' },
+    { value: 'urine_glucose', label: 'Urine Glucose', unit: 'mg/dL' },
+    { value: 'urine_ketones', label: 'Urine Ketones', unit: 'mg/dL' },
+    { value: 'urine_specific_gravity', label: 'Urine Specific Gravity', unit: '' },
+    { value: 'urine_ph', label: 'Urine pH', unit: '' },
+    { value: 'urine_blood', label: 'Urine Blood', unit: 'RBC/hpf' },
+    { value: 'urine_leukocytes', label: 'Urine Leukocytes', unit: 'WBC/hpf' },
+    
+    // Kidney Function
+    { value: 'creatinine', label: 'Creatinine', unit: 'mg/dL' },
+    { value: 'blood_urea_nitrogen', label: 'Blood Urea Nitrogen (BUN)', unit: 'mg/dL' },
+    
+    // Thyroid Function
+    { value: 'thyroid_tsh', label: 'Thyroid Stimulating Hormone (TSH)', unit: 'mIU/L' },
+    { value: 'thyroid_t3', label: 'Triiodothyronine (T3)', unit: 'ng/dL' },
+    { value: 'thyroid_t4', label: 'Thyroxine (T4)', unit: 'μg/dL' },
+    
+    // Vitamins & Minerals
+    { value: 'vitamin_d', label: 'Vitamin D', unit: 'ng/mL' },
+    { value: 'vitamin_b12', label: 'Vitamin B12', unit: 'pg/mL' },
+    { value: 'iron', label: 'Iron', unit: 'μg/dL' },
+    { value: 'calcium', label: 'Calcium', unit: 'mg/dL' },
+    
+    // Electrolytes
+    { value: 'potassium', label: 'Potassium', unit: 'mEq/L' },
+    { value: 'sodium', label: 'Sodium', unit: 'mEq/L' },
+    { value: 'chloride', label: 'Chloride', unit: 'mEq/L' },
+    
+    // Respiratory & Other
+    { value: 'peak_flow', label: 'Peak Flow', unit: 'L/min' },
+    
+    // Subjective Measurements
+    { value: 'pain_level', label: 'Pain Level', unit: '/10' },
+    { value: 'mood_rating', label: 'Mood Rating', unit: '/10' }
   ]
   
   export const LOG_TYPES = [
