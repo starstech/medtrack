@@ -43,9 +43,10 @@ const PatientDetails = ({ patient }) => {
       }
       extra={
         <Button 
-          type="link" 
+          type="text" 
           icon={<EditOutlined />} 
           onClick={handleEditPatient}
+          className="card-action-btn"
         >
           Edit
         </Button>
@@ -215,7 +216,11 @@ const PatientDetails = ({ patient }) => {
         </Space>
       }
       extra={
-        <Button type="link" icon={<EditOutlined />}>
+        <Button 
+          type="text" 
+          icon={<EditOutlined />}
+          className="card-action-btn"
+        >
           Manage
         </Button>
       }

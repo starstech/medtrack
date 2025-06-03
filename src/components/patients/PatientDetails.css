@@ -683,3 +683,21 @@
     background: #fff;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   }
+  
+  /* Card Action Buttons - Matching RecentActivity Style */
+  .card-action-btn {
+    opacity: 0.8;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    color: #595959;
+  }
+  
+  .card-action-btn:hover {
+    opacity: 1;
+    transform: translateX(4px);
+    color: #1890ff;
+  }
+  
+  .card-action-btn:focus {
+    color: #1890ff;
+  }
