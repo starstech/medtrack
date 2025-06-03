@@ -1,5 +1,5 @@
-import { Card, List, Avatar, Tag, Typography, Space, Button, Empty, Timeline, theme } from 'antd'
-import { 
+import { Card, List, Avatar, Tag, Typography, Space, Button, Empty, theme } from 'antd'
+import {
   MedicineBoxOutlined,
   ExperimentOutlined,
   FileTextOutlined,
@@ -20,12 +20,12 @@ dayjs.extend(relativeTime)
 const { Text, Title } = Typography
 
 const RecentActivity = () => {
-  const { 
-    selectedPatient, 
-    medications, 
-    measurements, 
-    dailyLogs, 
-    patients 
+  const {
+    selectedPatient,
+    medications,
+    measurements,
+    dailyLogs,
+    patients
   } = usePatients()
   const navigate = useNavigate()
   const { token: { colorPrimary, colorSuccess, colorWarning, colorInfo, borderRadius } } = theme.useToken()
@@ -35,7 +35,7 @@ const RecentActivity = () => {
     const activities = []
 
     // Filter data based on selected patient
-    const filteredMedications = selectedPatient 
+    const filteredMedications = selectedPatient
       ? medications.filter(med => med.patientId === selectedPatient.id)
       : medications
     const filteredMeasurements = selectedPatient
@@ -86,14 +86,14 @@ const RecentActivity = () => {
       const patient = patients.find(p => p.id === log.patientId)
       const logType = LOG_TYPES.find(type => type.value === log.type)
       const severityLevel = SEVERITY_LEVELS.find(level => level.value === log.severity)
-      
+
       activities.push({
         id: `log-${log.id}`,
         type: 'log',
         timestamp: log.timestamp,
         title: log.title,
-        description: log.description.length > 100 
-          ? `${log.description.substring(0, 100)}...` 
+        description: log.description.length > 100
+          ? `${log.description.substring(0, 100)}...`
           : log.description,
         patient: patient,
         icon: <FileTextOutlined />,
@@ -127,34 +127,59 @@ const RecentActivity = () => {
 
   if (activities.length === 0) {
     return (
-      <div className="empty-activity">
-        <Empty
-          image={Empty.PRESENTED_IMAGE_SIMPLE}
-          description={
-            <Text type="secondary">
-              {selectedPatient 
-                ? `No recent activity for ${selectedPatient.name}`
-                : 'No recent activity found'
-              }
-            </Text>
-          }
-        >
-          <Button type="primary" onClick={handleViewMore} size="large">
-            {selectedPatient ? 'Add Activity' : 'View Patients'}
+      <Card
+        className="dashboard-card recent-activity-card"
+        bordered={false}
+        title={
+          <Space>
+            <ClockCircleOutlined />
+            <Text strong style={{ fontSize: '16px' }}>Recent Activity</Text>
+          </Space>
+        }
+        extra={
+          <Button
+            type="text"
+            icon={<EyeOutlined />}
+            onClick={handleViewMore}
+            className="view-all-btn"
+          >
+            View All
           </Button>
-        </Empty>
-      </div>
+        }
+      >
+        <div className="empty-activity">
+          <Empty
+            image={Empty.PRESENTED_IMAGE_SIMPLE}
+            description={
+              <Text type="secondary">
+                {selectedPatient
+                  ? `No recent activity for ${selectedPatient.name}`
+                  : 'No recent activity found'
+                }
+              </Text>
+            }
+          >
+            <Button type="primary" onClick={handleViewMore} size="large">
+              {selectedPatient ? 'Add Activity' : 'View Patients'}
+            </Button>
+          </Empty>
+        </div>
+      </Card>
     )
   }
 
   return (
-    <div className="recent-activity">
-      <div className="activity-header">
+    <Card
+      className="dashboard-card recent-activity-card"
+      bordered={false}
+      title={
         <Space>
           <ClockCircleOutlined />
           <Text strong style={{ fontSize: '16px' }}>Recent Activity</Text>
         </Space>
-        <Button 
+      }
+      extra={
+        <Button
           type="text"
           icon={<EyeOutlined />}
           onClick={handleViewMore}
@@ -162,88 +187,92 @@ const RecentActivity = () => {
         >
           View All
         </Button>
-      </div>
-
-      <Timeline
-        className="activity-timeline"
-        items={activities.map(activity => ({
-          color: activity.color,
-          dot: (
-            <Avatar 
-              icon={activity.icon}
-              style={{ 
-                backgroundColor: activity.color,
-                border: '2px solid #fff',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-              }}
-              size="small"
-            />
-          ),
-          children: (
-            <div className="timeline-item">
-              <div className="timeline-content">
-                <div className="timeline-header">
-                  <Space size={8} wrap>
-                    <Text strong className="activity-title">
-                      {activity.title}
-                    </Text>
+      }
+    >
+      <div className="activity-feed">
+        {activities.map((activity, index) => (
+          <div key={activity.id} className="activity-item">
+            <div className="activity-icon">
+              <Avatar
+                icon={activity.icon}
+                style={{
+                  backgroundColor: activity.color,
+                  border: '2px solid #fff',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                }}
+                size="default"
+              />
+            </div>
+            
+            <div className="activity-content">
+              <div className="activity-header">
+                <div className="activity-header-left">
+                  <Text strong className="activity-title">
+                    {activity.title}
+                  </Text>
+                  <Space size={4} style={{ marginTop: '4px' }}>
                     {!selectedPatient && (
-                      <Tag 
+                      <Tag
                         color="blue"
-                        style={{ 
+                        size="small"
+                        style={{
                           borderRadius: '12px',
-                          padding: '0 8px'
+                          padding: '0 6px',
+                          fontSize: '11px'
                         }}
                       >
                         {activity.patient?.name}
                       </Tag>
                     )}
                     {activity.severity && (
-                      <Tag 
+                      <Tag
                         color={activity.severityColor}
-                        style={{ 
+                        size="small"
+                        style={{
                           borderRadius: '12px',
-                          padding: '0 8px'
+                          padding: '0 6px',
+                          fontSize: '11px'
                         }}
                       >
                         {activity.severity}
                       </Tag>
                     )}
                   </Space>
-                  <Text type="secondary" className="activity-time">
-                    {formatTimestamp(activity.timestamp)}
-                  </Text>
                 </div>
-                
-                <Text type="secondary" className="activity-description">
-                  {activity.description}
+                <Text type="secondary" className="activity-time">
+                  {formatTimestamp(activity.timestamp)}
                 </Text>
-
-                {activity.notes && (
-                  <div className="activity-notes">
-                    <Text type="secondary" style={{ fontSize: '12px' }}>
-                      {activity.notes}
-                    </Text>
-                  </div>
-                )}
               </div>
 
-              <Button 
-                type="text" 
-                size="small"
-                icon={<RightOutlined />}
-                className="timeline-action"
-                onClick={() => {
-                  if (activity.patient) {
-                    navigate(`/patients/${activity.patient.id}`)
-                  }
-                }}
-              />
+              <Text type="secondary" className="activity-description">
+                {activity.description}
+              </Text>
+
+              {activity.notes && (
+                <div className="activity-notes">
+                  <Text type="secondary" style={{ fontSize: '12px' }}>
+                    {activity.notes}
+                  </Text>
+                </div>
+              )}
             </div>
-          )
-        }))}
-      />
-    </div>
+
+            <Button
+              type="text"
+              size="small"
+              icon={<RightOutlined />}
+              className="activity-action"
+              onClick={(e) => {
+                e.stopPropagation()
+                if (activity.patient) {
+                  navigate(`/patients/${activity.patient.id}`)
+                }
+              }}
+            />
+          </div>
+        ))}
+      </div>
+    </Card>
   )
 }
 

@@ -125,13 +125,17 @@ const MedicationOverview = () => {
   }
 
   return (
-    <div className="medication-overview">
-      <div className="overview-header">
+    <Card 
+      className="dashboard-card medication-overview-card"
+      bordered={false}
+      title={
         <Space>
           <MedicineBoxOutlined />
           <Text strong style={{ fontSize: '16px' }}>Medication Overview</Text>
         </Space>
-        <Button 
+      }
+      extra={
+<Button 
           type="text"
           icon={<EyeOutlined />}
           onClick={handleViewAllMedications}
@@ -139,8 +143,8 @@ const MedicationOverview = () => {
         >
           View All
         </Button>
-      </div>
-
+      }
+    >
       {totalToday > 0 && (
         <div className="dose-progress">
           <div className="progress-header">
@@ -241,7 +245,7 @@ const MedicationOverview = () => {
           )
         })}
       </div>
-    </div>
+    </Card>
   )
 }
 

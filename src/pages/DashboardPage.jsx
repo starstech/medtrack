@@ -36,7 +36,7 @@ const DashboardPage = () => {
                   {getGreeting()}, {user?.name || 'Caregiver'}!
                 </Title>
                 <Text type="secondary" className="dashboard-subtitle">
-                  {selectedPatient 
+                  {selectedPatient
                     ? `Managing care for ${selectedPatient.name}`
                     : `You're caring for ${patients.length} patient${patients.length !== 1 ? 's' : ''}`
                   }
@@ -59,23 +59,11 @@ const DashboardPage = () => {
 
       <Row gutter={[24, 24]} className="dashboard-content">
         <Col xs={24} lg={16}>
-          <Card 
-            className="dashboard-card recent-activity-card"
-            title="Recent Activity"
-            bordered={false}
-          >
-            <RecentActivity />
-          </Card>
+          <RecentActivity />
         </Col>
-        
+
         <Col xs={24} lg={8}>
-          <Card 
-            className="dashboard-card medication-overview-card"
-            title="Medication Overview"
-            bordered={false}
-          >
-            <MedicationOverview />
-          </Card>
+          <MedicationOverview />
         </Col>
       </Row>
     </div>

@@ -327,13 +327,10 @@ const AppLayout = ({ children }) => {
             </Dropdown>
           </Space>
         </Header>
-        <Content style={{ 
-          margin: '24px', 
-          padding: '32px', 
-          background: '#fff',
-          borderRadius: '16px',
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',
-          border: '1px solid #f0f0f0'
+        <Content style={{           
+          padding: '16px 32px', 
+          background: '#fff',          
+          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',          
         }}>
           {children}
         </Content>

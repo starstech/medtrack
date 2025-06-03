@@ -1,19 +1,16 @@
-.recent-activity {
-  background: #fff;
-  border-radius: 12px;
-  padding: 24px;
-  height: 100%;
+/* Recent Activity Card Styles */
+.recent-activity-card.ant-card {
+  height: 500px;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  animation: fadeIn 0.3s ease-out;
 }
 
-.activity-header {
+.recent-activity-card .ant-card-body {
+  flex: 1;
+  overflow: hidden;
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  flex-direction: column;
+  padding: 16px 8px;
 }
 
 .view-all-btn {
@@ -26,96 +23,130 @@
   transform: translateX(4px);
 }
 
-.activity-timeline {
+/* Activity Feed Styles */
+.activity-feed {
   flex: 1;
   overflow-y: auto;
-  padding-right: 16px;
+  padding: 0 16px;
 }
 
-/* Custom scrollbar for the timeline */
-.activity-timeline::-webkit-scrollbar {
+/* Custom scrollbar */
+.activity-feed::-webkit-scrollbar {
   width: 6px;
 }
 
-.activity-timeline::-webkit-scrollbar-track {
+.activity-feed::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.activity-timeline::-webkit-scrollbar-thumb {
+.activity-feed::-webkit-scrollbar-thumb {
   background: rgba(0, 0, 0, 0.1);
   border-radius: 3px;
 }
 
-.activity-timeline::-webkit-scrollbar-thumb:hover {
+.activity-feed::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
 }
 
-/* Timeline item styling */
-.timeline-item {
+/* Activity Item Styles */
+.activity-item {
   display: flex;
   align-items: flex-start;
-  justify-content: space-between;
-  padding: 8px 0;
+  gap: 16px;
+  padding: 16px;
+  margin: 8px 0;
+  border-radius: 12px;
   transition: all 0.3s ease;
+  position: relative;
 }
 
-.timeline-item:hover {
+.activity-item:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 56px;
+  right: 16px;
+  height: 1px;
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.activity-item:hover {
   background: rgba(0, 0, 0, 0.02);
   transform: translateX(4px);
-  border-radius: 8px;
-  padding: 8px 12px;
-  margin: 0 -12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  margin: 8px -8px;
 }
 
-.timeline-content {
+.activity-icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.activity-content {
   flex: 1;
-  margin-right: 16px;
+  min-width: 0;
 }
 
-.timeline-header {
+.activity-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
+  gap: 16px;
+}
+
+.activity-header-left {
+  flex: 1;
+  min-width: 0;
 }
 
 .activity-title {
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  display: block;
+  color: rgba(0, 0, 0, 0.88);
 }
 
 .activity-time {
   font-size: 12px;
   white-space: nowrap;
-  margin-left: 8px;
+  flex-shrink: 0;
+  color: rgba(0, 0, 0, 0.45);
 }
 
 .activity-description {
   font-size: 13px;
   line-height: 1.5;
-  margin: 4px 0;
+  margin: 8px 0;
   color: rgba(0, 0, 0, 0.65);
 }
 
 .activity-notes {
-  margin-top: 8px;
-  padding: 8px;
+  margin-top: 12px;
+  padding: 8px 12px;
   background: rgba(0, 0, 0, 0.02);
-  border-radius: 6px;
+  border-radius: 8px;
   font-style: italic;
+  border-left: 3px solid rgba(0, 0, 0, 0.1);
 }
 
-.timeline-action {
+.activity-action {
   opacity: 0;
   transition: all 0.3s ease;
+  align-self: flex-start;
+  margin-top: auto;
+  margin-right: 8px;
+  flex-shrink: 0;
 }
 
-.timeline-item:hover .timeline-action {
+.activity-item:hover .activity-action {
   opacity: 1;
 }
 
-.timeline-action:hover {
+.activity-action:hover {
   transform: translateX(4px);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 /* Empty state styling */
@@ -125,47 +156,111 @@
   align-items: center;
   justify-content: center;
   padding: 48px 24px;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-  animation: fadeIn 0.3s ease-out;
+  height: 100%;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .recent-activity-card.ant-card {
+    height: 400px;
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .recent-activity-card .ant-card-body {
+    padding: 12px 4px;
+  }
+  
+  .activity-feed {
+    padding: 0 12px;
+  }
+  
+  .activity-item {
+    padding: 12px;
+    margin: 6px 0;
+    gap: 12px;
+  }
+  
+  .activity-item:hover {
+    margin: 6px -6px;
+  }
+  
+  .activity-item:not(:last-child)::after {
+    left: 44px;
+  }
+  
+  .activity-header {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .recent-activity-card.ant-card {
+    height: 350px;
+  }
+  
+  .activity-feed {
+    padding: 0 8px;
+  }
+  
+  .activity-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .activity-time {
+    align-self: flex-start;
+  }
+  
+  .activity-item {
+    gap: 10px;
+    padding: 10px;
+  }
+  
+  .activity-item:hover {
+    margin: 6px -4px;
+  }
+  
+  .activity-item:not(:last-child)::after {
+    left: 38px;
   }
 }
 
 /* Dark mode support */
 @media (prefers-color-scheme: dark) {
-  .recent-activity {
+  .activity-item:hover {
     background: rgba(255, 255, 255, 0.04);
   }
 
-  .timeline-item:hover {
-    background: rgba(255, 255, 255, 0.04);
+  .activity-item:not(:last-child)::after {
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .activity-notes {
     background: rgba(255, 255, 255, 0.04);
+    border-left-color: rgba(255, 255, 255, 0.1);
   }
 
-  .empty-activity {
-    background: rgba(255, 255, 255, 0.04);
+  .activity-title {
+    color: rgba(255, 255, 255, 0.88);
   }
 
-  .activity-timeline::-webkit-scrollbar-thumb {
+  .activity-time {
+    color: rgba(255, 255, 255, 0.45);
+  }
+
+  .activity-description {
+    color: rgba(255, 255, 255, 0.65);
+  }
+
+  .activity-action:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .activity-feed::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.1);
   }
 
-  .activity-timeline::-webkit-scrollbar-thumb:hover {
+  .activity-feed::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
   }
 } 
