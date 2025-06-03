@@ -295,7 +295,7 @@ const AppLayout = ({ children }) => {
             </Title>
           </Space>
           <Space>
-            <Badge count={getUnreadCount()}>
+            <Badge dot={true} offset={[-8, 8]}>
               <Button 
                 type="text" 
                 icon={<BellOutlined />}
