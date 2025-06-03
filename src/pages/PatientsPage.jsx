@@ -83,7 +83,7 @@ const PatientsPage = () => {
       <div className="patients-stats">
         <Row gutter={[16, 16]}>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="stat-card" bordered={false}>
+            <Card className="stat-card">
               <Statistic
                 title="Total Patients"
                 value={totalPatients}
@@ -93,7 +93,7 @@ const PatientsPage = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="stat-card" bordered={false}>
+            <Card className="stat-card">
               <Statistic
                 title="Active Medications"
                 value={activeMedications}
@@ -103,7 +103,7 @@ const PatientsPage = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="stat-card" bordered={false}>
+            <Card className="stat-card">
               <Statistic
                 title="Upcoming Appointments"
                 value={upcomingAppointments}
@@ -113,7 +113,7 @@ const PatientsPage = () => {
             </Card>
           </Col>
           <Col xs={24} sm={12} lg={6}>
-            <Card className="stat-card" bordered={false}>
+            <Card className="stat-card">
               <Statistic
                 title="Critical Conditions"
                 value={criticalPatients}
@@ -126,7 +126,7 @@ const PatientsPage = () => {
       </div>
 
       {/* Search and Controls */}
-      <Card className="patients-controls-card" bordered={false}>
+      <Card className="patients-controls-card">
         <Row gutter={[16, 16]} align="middle">
           <Col xs={24} md={16}>
             <Search
@@ -159,7 +159,7 @@ const PatientsPage = () => {
       </Card>
 
       {/* Patients List */}
-      <Card className="patients-list-card" bordered={false}>
+      <Card className="patients-list-card">
         <PatientList 
           patients={filteredPatients}
           searchTerm={searchTerm}

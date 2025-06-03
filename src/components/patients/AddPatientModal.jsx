@@ -125,8 +125,8 @@ const AddPatientModal = ({ visible, onClose }) => {
       onCancel={handleClose}
       footer={null}
       width={600}
+      destroyOnHidden
       className="add-patient-modal"
-      destroyOnClose
     >
       <Form
         form={form}

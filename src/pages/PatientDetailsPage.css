@@ -1,324 +1,288 @@
-/* Patient Details Page Styles - Mobile First */
+/* Patient Details Page - Compact Design */
 
 .patient-details-page {
-    padding: 0;
-    min-height: calc(100vh - 64px);
+  padding: 0 12px;
+  animation: fadeIn 0.3s ease-in-out;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* Quick Actions Bar - Compact */
+.patient-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  animation: slideInDown 0.5s ease-out;
+}
+
+/* Back Button - Compact */
+.back-button {
+  border-style: dashed !important;
+  border-color: #d9d9d9 !important;
+  height: 32px !important;
+  border-radius: 6px !important;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover,
+.back-button:focus {
+  border-color: #1890ff !important;
+  color: #1890ff !important;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.2);
+}
+
+/* Edit Patient Button - Compact */
+.edit-patient-btn {
+  border-radius: 6px !important;
+  height: 32px !important;
+  padding: 0 16px !important;
+  font-weight: 600;
+  font-size: 13px !important;
+  border: none !important;
+  background: linear-gradient(135deg, #1890ff, #40a9ff) !important;
+  box-shadow: 0 2px 6px rgba(24, 144, 255, 0.25);
+  transition: all 0.3s ease;
+}
+
+.edit-patient-btn:hover,
+.edit-patient-btn:focus {
+  background: linear-gradient(135deg, #40a9ff, #1890ff) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(24, 144, 255, 0.3);
+}
+
+/* Patient Tabs Container - Compact */
+.patient-tabs-container {
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  animation: slideInUp 0.5s ease-out;
+}
+
+.patient-tabs {
+  background: #fff;
+}
+
+.patient-tabs .ant-tabs-nav {
+  margin: 0;
+  background: linear-gradient(135deg, #fafafa, #f5f5f5);
+  border-bottom: 1px solid #e8e8e8;
+  padding: 0 20px;
+  position: relative;
+}
+
+.patient-tabs .ant-tabs-nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(24, 144, 255, 0.1), transparent);
+}
+
+.patient-tabs .ant-tabs-tab {
+  padding: 12px 16px !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  color: #595959;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 8px 8px 0 0;
+  margin: 0 2px 0 0;
+  position: relative;
+  border: none;
+  background: transparent;
+}
+
+.patient-tabs .ant-tabs-tab:hover {
+  color: #1890ff;
+  background: linear-gradient(135deg, rgba(24, 144, 255, 0.06), rgba(24, 144, 255, 0.03));
+  transform: translateY(-1px);
+}
+
+.patient-tabs .ant-tabs-tab-active {
+  color: #1890ff !important;
+  background: #fff !important;
+  font-weight: 600 !important;
+  box-shadow: 0 -1px 4px rgba(24, 144, 255, 0.1);
+  transform: translateY(-1px);
+}
+
+.patient-tabs .ant-tabs-tab-active::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 24px;
+  height: 2px;
+  background: linear-gradient(90deg, #1890ff, #40a9ff);
+  border-radius: 2px 2px 0 0;
+}
+
+.patient-tabs .ant-tabs-content-holder {
+  padding: 20px;
+  background: #fff;
+  min-height: 300px;
+}
+
+.patient-tabs .ant-tabs-tabpane {
+  outline: none;
+  animation: fadeInUp 0.4s ease-out;
+}
+
+/* Patient Not Found */
+.patient-not-found {
+  padding: 60px 20px;
+  text-align: center;
+  min-height: 300px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+}
+
+.not-found-content h3 {
+  color: #262626;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.not-found-content p {
+  color: #8c8c8c;
+  font-size: 14px;
+  margin: 6px 0 0 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
   }
-  
-  /* Page Header */
-  .patient-details-page .page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 24px;
-    gap: 16px;
-    padding: 16px 0;
-    border-bottom: 1px solid #f0f0f0;
+  to {
+    opacity: 1;
   }
-  
-  .patient-details-page .header-content {
-    flex: 1;
-    min-width: 0;
+}
+
+@keyframes slideInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
   }
-  
-  .patient-details-page .header-actions {
-    flex-shrink: 0;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  .patient-details-page .page-title {
-    color: #262626 !important;
-    font-size: 24px !important;
-    font-weight: 700 !important;
-    margin: 0 !important;
-    line-height: 1.2;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  .patient-details-page .page-subtitle {
-    font-size: 14px;
-    color: #8c8c8c !important;
-    margin: 4px 0 0 0;
-    line-height: 1.4;
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
-  
-  /* Back Button */
-  .patient-details-page .back-button {
-    border: 1px solid #d9d9d9 !important;
-    border-radius: 8px !important;
-    height: 44px;
-    display: flex;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .patient-tabs .ant-tabs-tab {
+    padding: 14px 18px !important;
+    font-size: 15px !important;
+  }
+
+  .patient-tabs .ant-tabs-content-holder {
+    padding: 24px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .patient-actions-bar {
+    margin-bottom: 16px;
+  }
+
+  .patient-tabs .ant-tabs-content-holder {
+    padding: 28px;
+  }
+}
+
+@media (max-width: 767px) {
+  .patient-actions-bar {
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .patient-tabs .ant-tabs-nav {
+    padding: 0 12px;
+  }
+
+  .patient-tabs .ant-tabs-tab {
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    margin: 0 1px 0 0;
+  }
+
+  .patient-tabs .ant-tabs-content-holder {
+    padding: 16px 12px;
+  }
+
+  .back-button,
+  .edit-patient-btn {
+    height: 28px !important;
+    padding: 0 10px !important;
+    font-size: 12px !important;
+  }
+}
+
+@media (max-width: 576px) {
+  .patient-actions-bar {
+    flex-direction: row;
     align-items: center;
     gap: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
   }
-  
-  .patient-details-page .back-button:hover {
-    border-color: #1890ff !important;
-    color: #1890ff !important;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(24, 144, 255, 0.2);
+
+  .patient-tabs .ant-tabs-content-holder {
+    padding: 14px 10px;
   }
-  
-  .patient-details-page .back-button:focus {
-    border-color: #1890ff !important;
-    color: #1890ff !important;
-    outline: 2px solid rgba(24, 144, 255, 0.2);
-    outline-offset: 2px;
+
+  .not-found-content h3 {
+    font-size: 18px;
   }
-  
-  /* Edit Button */
-  .patient-details-page .edit-button {
-    border: 1px solid #d9d9d9 !important;
-    border-radius: 8px !important;
-    height: 44px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+
+  .not-found-content p {
+    font-size: 13px;
   }
-  
-  .patient-details-page .edit-button:hover {
-    border-color: #52c41a !important;
-    color: #52c41a !important;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 8px rgba(82, 196, 26, 0.2);
-  }
-  
-  .patient-details-page .edit-button:focus {
-    border-color: #52c41a !important;
-    color: #52c41a !important;
-    outline: 2px solid rgba(82, 196, 26, 0.2);
-    outline-offset: 2px;
-  }
-  
-  /* Patient Not Found */
-  .patient-details-page .patient-not-found {
-    padding: 60px 20px;
-    text-align: center;
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .patient-details-page .patient-not-found .ant-alert {
-    border-radius: 12px;
-    border: 1px solid #ffccc7;
-    background: #fff2f0;
-    max-width: 500px;
-    margin: 0 auto;
-  }
-  
-  /* Tabs Container */
-  .patient-details-page .patient-tabs-container {
-    margin-top: 8px;
-    background: #fff;
-    border-radius: 12px;
-    overflow: hidden;
-    border: 1px solid #f0f0f0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  .patient-details-page .patient-tabs {
-    background: #fff;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-nav {
-    margin-bottom: 0;
-    background: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-    padding: 0 20px;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-tab {
-    padding: 16px 20px !important;
-    font-size: 16px !important;
-    font-weight: 500 !important;
-    color: #595959;
-    transition: all 0.3s ease;
-    border-radius: 0;
-    margin: 0 8px 0 0;
-    position: relative;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-tab:hover {
-    color: #1890ff;
-    background: rgba(24, 144, 255, 0.04);
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-tab-active {
-    color: #1890ff !important;
-    background: #fff !important;
-    font-weight: 600 !important;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-tab-active::before {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: #1890ff;
-    border-radius: 3px 3px 0 0;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-content-holder {
-    padding: 24px 20px;
-    background: #fff;
-  }
-  
-  .patient-details-page .patient-tabs .ant-tabs-tabpane {
-    outline: none;
-  }
-  
-  /* Tab Content */
-  .patient-details-page .patient-tabs .ant-tabs-tabpane > * {
-    animation: fadeInUp 0.3s ease-out;
-  }
-  
-  @keyframes fadeInUp {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Loading States */
-  .patient-details-page .loading-container {
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fafafa;
-  }
-  
-  /* Error States */
-  .patient-details-page .error-container {
-    min-height: 400px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    padding: 40px 20px;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 767px) {
-    .patient-details-page .page-header {
-      flex-direction: column;
-      align-items: stretch;
-      gap: 12px;
-    }
-    
-    .patient-details-page .header-actions {
-      width: 100%;
-    }
-    
-    .patient-details-page .back-button,
-    .patient-details-page .edit-button {
-      width: 100%;
-      justify-content: center;
-      height: 48px;
-    }
-    
-    .patient-details-page .page-title {
-      font-size: 20px !important;
-    }
-    
-    .patient-details-page .page-subtitle {
-      font-size: 13px;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-nav {
-      padding: 0 12px;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-tab {
-      padding: 12px 16px !important;
-      font-size: 14px !important;
-      margin: 0 4px 0 0;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-content-holder {
-      padding: 16px 12px;
-    }
-    
-    .patient-details-page .back-button .desktop-only,
-    .patient-details-page .edit-button .desktop-only {
-      display: none;
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .patient-details-page .page-title {
-      font-size: 28px !important;
-    }
-    
-    .patient-details-page .page-subtitle {
-      font-size: 16px;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-tab {
-      padding: 18px 24px !important;
-      font-size: 17px !important;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-content-holder {
-      padding: 32px 24px;
-    }
-  }
-  
-  @media (min-width: 1024px) {
-    .patient-details-page .patient-tabs .ant-tabs-content-holder {
-      padding: 40px 32px;
-    }
-  }
-  
-  /* Focus Management */
-  .patient-details-page .patient-tabs .ant-tabs-tab:focus {
-    outline: 2px solid rgba(24, 144, 255, 0.5);
-    outline-offset: -2px;
-  }
-  
-  /* Print Styles */
-  @media print {
-    .patient-details-page .page-header .header-actions,
-    .patient-details-page .patient-tabs .ant-tabs-nav {
-      display: none;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-content-holder {
-      padding: 0;
-    }
-  }
-  
-  /* High Contrast Mode */
-  @media (prefers-contrast: high) {
-    .patient-details-page .patient-tabs .ant-tabs-tab-active {
-      border: 2px solid #1890ff;
-    }
-    
-    .patient-details-page .back-button:hover,
-    .patient-details-page .edit-button:hover {
-      border-width: 2px;
-    }
-  }
-  
-  /* Reduced Motion */
-  @media (prefers-reduced-motion: reduce) {
-    .patient-details-page .back-button,
-    .patient-details-page .edit-button,
-    .patient-details-page .patient-tabs .ant-tabs-tab {
-      transition: none;
-    }
-    
-    .patient-details-page .patient-tabs .ant-tabs-tabpane > * {
-      animation: none;
-    }
-  }
+}
+
+/* Focus Management */
+.patient-tabs .ant-tabs-tab:focus {
+  outline: 2px solid rgba(24, 144, 255, 0.3);
+  outline-offset: 2px;
+  border-radius: 6px;
+}

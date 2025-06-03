@@ -1,4 +1,4 @@
-import { Card, Row, Col, Typography, Tag, Space, Avatar, Button, Divider } from 'antd'
+import { Card, Row, Col, Typography, Tag, Space, Avatar, Button } from 'antd'
 import { 
   UserOutlined,
   EditOutlined,
@@ -9,15 +9,12 @@ import {
   TeamOutlined,
   MailOutlined
 } from '@ant-design/icons'
-import { usePatients } from '../../hooks/usePatients'
 import dayjs from 'dayjs'
 import './PatientDetails.css'
 
 const { Title, Text } = Typography
 
 const PatientDetails = ({ patient }) => {
-  const { getPatientMedications, getPatientMeasurements, getPatientLogs } = usePatients()
-
   const getPatientAge = (dateOfBirth) => {
     const today = new Date()
     const birth = new Date(dateOfBirth)
@@ -30,27 +27,6 @@ const PatientDetails = ({ patient }) => {
     
     return age
   }
-
-  const getPatientStats = () => {
-    const medications = getPatientMedications(patient.id)
-    const measurements = getPatientMeasurements(patient.id)
-    const logs = getPatientLogs(patient.id)
-    
-    return {
-      activeMedications: medications.filter(med => med.isActive).length,
-      totalMedications: medications.length,
-      recentMeasurements: measurements.filter(measure => 
-        dayjs().diff(dayjs(measure.recordedAt), 'days') <= 7
-      ).length,
-      totalMeasurements: measurements.length,
-      recentLogs: logs.filter(log => 
-        dayjs().diff(dayjs(log.timestamp), 'days') <= 7
-      ).length,
-      totalLogs: logs.length
-    }
-  }
-
-  const stats = getPatientStats()
 
   const handleEditPatient = () => {
     // TODO: Open edit patient modal
@@ -277,47 +253,9 @@ const PatientDetails = ({ patient }) => {
     </Card>
   )
 
-  const renderQuickStats = () => (
-    <Card 
-      title="Quick Statistics"
-      className="patient-info-card stats-card"
-    >
-      <Row gutter={[16, 16]}>
-        <Col xs={12} sm={6}>
-          <div className="stat-item">
-            <div className="stat-number">{stats.activeMedications}</div>
-            <Text type="secondary" size="small">Active Medications</Text>
-          </div>
-        </Col>
-        
-        <Col xs={12} sm={6}>
-          <div className="stat-item">
-            <div className="stat-number">{stats.recentMeasurements}</div>
-            <Text type="secondary" size="small">Recent Measurements</Text>
-          </div>
-        </Col>
-        
-        <Col xs={12} sm={6}>
-          <div className="stat-item">
-            <div className="stat-number">{stats.recentLogs}</div>
-            <Text type="secondary" size="small">Recent Logs</Text>
-          </div>
-        </Col>
-        
-        <Col xs={12} sm={6}>
-          <div className="stat-item">
-            <div className="stat-number">{stats.totalMedications}</div>
-            <Text type="secondary" size="small">Total Medications</Text>
-          </div>
-        </Col>
-      </Row>
-    </Card>
-  )
-
   return (
     <div className="patient-details">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {renderQuickStats()}
         {renderBasicInfo()}
         {renderMedicalInfo()}
         {renderEmergencyContact()}
