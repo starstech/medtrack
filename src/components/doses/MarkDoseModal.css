@@ -1,0 +1,103 @@
+/* Mark Dose Modal - Consistent with App Design */
+
+.mark-dose-modal .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mark-dose-modal .ant-modal-header {
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.mark-dose-modal .ant-modal-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.mark-dose-modal .ant-modal-body {
+  padding: 20px 24px;
+}
+
+.mark-dose-modal .ant-modal-close {
+  top: 16px;
+  right: 16px;
+  color: #8c8c8c;
+}
+
+.mark-dose-modal .ant-modal-close:hover {
+  color: #262626;
+}
+
+/* Dose Info Card */
+.dose-info-card {
+  margin-bottom: 16px;
+  border: 1px solid #f0f0f0 !important;
+  border-radius: 8px !important;
+  background: #fafafa !important;
+}
+
+.dose-info-card .ant-card-body {
+  padding: 16px !important;
+}
+
+/* Form Elements */
+.mark-dose-modal .ant-form-item-label > label {
+  font-weight: 600;
+  color: #262626;
+}
+
+.mark-dose-modal .ant-radio-group {
+  display: flex;
+  gap: 16px;
+}
+
+.mark-dose-modal .ant-radio-wrapper {
+  margin-right: 0;
+}
+
+.mark-dose-modal .ant-time-picker {
+  border-radius: 6px;
+}
+
+.mark-dose-modal .ant-input {
+  border-radius: 6px;
+}
+
+.mark-dose-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.mark-dose-modal .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.mark-dose-modal .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+}
+
+/* Responsive Design */
+@media (max-width: 576px) {
+  .mark-dose-modal {
+    margin: 16px !important;
+    max-width: calc(100vw - 32px) !important;
+  }
+  
+  .mark-dose-modal .ant-modal-header {
+    padding: 16px 20px 12px;
+  }
+  
+  .mark-dose-modal .ant-modal-body {
+    padding: 16px 20px;
+  }
+  
+  .mark-dose-modal .ant-radio-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+} 

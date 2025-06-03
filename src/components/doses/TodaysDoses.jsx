@@ -1,10 +1,13 @@
 import { useState, useMemo } from 'react'
-import { List, Empty, Typography, Space, Button, Segmented } from 'antd'
+import { List, Empty, Typography, Space, Button, Card, Segmented } from 'antd'
 import { 
   ClockCircleOutlined, 
   CheckCircleOutlined, 
   ExclamationCircleOutlined,
-  MedicineBoxOutlined 
+  MedicineBoxOutlined,
+  UnorderedListOutlined,
+  CalendarOutlined,
+  SmileOutlined
 } from '@ant-design/icons'
 import DoseCard from './DoseCard'
 import MarkDoseModal from './MarkDoseModal'
@@ -28,7 +31,8 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
     const groups = {
       overdue: [],
       upcoming: [],
-      later: []
+      later: [],
+      completed: []
     }
 
     doses.forEach(dose => {
@@ -44,8 +48,6 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
           groups.later.push(dose)
         }
       } else {
-        // Completed/missed doses go to a separate group
-        if (!groups.completed) groups.completed = []
         groups.completed.push(dose)
       }
     })
@@ -78,42 +80,33 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
     setSelectedDose(null)
   }
 
-  const renderTimelineSection = (title, doses, icon, color, description) => {
-    if (!doses || doses.length === 0) return null
+  const renderTimelineSection = (sectionKey, sectionDoses, title, icon, color) => {
+    if (!sectionDoses || sectionDoses.length === 0) return null
 
     return (
-      <div className="timeline-section" key={title}>
-        <div className="timeline-header">
+      <div className={`timeline-section timeline-section-${sectionKey}`} key={sectionKey}>
+        <div className="section-header">
           <Space>
-            <div className="timeline-icon" style={{ color }}>
+            <span className="section-icon" style={{ color }}>
               {icon}
-            </div>
-            <div>
-              <Title level={5} className="timeline-title">
-                {title} ({doses.length})
-              </Title>
-              {description && (
-                <Text type="secondary" size="small">
-                  {description}
-                </Text>
-              )}
-            </div>
+            </span>
+            <Title level={5} className="section-title">
+              {title} ({sectionDoses.length})
+            </Title>
           </Space>
         </div>
         
-        <List
-          dataSource={doses}
-          renderItem={(dose) => (
-            <List.Item className="dose-list-item">
+        <div className="section-content">
+          {sectionDoses.map((dose) => (
+            <div key={`${dose.medication.id}-${dose.id}`} className="dose-list-item">
               <DoseCard
                 dose={dose}
                 onMarkDose={handleMarkDose}
                 showPatient={selectedPatient === 'all'}
               />
-            </List.Item>
-          )}
-          split={false}
-        />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
@@ -121,40 +114,39 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
   const renderListView = () => {
     if (doses.length === 0) {
       return (
-        <Empty
-          image={<MedicineBoxOutlined className="empty-icon" />}
-          imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
-          description={
-            <div className="empty-description">
-              <Text strong>No doses scheduled for today</Text>
-              <br />
-              <Text type="secondary">
-                {selectedPatient === 'all' 
-                  ? 'No patients have doses scheduled for today'
-                  : 'This patient has no doses scheduled for today'
-                }
-              </Text>
-            </div>
-          }
-        />
+        <div className="empty-state">
+          <Empty
+            image={<MedicineBoxOutlined className="empty-icon" />}
+            imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+            description={
+              <div>
+                <Text type="secondary">No doses scheduled for today</Text>
+                <br />
+                <Text type="secondary" size="small">
+                  {selectedPatient === 'all' 
+                    ? 'All patients are up to date'
+                    : 'This patient has no scheduled doses'
+                  }
+                </Text>
+              </div>
+            }
+          />
+        </div>
       )
     }
 
     return (
-      <List
-        dataSource={doses}
-        renderItem={(dose) => (
-          <List.Item className="dose-list-item">
+      <div className="doses-list">
+        {doses.map((dose) => (
+          <div key={`${dose.medication.id}-${dose.id}`} className="dose-list-item">
             <DoseCard
               dose={dose}
               onMarkDose={handleMarkDose}
               showPatient={selectedPatient === 'all'}
             />
-          </List.Item>
-        )}
-        split={false}
-        className="doses-list"
-      />
+          </div>
+        ))}
+      </div>
     )
   }
 
@@ -163,96 +155,81 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter }) => {
     
     if (!hasAnyDoses) {
       return (
-        <Empty
-          image={<ClockCircleOutlined className="empty-icon" />}
-          imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
-          description={
-            <div className="empty-description">
-              <Text strong>No doses for today</Text>
-              <br />
-              <Text type="secondary">
-                Great! All doses have been completed or there are no doses scheduled.
-              </Text>
-            </div>
-          }
-        />
+        <div className="empty-state">
+          <Empty
+            image={<CalendarOutlined className="empty-icon" />}
+            imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+            description={
+              <div>
+                <Text type="secondary">No doses found</Text>
+                <br />
+                <Text type="secondary" size="small">
+                  Try adjusting your filters to see more results
+                </Text>
+              </div>
+            }
+          />
+        </div>
       )
     }
 
     return (
       <div className="timeline-view">
-        {renderTimelineSection(
-          'Overdue',
-          groupedDoses.overdue,
-          <ExclamationCircleOutlined />,
-          '#ff4d4f',
-          'These doses are past their scheduled time'
-        )}
-        
-        {renderTimelineSection(
-          'Coming Up',
-          groupedDoses.upcoming,
-          <ClockCircleOutlined />,
-          '#fa8c16',
-          'Doses scheduled in the next 2 hours'
-        )}
-        
-        {renderTimelineSection(
-          'Later Today',
-          groupedDoses.later,
-          <ClockCircleOutlined />,
-          '#1890ff',
-          'Doses scheduled for later today'
-        )}
-        
-        {renderTimelineSection(
-          'Completed Today',
-          groupedDoses.completed,
-          <CheckCircleOutlined />,
-          '#52c41a',
-          'Doses that have been taken or marked as missed'
-        )}
+        {renderTimelineSection('overdue', groupedDoses.overdue, 'Overdue', <ExclamationCircleOutlined />, '#ff4d4f')}
+        {renderTimelineSection('upcoming', groupedDoses.upcoming, 'Coming Up', <ClockCircleOutlined />, '#fa8c16')}
+        {renderTimelineSection('later', groupedDoses.later, 'Later Today', <ClockCircleOutlined />, '#1890ff')}
+        {renderTimelineSection('completed', groupedDoses.completed, 'Completed', <CheckCircleOutlined />, '#52c41a')}
       </div>
     )
   }
 
   return (
     <div className="todays-doses">
-      {/* View Mode Toggle */}
+      {/* View Controls */}
       <div className="view-controls">
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <div className="view-toggle">
-            <Segmented
-              value={viewMode}
-              onChange={setViewMode}
-              options={[
-                {
-                  label: 'Timeline',
-                  value: 'timeline',
-                  icon: <ClockCircleOutlined />
-                },
-                {
-                  label: 'List',
-                  value: 'list',
-                  icon: <MedicineBoxOutlined />
-                }
-              ]}
-              size="large"
-            />
-          </div>
-          
+        <div className="view-toggle-container">
+          <Segmented
+            value={viewMode}
+            onChange={setViewMode}
+            options={[
+              {
+                label: (
+                  <Space>
+                    <ClockCircleOutlined />
+                    <span>Timeline</span>
+                  </Space>
+                ),
+                value: 'timeline'
+              },
+              {
+                label: (
+                  <Space>
+                    <UnorderedListOutlined />
+                    <span>List</span>
+                  </Space>
+                ),
+                value: 'list'
+              }
+            ]}
+            className="view-toggle"
+          />
+        </div>
+        
+        <div className="view-description-container">
           <Text type="secondary" size="small" className="view-description">
             {viewMode === 'timeline' 
               ? 'Organized by urgency and time periods'
               : 'Simple chronological list of all doses'
             }
           </Text>
-        </Space>
+        </div>
       </div>
 
-      {/* Content */}
-      <div className="doses-content">
-        {viewMode === 'timeline' ? renderTimelineView() : renderListView()}
+      {/* Content Container */}
+      <div className="doses-container">
+        <div className="doses-content">
+          {viewMode === 'timeline' ? renderTimelineView() : renderListView()}
+        </div>
       </div>
 
       {/* Mark Dose Modal */}

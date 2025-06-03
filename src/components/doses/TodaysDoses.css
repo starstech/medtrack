@@ -1,492 +1,226 @@
-/* Today's Doses Styles - Mobile First */
+/* Today's Doses Component - Consistent with App Design */
 
-/* Main Container */
 .todays-doses {
-    width: 100%;
+  width: 100%;
+}
+
+/* View Controls */
+.view-controls {
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: #fff;
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.view-toggle-container {
+  display: flex;
+  justify-content: center;
+}
+
+.view-toggle {
+  margin: 0;
+}
+
+.view-toggle .ant-segmented {
+  background: #fafafa !important;
+  border-radius: 8px !important;
+  padding: 2px !important;
+}
+
+.view-toggle .ant-segmented-item {
+  border-radius: 6px !important;
+  font-weight: 500;
+  padding: 8px 16px !important;
+  transition: all 0.3s ease;
+}
+
+.view-toggle .ant-segmented-item-selected {
+  background: #fff !important;
+  color: #1890ff !important;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1) !important;
+}
+
+.view-description-container {
+  text-align: center;
+}
+
+.view-description {
+  color: #8c8c8c;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+/* Content Container - Like MedicationSection */
+.doses-container {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  background: #fff;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.doses-content {
+  padding: 0;
+  margin: 0;
+}
+
+/* Custom scrollbar - Like MedicationSection */
+.doses-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.doses-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+}
+
+.doses-container::-webkit-scrollbar-thumb {
+  background: #d9d9d9;
+  border-radius: 3px;
+}
+
+/* Timeline View */
+.timeline-view {
+  display: flex;
+  flex-direction: column;
+}
+
+.timeline-section {
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.timeline-section:last-child {
+  border-bottom: none;
+}
+
+.section-header {
+  padding: 12px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+}
+
+.section-icon {
+  font-size: 14px;
+  margin-right: 8px;
+}
+
+.section-title {
+  margin: 0 !important;
+  color: #262626;
+  font-weight: 600;
+  font-size: 14px !important;
+}
+
+.section-content {
+  background: #fff;
+}
+
+/* List View */
+.doses-list {
+  background: #fff;
+}
+
+/* Dose List Items - Compact like MedicationSection */
+.dose-list-item {
+  padding: 12px 20px;
+  border-bottom: 1px solid #f5f5f5;
+  transition: background-color 0.2s;
+}
+
+.dose-list-item:last-child {
+  border-bottom: none;
+}
+
+.dose-list-item:hover {
+  background-color: #fafafa;
+}
+
+/* Empty States */
+.empty-state {
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+  opacity: 0.6;
+}
+
+.empty-state .ant-empty-description {
+  color: #8c8c8c;
+}
+
+/* Dose Card Overrides for compact layout */
+.dose-list-item .dose-card {
+  border: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  width: 100%;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.dose-list-item .dose-card .ant-card-body {
+  padding: 0 !important;
+}
+
+.dose-list-item .dose-card:hover {
+  background: transparent !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Animation */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
   }
-  
-  /* View Controls */
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
   .view-controls {
-    margin-bottom: 24px;
-    padding: 16px;
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  .view-toggle {
-    display: flex;
-    justify-content: center;
-  }
-  
-  .view-toggle .ant-segmented {
-    background: #f5f5f5;
-    border-radius: 8px;
-    padding: 4px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
   }
   
   .view-toggle .ant-segmented-item {
-    min-width: 100px;
-    border-radius: 6px;
-    font-weight: 500;
+    padding: 6px 12px !important;
+    font-size: 14px;
   }
   
-  .view-description {
-    text-align: center;
-    margin-top: 8px;
-  }
-  
-  /* Timeline View */
-  .timeline-view {
-    width: 100%;
-  }
-  
-  .timeline-section {
-    margin-bottom: 32px;
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  .timeline-header {
-    padding: 16px 20px 12px;
-    background: #fafafa;
-    border-bottom: 1px solid #f0f0f0;
-  }
-  
-  .timeline-icon {
-    font-size: 18px;
-    padding: 8px;
-    border-radius: 8px;
-    background: rgba(255, 255, 255, 0.8);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .timeline-title {
-    margin: 0 !important;
-    font-size: 16px !important;
-    font-weight: 600;
-    color: #262626;
-  }
-  
-  .timeline-section .ant-list {
-    padding: 0;
-  }
-  
-  .timeline-section .dose-list-item {
-    padding: 16px 20px;
-    border-bottom: 1px solid #f5f5f5;
-  }
-  
-  .timeline-section .dose-list-item:last-child {
-    border-bottom: none;
-  }
-  
-  /* List View */
-  .doses-list .dose-list-item {
-    padding: 16px;
-    margin-bottom: 12px;
-    background: #fff;
-    border: 1px solid #f0f0f0;
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  }
-  
-  .doses-list .dose-list-item:hover {
-    border-color: #d9d9d9;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  .section-header {
+    padding: 10px 16px;
   }
   
   .dose-list-item {
-    border: none !important;
+    padding: 10px 16px;
   }
   
-  /* Dose Card */
-  .dose-card {
-    border-radius: 8px !important;
-    transition: all 0.3s ease;
-    width: 100%;
+  .empty-state {
+    padding: 30px 16px;
   }
   
-  .dose-card-pending {
-    border-left: 4px solid #fa8c16;
+  .doses-container {
+    max-height: 350px;
   }
-  
-  .dose-card-taken {
-    border-left: 4px solid #52c41a;
+}
+
+@media (min-width: 768px) {
+  .view-controls {
+    padding: 20px 24px;
+    margin-bottom: 20px;
   }
-  
-  .dose-card-missed {
-    border-left: 4px solid #ff4d4f;
-  }
-  
-  .dose-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
-  }
-  
-  .dose-card .ant-card-body {
-    padding: 16px;
-  }
-  
-  /* Dose Card Content */
-  .dose-card-content {
-    width: 100%;
-  }
-  
-  .dose-patient-info {
-    margin-bottom: 12px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #f5f5f5;
-  }
-  
-  .dose-patient-info .patient-name {
-    color: #262626;
-    font-size: 14px;
-  }
-  
-  .dose-main-content {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .dose-info {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 12px;
-  }
-  
-  .medication-info {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .medication-details {
-    flex: 1;
-    min-width: 0;
-  }
-  
-  .medication-name {
-    color: #262626;
-    font-size: 15px;
-    font-weight: 600;
-    margin-bottom: 2px;
-    display: block;
-  }
-  
-  .medication-dosage {
-    color: #8c8c8c;
-    font-size: 13px;
-    line-height: 1.4;
-  }
-  
-  .dose-status {
-    flex-shrink: 0;
-  }
-  
-  .status-tag {
-    font-weight: 500;
-    font-size: 12px;
-    border-radius: 6px;
-    padding: 4px 8px;
-    border: none;
-  }
-  
-  /* Time Information */
-  .dose-time-info {
-    background: #fafafa;
-    border: 1px solid #f0f0f0;
-    border-radius: 6px;
-    padding: 12px;
-  }
-  
-  .scheduled-time {
-    margin-bottom: 4px;
-  }
-  
-  .time-icon {
-    color: #1890ff;
-    font-size: 12px;
-  }
-  
-  .actual-time {
-    margin-bottom: 4px;
-  }
-  
-  .relative-time {
-    color: #8c8c8c;
-  }
-  
-  /* Notes */
-  .dose-notes {
-    background: #f6ffed;
-    border: 1px solid #b7eb8f;
-    border-radius: 6px;
-    padding: 8px 12px;
-    margin-top: 8px;
-  }
-  
-  /* Actions */
-  .dose-actions {
-    margin-top: 12px;
-    padding-top: 12px;
-    border-top: 1px solid #f5f5f5;
-    display: flex;
-    justify-content: flex-end;
-    gap: 8px;
-  }
-  
-  .take-button {
-    background: #52c41a !important;
-    border-color: #52c41a !important;
-    color: #fff !important;
-    font-weight: 500;
-  }
-  
-  .take-button:hover {
-    background: #73d13d !important;
-    border-color: #73d13d !important;
-  }
-  
-  .miss-button {
-    font-weight: 500;
-  }
-  
-  /* Empty States */
-  .empty-icon {
-    color: #d9d9d9;
-    font-size: 64px;
-    margin-bottom: 16px;
-  }
-  
-  .empty-description {
-    max-width: 300px;
-    margin: 0 auto;
-    text-align: center;
-  }
-  
-  .empty-description .ant-typography {
-    margin: 0;
-  }
-  
-  /* Mark Dose Modal */
-  .mark-dose-modal .ant-modal-header {
-    border-bottom: 1px solid #f0f0f0;
-    padding: 16px 24px;
-  }
-  
-  .mark-dose-modal .ant-modal-body {
-    padding: 24px;
-  }
-  
-  .dose-info-section {
-    background: #fafafa;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    padding: 16px;
-    margin-bottom: 16px;
-  }
-  
-  .medication-summary .medication-name {
-    font-size: 16px;
-    color: #262626;
-  }
-  
-  .patient-summary,
-  .scheduled-info {
-    margin-top: 8px;
-  }
-  
-  .mark-dose-form .ant-form-item-label > label {
-    font-weight: 600;
-    color: #262626;
-    font-size: 14px;
-  }
-  
-  .status-radio-group {
-    width: 100%;
-  }
-  
-  .status-radio {
-    display: flex !important;
-    align-items: flex-start;
-    padding: 12px 16px;
-    border: 1px solid #f0f0f0;
-    border-radius: 8px;
-    margin-bottom: 8px;
-    transition: all 0.3s ease;
-  }
-  
-  .status-radio:hover {
-    border-color: #1890ff;
-    background: #f6ffed;
-  }
-  
-  .status-radio.ant-radio-wrapper-checked {
-    border-color: #1890ff;
-    background: #e6f7ff;
-  }
-  
-  .status-radio .ant-radio {
-    margin-right: 12px;
-    margin-top: 2px;
-  }
-  
-  .mark-dose-form .ant-input,
-  .mark-dose-form .ant-picker,
-  .mark-dose-form .ant-input {
-    border-radius: 6px;
-    border: 1px solid #d9d9d9;
-  }
-  
-  .mark-dose-form .ant-input:focus,
-  .mark-dose-form .ant-input-focused,
-  .mark-dose-form .ant-picker-focused {
-    border-color: #1890ff;
-    box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
-  }
-  
-  .form-actions {
-    border-top: 1px solid #f0f0f0;
-    padding-top: 20px;
-    margin-top: 20px;
-    text-align: right;
-  }
-  
-  .form-actions .ant-btn {
-    margin-left: 8px;
-    min-width: 100px;
-  }
-  
-  /* Responsive Design */
-  @media (max-width: 767px) {
-    .dose-info {
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .dose-status {
-      align-self: flex-start;
-    }
-    
-    .dose-actions {
-      flex-direction: column;
-      gap: 8px;
-    }
-    
-    .dose-actions .ant-btn {
-      width: 100%;
-    }
-    
-    .timeline-section .dose-list-item {
-      padding: 12px 16px;
-    }
-    
-    .timeline-header {
-      padding: 12px 16px 8px;
-    }
-    
-    .view-toggle .ant-segmented-item {
-      min-width: 80px;
-      font-size: 14px;
-    }
-    
-    .medication-name {
-      font-size: 14px;
-    }
-    
-    .form-actions {
-      text-align: center;
-    }
-    
-    .form-actions .ant-btn {
-      margin: 0 4px;
-      min-width: 120px;
-    }
-    
-    .mark-dose-modal {
-      margin: 16px;
-      max-width: calc(100vw - 32px);
-    }
-  }
-  
-  @media (min-width: 768px) {
-    .dose-main-content {
-      flex-direction: row;
-      align-items: flex-start;
-      gap: 16px;
-    }
-    
-    .dose-info {
-      flex: 1;
-    }
-    
-    .dose-time-info {
-      flex: 0 0 200px;
-    }
-    
-    .dose-actions {
-      flex-direction: row;
-      justify-content: flex-end;
-    }
-    
-    .timeline-title {
-      font-size: 18px !important;
-    }
-    
-    .medication-name {
-      font-size: 16px;
-    }
-  }
-  
-  /* Animation */
-  .dose-card {
-    animation: slideIn 0.3s ease-out;
-  }
-  
-  @keyframes slideIn {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-  
-  /* Badge Ribbon */
-  .ant-badge-ribbon {
-    font-size: 11px;
-    font-weight: 600;
-    padding: 4px 8px;
-    border-radius: 0 0 6px 6px;
-  }
-  
-  /* Loading States */
-  .dose-card.loading {
-    pointer-events: none;
-    opacity: 0.7;
-  }
-  
-  /* Alert Styling */
-  .ant-alert {
-    border-radius: 8px;
-    margin-bottom: 16px;
-  }
-  
-  /* Time Picker Styling */
-  .ant-picker {
-    width: 100%;
-  }
-  
-  .ant-picker-input > input {
-    font-size: 14px;
-  }
+}

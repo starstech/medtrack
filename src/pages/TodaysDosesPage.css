@@ -1,113 +1,174 @@
+/* Today's Doses Page - Consistent with App Design */
+
 .todays-doses-page {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 16px;
+  padding: 0 12px;
+  animation: fadeIn 0.3s ease-in-out;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.page-header {
+/* Overdue Alert */
+.overdue-alert {
   margin-bottom: 24px;
+  border-radius: 8px !important;
+  border: 1px solid #ffccc7 !important;
+  animation: slideInUp 0.5s ease-out;
 }
 
-.header-content {
-  padding: 24px 0;
+.overdue-alert .ant-alert-message {
+  font-weight: 600;
+  color: #cf1322;
 }
 
-.page-title {
-  margin-bottom: 4px !important;
-  color: #1f1f1f;
+.overdue-alert .ant-alert-description {
+  color: #a8071a;
 }
 
-.page-subtitle {
-  font-size: 16px;
-  color: #5c5c5c;
+/* View All Button - Dashboard Style */
+.view-all-btn {
+  opacity: 0.8;
+  transition: all 0.3s ease;
+  font-weight: 500;
 }
 
-.doses-overview {
-  background-color: #fff;
-  border-radius: 8px;
-  padding: 24px;
+.view-all-btn:hover {
+  opacity: 1;
+  transform: translateX(4px);
+}
+
+/* Stats Overview */
+.stats-overview {
   margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  animation: slideInUp 0.5s ease-out;
 }
 
-.progress-section {
-  padding-right: 24px;
+.stat-card {
+  border-radius: 12px !important;
+  border: 1px solid #f0f0f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.3s ease;
 }
 
-.progress-header {
-  display: flex;
-  justify-content: space-between;
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+}
+
+.stat-card .ant-statistic-title {
+  font-weight: 500;
+  font-size: 14px;
+  color: #8c8c8c;
   margin-bottom: 8px;
 }
 
-.stat-mini {
+.stat-card .ant-statistic-content {
   display: flex;
   align-items: center;
-  background-color: #f9f9f9;
-  padding: 16px;
-  border-radius: 8px;
-  height: 100%;
+  gap: 8px;
 }
 
-.stat-icon {
-  font-size: 24px;
-  margin-right: 12px;
+.stat-card .ant-statistic-content-value {
+  font-size: 28px !important;
+  font-weight: 600;
 }
 
-.stat-icon.success {
-  color: #52c41a;
-}
-
-.stat-icon.warning {
-  color: #faad14;
-}
-
-.stat-icon.danger {
-  color: #ff4d4f;
-}
-
-.stat-content {
-  display: flex;
-  flex-direction: column;
-}
-
-.stat-number {
-  font-size: 20px;
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.overdue-alert {
+/* Filters Card */
+.filters-card {
+  border-radius: 12px !important;
+  border: 1px solid #f0f0f0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
   margin-bottom: 24px;
+  animation: slideInUp 0.5s ease-out;
 }
 
-.doses-filters {
-  background-color: #fff;
+.filters-card .ant-card-body {
+  padding: 20px;
+}
+
+.filters-card .ant-select {
   border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filters-card .ant-select-selector {
+  border-radius: 8px !important;
+  border: 1px solid #d9d9d9 !important;
+  transition: all 0.3s ease;
+}
+
+.filters-card .ant-select-focused .ant-select-selector {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1) !important;
 }
 
 .filter-summary {
   display: flex;
-  justify-content: flex-end;
-  align-items: center;
+  flex-direction: column;
+  justify-content: center;
   height: 100%;
+  padding-top: 20px;
 }
 
-.doses-content {
-  margin-bottom: 40px;
+.filter-summary .ant-typography {
+  color: #8c8c8c;
+  line-height: 1.4;
 }
 
-@media (max-width: 768px) {
-  .progress-section {
-    padding-right: 0;
-    margin-bottom: 16px;
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive Design */
+@media (max-width: 767px) {
+  .todays-doses-page {
+    padding: 0 8px;
   }
   
   .filter-summary {
-    justify-content: flex-start;
-    margin-top: 8px;
+    padding-top: 12px;
+    align-items: flex-start;
+  }
+  
+  .stat-card .ant-statistic-content-value {
+    font-size: 24px !important;
+  }
+}
+
+@media (min-width: 768px) {
+  .stats-overview,
+  .filters-card {
+    margin-bottom: 32px;
+  }
+  
+  .filters-card .ant-card-body {
+    padding: 24px;
+  }
+}
+
+@media (max-width: 576px) {
+  .filter-summary {
+    text-align: left;
+    padding-top: 8px;
+  }
+  
+  .stat-card .ant-card-body {
+    padding: 16px;
   }
 } 

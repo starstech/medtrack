@@ -9,15 +9,19 @@ import {
   Space, 
   Typography,
   Alert,
-  Divider
+  Card
 } from 'antd'
 import { 
   CheckCircleOutlined,
   CloseCircleOutlined,
   ClockCircleOutlined,
-  MedicineBoxOutlined
+  MedicineBoxOutlined,
+  UserOutlined,
+  CalendarOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons'
 import dayjs from 'dayjs'
+import './MarkDoseModal.css'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
@@ -83,17 +87,6 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
     }
   }
 
-  const getStatusIcon = (status) => {
-    switch (status) {
-      case 'taken':
-        return <CheckCircleOutlined style={{ color: '#52c41a' }} />
-      case 'missed':
-        return <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
-      default:
-        return <ClockCircleOutlined style={{ color: '#fa8c16' }} />
-    }
-  }
-
   const getScheduledTimeInfo = () => {
     const scheduledTime = dayjs(dose.scheduledTime)
     const now = dayjs()
@@ -116,63 +109,55 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
       title={
         <Space>
           <MedicineBoxOutlined />
-          <Title level={4} style={{ margin: 0 }}>
-            {dose.status === 'pending' ? 'Mark Dose' : 'Edit Dose Record'}
-          </Title>
+          <span>{dose.status === 'pending' ? 'Mark Dose' : 'Edit Dose Record'}</span>
         </Space>
       }
       open={visible}
       onCancel={onClose}
       footer={null}
-      width={500}
+      width={480}
       className="mark-dose-modal"
       destroyOnClose
     >
-      {/* Dose Information */}
-      <div className="dose-info-section">
-        <Space direction="vertical" size="small" style={{ width: '100%' }}>
-          <div className="medication-summary">
-            <Text strong className="medication-name">
-              {dose.medication.name}
-            </Text>
-            <Text type="secondary"> • </Text>
-            <Text type="secondary">
+      {/* Dose Information Card */}
+      <Card size="small" className="dose-info-card">
+        <Space direction="vertical" size={8} style={{ width: '100%' }}>
+          <div>
+            <Text strong>{dose.medication.name}</Text>
+            <Text type="secondary" style={{ marginLeft: 8 }}>
               {dose.medication.dosage} {dose.medication.form}
             </Text>
           </div>
           
-          <div className="patient-summary">
-            <Text type="secondary">
-              Patient: <Text strong>{dose.patient.name}</Text>
-            </Text>
+          <div>
+            <Space>
+              <UserOutlined />
+              <Text type="secondary">{dose.patient.name}</Text>
+            </Space>
           </div>
           
-          <div className="scheduled-info">
+          <div>
             <Space>
-              <ClockCircleOutlined />
+              <CalendarOutlined />
               <Text type="secondary">
                 Scheduled: {scheduledInfo.time} on {scheduledInfo.date}
               </Text>
               {scheduledInfo.isOverdue && (
-                <Text type="danger" size="small">
-                  ({scheduledInfo.diffText})
-                </Text>
+                <Text type="danger" size="small">(Overdue)</Text>
               )}
             </Space>
           </div>
         </Space>
-      </div>
-
-      <Divider />
+      </Card>
 
       {/* Overdue Warning */}
       {dose.status === 'pending' && scheduledInfo.isOverdue && (
         <Alert
           message="This dose is overdue"
-          description="Please confirm whether the dose was taken or missed."
+          description={`Scheduled ${scheduledInfo.diffText}. Please confirm whether it was taken or missed.`}
           type="warning"
           showIcon
-          style={{ marginBottom: 24 }}
+          style={{ marginBottom: 16 }}
         />
       )}
 
@@ -181,47 +166,36 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        size="large"
-        className="mark-dose-form"
+        style={{ marginTop: 16 }}
       >
         {/* Status Selection */}
         <Form.Item
           name="status"
-          label="Status"
+          label="Dose Status"
           rules={[
             { required: true, message: 'Please select the dose status' }
           ]}
         >
-          <Radio.Group onChange={handleStatusChange} className="status-radio-group">
-            <Radio value="taken" className="status-radio">
+          <Radio.Group onChange={handleStatusChange}>
+            <Radio value="taken">
               <Space>
-                {getStatusIcon('taken')}
-                <div>
-                  <div>Dose Taken</div>
-                  <Text type="secondary" size="small">
-                    Patient received the medication
-                  </Text>
-                </div>
+                <CheckCircleOutlined style={{ color: '#52c41a' }} />
+                Taken
               </Space>
             </Radio>
-            <Radio value="missed" className="status-radio">
+            <Radio value="missed">
               <Space>
-                {getStatusIcon('missed')}
-                <div>
-                  <div>Dose Missed</div>
-                  <Text type="secondary" size="small">
-                    Patient did not receive the medication
-                  </Text>
-                </div>
+                <CloseCircleOutlined style={{ color: '#ff4d4f' }} />
+                Missed
               </Space>
             </Radio>
           </Radio.Group>
         </Form.Item>
 
-        {/* Actual Time */}
+        {/* Time Selection */}
         <Form.Item
           name="actualTime"
-          label={selectedStatus === 'taken' ? 'Time Taken' : 'Time Recorded'}
+          label={selectedStatus === 'taken' ? 'Time Taken' : 'Time Missed'}
           rules={[
             { required: true, message: 'Please select the time' }
           ]}
@@ -229,8 +203,8 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
           <TimePicker
             format="h:mm A"
             use12Hours
-            style={{ width: '100%' }}
             placeholder="Select time"
+            style={{ width: '100%' }}
           />
         </Form.Item>
 
@@ -240,41 +214,28 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
           label="Notes (Optional)"
         >
           <TextArea
-            placeholder={
-              selectedStatus === 'taken' 
-                ? "Any notes about taking the dose (e.g., 'Taken with food', 'Patient felt nauseous')"
-                : "Reason for missing the dose (e.g., 'Patient was sleeping', 'Forgot to administer')"
-            }
+            placeholder="Add any relevant notes..."
             rows={3}
             maxLength={500}
             showCount
           />
         </Form.Item>
 
-        {/* Form Actions */}
-        <div className="form-actions">
+        {/* Actions */}
+        <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
           <Space>
-            <Button
-              onClick={onClose}
-              size="large"
-              disabled={loading}
-            >
+            <Button onClick={onClose}>
               Cancel
             </Button>
             <Button
               type="primary"
               htmlType="submit"
               loading={loading}
-              size="large"
-              icon={getStatusIcon(selectedStatus)}
             >
-              {loading 
-                ? 'Saving...' 
-                : `Mark as ${selectedStatus === 'taken' ? 'Taken' : 'Missed'}`
-              }
+              {dose.status === 'pending' ? 'Mark Dose' : 'Update Record'}
             </Button>
           </Space>
-        </div>
+        </Form.Item>
       </Form>
     </Modal>
   )

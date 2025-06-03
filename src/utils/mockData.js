@@ -1,5 +1,26 @@
 // Mock data for development and testing
 
+// Helper function to get today's date in various formats for mock data
+const getTodayISO = (hour = 8, minute = 0) => {
+  const today = new Date()
+  today.setHours(hour, minute, 0, 0)
+  return today.toISOString()
+}
+
+const getYesterdayISO = (hour = 8, minute = 0) => {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  yesterday.setHours(hour, minute, 0, 0)
+  return yesterday.toISOString()
+}
+
+const getTomorrowISO = (hour = 8, minute = 0) => {
+  const tomorrow = new Date()
+  tomorrow.setDate(tomorrow.getDate() + 1)
+  tomorrow.setHours(hour, minute, 0, 0)
+  return tomorrow.toISOString()
+}
+
 export const mockPatients = [
     {
       id: 'patient1',
@@ -81,21 +102,21 @@ export const mockPatients = [
       doses: [
         {
           id: 'dose1',
-          scheduledTime: '2024-06-03T08:00:00Z',
+          scheduledTime: getTodayISO(8, 0), // 8:00 AM today
           status: 'taken',
-          takenAt: '2024-06-03T08:05:00Z',
+          takenAt: getTodayISO(8, 5), // 8:05 AM today
           notes: 'Taken with breakfast'
         },
         {
           id: 'dose2',
-          scheduledTime: '2024-06-03T20:00:00Z',
+          scheduledTime: getTodayISO(20, 0), // 8:00 PM today
           status: 'pending',
           takenAt: null,
           notes: ''
         },
         {
           id: 'dose3',
-          scheduledTime: '2024-06-04T08:00:00Z',
+          scheduledTime: getTomorrowISO(8, 0), // 8:00 AM tomorrow
           status: 'pending',
           takenAt: null,
           notes: ''
@@ -135,14 +156,14 @@ export const mockPatients = [
       doses: [
         {
           id: 'dose4',
-          scheduledTime: '2024-06-03T07:30:00Z',
+          scheduledTime: getTodayISO(7, 30), // 7:30 AM today
           status: 'taken',
-          takenAt: '2024-06-03T07:35:00Z',
+          takenAt: getTodayISO(7, 35), // 7:35 AM today
           notes: 'Good response today'
         },
         {
           id: 'dose5',
-          scheduledTime: '2024-06-04T07:30:00Z',
+          scheduledTime: getTomorrowISO(7, 30), // 7:30 AM tomorrow
           status: 'pending',
           takenAt: null,
           notes: ''
@@ -166,24 +187,31 @@ export const mockPatients = [
       doses: [
         {
           id: 'dose6',
-          scheduledTime: '2024-06-03T08:00:00Z',
+          scheduledTime: getTodayISO(8, 0), // 8:00 AM today
           status: 'taken',
-          takenAt: '2024-06-03T08:10:00Z',
-          notes: ''
+          takenAt: getTodayISO(8, 10), // 8:10 AM today
+          notes: 'Taken with breakfast'
         },
         {
           id: 'dose7',
-          scheduledTime: '2024-06-03T18:00:00Z',
-          status: 'taken',
-          takenAt: '2024-06-03T18:15:00Z',
+          scheduledTime: getTodayISO(18, 0), // 6:00 PM today
+          status: 'pending',
+          takenAt: null,
           notes: ''
         },
         {
           id: 'dose8',
-          scheduledTime: '2024-06-04T08:00:00Z',
+          scheduledTime: getTomorrowISO(8, 0), // 8:00 AM tomorrow
           status: 'pending',
           takenAt: null,
           notes: ''
+        },
+        {
+          id: 'dose11',
+          scheduledTime: getTodayISO(12, 30), // 12:30 PM today
+          status: 'missed',
+          takenAt: null,
+          notes: 'Forgot during lunch'
         }
       ]
     },
@@ -204,17 +232,110 @@ export const mockPatients = [
       doses: [
         {
           id: 'dose9',
-          scheduledTime: '2024-06-03T09:00:00Z',
+          scheduledTime: getTodayISO(9, 0), // 9:00 AM today
           status: 'taken',
-          takenAt: '2024-06-03T09:05:00Z',
-          notes: ''
+          takenAt: getTodayISO(9, 5), // 9:05 AM today
+          notes: 'Blood pressure check done'
         },
         {
           id: 'dose10',
-          scheduledTime: '2024-06-04T09:00:00Z',
+          scheduledTime: getTomorrowISO(9, 0), // 9:00 AM tomorrow
           status: 'pending',
           takenAt: null,
           notes: ''
+        }
+      ]
+    },
+    {
+      id: 'med6',
+      patientId: 'patient1',
+      name: 'Children\'s Vitamins',
+      dosage: '1 gummy',
+      form: 'gummy',
+      frequency: 'once_daily',
+      duration: 'ongoing',
+      instructions: 'Take after breakfast',
+      prescribedBy: 'Dr. Smith',
+      startDate: '2024-12-01',
+      endDate: null,
+      isActive: true,
+      createdAt: '2024-12-01T10:00:00Z',
+      doses: [
+        {
+          id: 'dose12',
+          scheduledTime: getTodayISO(9, 30), // 9:30 AM today
+          status: 'pending',
+          takenAt: null,
+          notes: ''
+        },
+        {
+          id: 'dose13',
+          scheduledTime: getYesterdayISO(9, 30), // 9:30 AM yesterday
+          status: 'taken',
+          takenAt: getYesterdayISO(9, 35), // 9:35 AM yesterday
+          notes: 'Enjoyed the orange flavor'
+        }
+      ]
+    },
+    {
+      id: 'med7',
+      patientId: 'patient2',
+      name: 'Omega-3 Supplement',
+      dosage: '500mg',
+      form: 'capsule',
+      frequency: 'twice_daily',
+      duration: 'ongoing',
+      instructions: 'Take with meals',
+      prescribedBy: 'Dr. Johnson',
+      startDate: '2024-11-01',
+      endDate: null,
+      isActive: true,
+      createdAt: '2024-11-01T08:00:00Z',
+      doses: [
+        {
+          id: 'dose14',
+          scheduledTime: getTodayISO(8, 30), // 8:30 AM today
+          status: 'taken',
+          takenAt: getTodayISO(8, 45), // 8:45 AM today
+          notes: 'Taken with morning snack'
+        },
+        {
+          id: 'dose15',
+          scheduledTime: getTodayISO(19, 30), // 7:30 PM today
+          status: 'pending',
+          takenAt: null,
+          notes: ''
+        }
+      ]
+    },
+    {
+      id: 'med8',
+      patientId: 'patient3',
+      name: 'Atorvastatin',
+      dosage: '20mg',
+      form: 'tablet',
+      frequency: 'once_daily',
+      duration: 'ongoing',
+      instructions: 'Take at bedtime',
+      prescribedBy: 'Dr. Rodriguez',
+      startDate: '2024-10-15',
+      endDate: null,
+      isActive: true,
+      createdAt: '2024-10-15T10:00:00Z',
+      doses: [
+        {
+          id: 'dose16',
+          scheduledTime: getTodayISO(22, 0), // 10:00 PM today
+          status: 'pending',
+          takenAt: null,
+          notes: ''
+        },
+        {
+          id: 'dose17',
+          scheduledTime: getYesterdayISO(22, 0), // 10:00 PM yesterday
+          status: 'taken',
+          takenAt: getYesterdayISO(22, 10), // 10:10 PM yesterday
+          notes: 'Right before sleep'
         }
       ]
     }
