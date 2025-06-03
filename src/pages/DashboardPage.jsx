@@ -1,6 +1,6 @@
 import { Row, Col, Typography, Space, Card } from 'antd'
 import StatsCards from '../components/dashboard/StatsCards'
-import PatientSelector from '../components/dashboard/PatientSelector'
+import { PatientDropdown, AddPatientButton, SelectedPatientCard } from '../components/dashboard/PatientSelector'
 import RecentActivity from '../components/dashboard/RecentActivity'
 import MedicationOverview from '../components/dashboard/MedicationOverview'
 import { usePatients } from '../hooks/usePatients'
@@ -28,22 +28,28 @@ const DashboardPage = () => {
   return (
     <div className="dashboard-page">
       <div className="dashboard-header">
-        <Row gutter={[24, 24]} align="middle" justify="space-between">
-          <Col>
-            <Space direction="vertical" size={4}>
-              <Title level={2} className="dashboard-title">
-                {getGreeting()}, {user?.name || 'Caregiver'}!
-              </Title>
-              <Text type="secondary" className="dashboard-subtitle">
-                {selectedPatient 
-                  ? `Managing care for ${selectedPatient.name}`
-                  : `You're caring for ${patients.length} patient${patients.length !== 1 ? 's' : ''}`
-                }
-              </Text>
+        <Row gutter={[24, 24]} align="top" justify="space-between">
+          <Col xs={24} lg={16}>
+            <Space direction="vertical" size={16}>
+              <Space direction="vertical" size={4}>
+                <Title level={2} className="dashboard-title">
+                  {getGreeting()}, {user?.name || 'Caregiver'}!
+                </Title>
+                <Text type="secondary" className="dashboard-subtitle">
+                  {selectedPatient 
+                    ? `Managing care for ${selectedPatient.name}`
+                    : `You're caring for ${patients.length} patient${patients.length !== 1 ? 's' : ''}`
+                  }
+                </Text>
+              </Space>
+              <PatientDropdown />
             </Space>
           </Col>
-          <Col>
-            <PatientSelector />
+          <Col xs={24} lg={8}>
+            <Space direction="vertical" size={16} style={{ width: '100%', alignItems: 'flex-end' }}>
+              <AddPatientButton />
+              <SelectedPatientCard />
+            </Space>
           </Col>
         </Row>
       </div>
