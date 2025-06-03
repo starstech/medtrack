@@ -156,7 +156,7 @@ export const AddPatientButton = () => {
 // Selected Patient Card component
 export const SelectedPatientCard = () => {
   const { selectedPatient } = usePatients()
-  const { token: { colorPrimary, colorBgContainer, borderRadius } } = theme.useToken()
+  const { token: { colorPrimary, colorBgContainer } } = theme.useToken()
 
   const getPatientAge = (dateOfBirth) => {
     return dayjs().diff(dayjs(dateOfBirth), 'year')
@@ -168,55 +168,91 @@ export const SelectedPatientCard = () => {
 
   return (
     <Card 
-      className="selected-patient-card"
+      className="selected-patient-card stat-card"
       style={{
         width: '300px',
-        borderRadius: borderRadius,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+        borderRadius: '12px',
+        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
+        transition: 'all 0.3s ease',
+        border: 'none'
       }}
-      bodyStyle={{ padding: '16px' }}
+      bodyStyle={{ padding: '20px' }}
       bordered={false}
     >
-      <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-        <Space align="start">
-          <Avatar 
-            size={64}
-            icon={<UserOutlined />}
-            style={{
-              backgroundColor: colorPrimary,
-              color: colorBgContainer
-            }}
-          />
-          <div>
-            <Title level={4} style={{ margin: 0 }}>{selectedPatient.name}</Title>
-            <Space split="•" style={{ color: 'rgba(0,0,0,0.45)' }}>
-              <Text type="secondary">{getPatientAge(selectedPatient.dateOfBirth)} years</Text>
-              <Text type="secondary">{selectedPatient.gender}</Text>
+      <Space direction="vertical" size="large" style={{ width: '100%' }}>
+        {/* Header with avatar and basic info */}
+        <div className="patient-card-header">
+          <Space align="start" size="middle">
+            <Avatar 
+              size={56}
+              icon={<UserOutlined />}
+              style={{
+                backgroundColor: colorPrimary,
+                color: colorBgContainer,
+                fontSize: '24px'
+              }}
+            />
+            <div className="patient-basic-info">
+              <Title level={4} style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>
+                {selectedPatient.name}
+              </Title>
+              <Space split="•" style={{ color: 'rgba(0,0,0,0.45)', fontSize: '14px' }}>
+                <Text type="secondary">{getPatientAge(selectedPatient.dateOfBirth)} years</Text>
+                <Text type="secondary">{selectedPatient.gender}</Text>
+              </Space>
               {selectedPatient.caregivers?.length > 0 && (
-                <Text type="secondary">{selectedPatient.caregivers.length} caregivers</Text>
+                <Text type="secondary" style={{ fontSize: '13px', display: 'block', marginTop: '4px' }}>
+                  {selectedPatient.caregivers.length} caregiver{selectedPatient.caregivers.length !== 1 ? 's' : ''} assigned
+                </Text>
               )}
-            </Space>
-          </div>
-        </Space>
+            </div>
+          </Space>
+        </div>
 
+        {/* Medical conditions */}
         {selectedPatient.medicalConditions?.length > 0 && (
-          <div>
-            <Text type="secondary" style={{ display: 'block', marginBottom: '8px' }}>
+          <div className="patient-conditions-section">
+            <Text 
+              type="secondary" 
+              style={{ 
+                display: 'block', 
+                marginBottom: '8px',
+                fontSize: '13px',
+                fontWeight: 500,
+                textTransform: 'uppercase',
+                letterSpacing: '0.5px'
+              }}
+            >
               Medical Conditions
             </Text>
-            <Space size={[4, 8]} wrap>
-              {selectedPatient.medicalConditions.map((condition, index) => (
+            <Space size={[6, 6]} wrap>
+              {selectedPatient.medicalConditions.slice(0, 3).map((condition, index) => (
                 <Tag
                   key={index}
                   color="blue"
                   style={{
-                    borderRadius: '12px',
-                    padding: '4px 12px'
+                    borderRadius: '6px',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    border: 'none'
                   }}
                 >
                   {condition}
                 </Tag>
               ))}
+              {selectedPatient.medicalConditions.length > 3 && (
+                <Tag
+                  color="default"
+                  style={{
+                    borderRadius: '6px',
+                    padding: '2px 8px',
+                    fontSize: '12px',
+                    border: 'none'
+                  }}
+                >
+                  +{selectedPatient.medicalConditions.length - 3} more
+                </Tag>
+              )}
             </Space>
           </div>
         )}

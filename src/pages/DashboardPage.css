@@ -130,6 +130,48 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
   }
   
+  /* Selected Patient Card - Match Stats Card Style */
+  .selected-patient-card {
+    animation: slideInDown 0.3s ease-out;
+  }
+  
+  .selected-patient-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  }
+  
+  .selected-patient-card .patient-card-header {
+    margin-bottom: 4px;
+  }
+  
+  .selected-patient-card .patient-basic-info {
+    flex: 1;
+    min-width: 0;
+  }
+  
+  .selected-patient-card .patient-conditions-section {
+    margin-top: 4px;
+  }
+  
+  .selected-patient-card .ant-avatar {
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+  }
+  
+  .selected-patient-card:hover .ant-avatar {
+    transform: scale(1.05);
+  }
+  
+  .selected-patient-card .ant-tag {
+    transition: all 0.3s ease;
+    font-weight: 500;
+  }
+  
+  .selected-patient-card .ant-tag:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
   .patient-selector-header {
     margin-bottom: 16px;
     padding-bottom: 8px;
