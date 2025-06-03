@@ -12,26 +12,49 @@ import { usePatients } from '../../hooks/usePatients'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import './MedicationOverview.css'
+import { mockMedications, mockPatients } from '../../utils/mockData'
 
 const { Text, Title } = Typography
 
 const MedicationOverview = () => {
   const { 
-    selectedPatient, 
-    medications, 
-    patients,
-    getTodaysDoses 
+    selectedPatient
   } = usePatients()
   const navigate = useNavigate()
   const { token: { colorPrimary, colorSuccess, colorWarning, colorError } } = theme.useToken()
 
-  // Filter medications based on selected patient
-  const filteredMedications = selectedPatient 
-    ? medications.filter(med => med.patientId === selectedPatient.id && med.isActive)
-    : medications.filter(med => med.isActive)
+  // Mock function to get today's doses
+  const getMockTodaysDoses = () => {
+    const today = new Date()
+    const doses = []
+    
+    mockMedications.forEach(medication => {
+      const patient = mockPatients.find(p => p.id === medication.patientId)
+      medication.doses?.forEach(dose => {
+        // Create doses for today by updating the date part while keeping the time
+        const originalDate = new Date(dose.scheduledTime)
+        const todaysDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
+          originalDate.getHours(), originalDate.getMinutes(), originalDate.getSeconds())
+        
+        doses.push({
+          ...dose,
+          scheduledTime: todaysDate.toISOString(),
+          medication,
+          patient
+        })
+      })
+    })
+    
+    return doses.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime))
+  }
 
-  // Get today's doses for overview
-  const todaysDoses = getTodaysDoses()
+  // Filter medications based on selected patient using mock data
+  const filteredMedications = selectedPatient 
+    ? mockMedications.filter(med => med.patientId === selectedPatient.id && med.isActive)
+    : mockMedications.filter(med => med.isActive)
+
+  // Get today's doses for overview using mock data
+  const todaysDoses = getMockTodaysDoses()
   const filteredTodaysDoses = selectedPatient
     ? todaysDoses.filter(dose => dose.patient.id === selectedPatient.id)
     : todaysDoses
@@ -40,10 +63,11 @@ const MedicationOverview = () => {
   const totalToday = filteredTodaysDoses.length
   const completionPercentage = totalToday > 0 ? Math.round((takenToday / totalToday) * 100) : 0
 
-  // Get medications with upcoming doses today
+  // Get medications with upcoming doses today - modified to show all medications if no doses today
   const getMedicationsWithDoses = () => {
     const medicationDoses = {}
     
+    // First, try to get medications with today's doses
     filteredTodaysDoses.forEach(dose => {
       const medId = dose.medication.id
       if (!medicationDoses[medId]) {
@@ -55,6 +79,18 @@ const MedicationOverview = () => {
       }
       medicationDoses[medId].doses.push(dose)
     })
+
+    // If no medications with today's doses, show active medications anyway
+    if (Object.keys(medicationDoses).length === 0) {
+      filteredMedications.forEach(medication => {
+        const patient = mockPatients.find(p => p.id === medication.patientId)
+        medicationDoses[medication.id] = {
+          medication,
+          patient,
+          doses: medication.doses || []
+        }
+      })
+    }
 
     return Object.values(medicationDoses).slice(0, 5) // Show top 5
   }
