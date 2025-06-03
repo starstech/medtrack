@@ -267,4 +267,36 @@
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* Date Grouping */
+.date-group {
+  margin-bottom: 24px;
+}
+
+.date-group:last-child {
+  margin-bottom: 0;
+}
+
+.date-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 20px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+.date-group-title {
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  color: #262626;
+  margin: 0 !important;
+}
+
+.date-group-logs {
+  /* No additional styling needed - inherits from log items */
 } 

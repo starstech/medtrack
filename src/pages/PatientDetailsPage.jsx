@@ -92,15 +92,6 @@ const PatientDetailsPage = () => {
         >
           Back
         </Button>
-        
-        <Button
-          icon={<EditOutlined />}
-          type="primary"
-          className="edit-patient-btn"
-          size="small"
-        >
-          Edit
-        </Button>
       </div>
 
       {/* Patient Tabs */}

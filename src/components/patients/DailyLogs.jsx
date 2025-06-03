@@ -44,12 +44,15 @@ import './DailyLogs.css'
 const { Title, Text } = Typography
 const { Option } = Select
 const { TextArea } = Input
+const { RangePicker } = DatePicker
 
 const DailyLogs = ({ patient }) => {
   const { getPatientLogs, addDailyLog } = usePatients()
   const [addModalVisible, setAddModalVisible] = useState(false)
   const [selectedType, setSelectedType] = useState('all')
   const [selectedSeverity, setSelectedSeverity] = useState('all')
+  const [selectedDateFilter, setSelectedDateFilter] = useState('all') // 'all', 'today', 'yesterday', 'last7days', 'thisweek', 'custom'
+  const [customDateRange, setCustomDateRange] = useState([null, null])
   const [viewMode, setViewMode] = useState('list') // 'list' or 'timeline'
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
@@ -58,6 +61,37 @@ const DailyLogs = ({ patient }) => {
 
   const logs = getPatientLogs(patient.id)
   
+  // Helper function to filter logs by date
+  const filterLogsByDate = (logs, dateFilter, customRange) => {
+    const now = dayjs()
+    const today = now.startOf('day')
+    
+    switch (dateFilter) {
+      case 'today':
+        return logs.filter(log => dayjs(log.timestamp).isSame(today, 'day'))
+      case 'yesterday':
+        const yesterday = today.subtract(1, 'day')
+        return logs.filter(log => dayjs(log.timestamp).isSame(yesterday, 'day'))
+      case 'last7days':
+        const sevenDaysAgo = today.subtract(7, 'day')
+        return logs.filter(log => dayjs(log.timestamp).isAfter(sevenDaysAgo))
+      case 'thisweek':
+        const startOfWeek = today.startOf('week')
+        return logs.filter(log => dayjs(log.timestamp).isAfter(startOfWeek))
+      case 'custom':
+        if (customRange[0] && customRange[1]) {
+          return logs.filter(log => {
+            const logDate = dayjs(log.timestamp)
+            return logDate.isAfter(customRange[0].startOf('day')) && 
+                   logDate.isBefore(customRange[1].endOf('day'))
+          })
+        }
+        return logs
+      default:
+        return logs
+    }
+  }
+  
   // Filter logs
   const filteredLogs = logs.filter(log => {
     const typeMatch = selectedType === 'all' || log.type === selectedType
@@ -65,10 +99,41 @@ const DailyLogs = ({ patient }) => {
     return typeMatch && severityMatch
   })
 
+  // Apply date filtering
+  const dateFilteredLogs = filterLogsByDate(filteredLogs, selectedDateFilter, customDateRange)
+
   // Sort logs by date (newest first)
-  const sortedLogs = filteredLogs.sort((a, b) => 
+  const sortedLogs = dateFilteredLogs.sort((a, b) => 
     new Date(b.timestamp) - new Date(a.timestamp)
   )
+
+  // Group logs by date for better organization
+  const groupLogsByDate = (logs) => {
+    const groups = {}
+    logs.forEach(log => {
+      const dateKey = dayjs(log.timestamp).format('YYYY-MM-DD')
+      const dateLabel = dayjs(log.timestamp).format('MMMM D, YYYY')
+      const isToday = dayjs(log.timestamp).isSame(dayjs(), 'day')
+      const isYesterday = dayjs(log.timestamp).isSame(dayjs().subtract(1, 'day'), 'day')
+      
+      let displayLabel = dateLabel
+      if (isToday) displayLabel = `Today, ${dateLabel}`
+      else if (isYesterday) displayLabel = `Yesterday, ${dateLabel}`
+      
+      if (!groups[dateKey]) {
+        groups[dateKey] = {
+          date: dateKey,
+          label: displayLabel,
+          logs: []
+        }
+      }
+      groups[dateKey].logs.push(log)
+    })
+    
+    return Object.values(groups).sort((a, b) => dayjs(b.date).valueOf() - dayjs(a.date).valueOf())
+  }
+
+  const groupedLogs = groupLogsByDate(sortedLogs)
 
   // Get unique types and severities from data
   const availableTypes = [...new Set(logs.map(log => log.type))]
@@ -89,7 +154,7 @@ const DailyLogs = ({ patient }) => {
     return () => {
       window.removeEventListener('resize', checkScrollable)
     }
-  }, [sortedLogs])
+  }, [sortedLogs, selectedDateFilter, customDateRange])
 
   const handleAddLog = async (values) => {
     setLoading(true)
@@ -253,7 +318,21 @@ const DailyLogs = ({ patient }) => {
       ref={containerRef}
     >
       <div className="logs-list">
-        {sortedLogs.map(renderLogItem)}
+        {groupedLogs.map((dateGroup) => (
+          <div key={dateGroup.date} className="date-group">
+            <div className="date-group-header">
+              <Text strong className="date-group-title">
+                {dateGroup.label}
+              </Text>
+              <Tag size="small" color="blue">
+                {dateGroup.logs.length} {dateGroup.logs.length === 1 ? 'entry' : 'entries'}
+              </Tag>
+            </div>
+            <div className="date-group-logs">
+              {dateGroup.logs.map(renderLogItem)}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   )
@@ -524,10 +603,49 @@ const DailyLogs = ({ patient }) => {
                   }
                 ]}
               />
+            </Space>
+          </div>
+          
+          <Row gutter={[16, 8]}>
+            <Col xs={24} sm={8} md={6}>
+              <Select
+                value={selectedDateFilter}
+                onChange={(value) => {
+                  setSelectedDateFilter(value)
+                  if (value !== 'custom') {
+                    setCustomDateRange([null, null])
+                  }
+                }}
+                style={{ width: '100%' }}
+                size="small"
+                placeholder="Select date range"
+              >
+                <Option value="all">All Dates</Option>
+                <Option value="today">Today</Option>
+                <Option value="yesterday">Yesterday</Option>
+                <Option value="last7days">Last 7 Days</Option>
+                <Option value="thisweek">This Week</Option>
+                <Option value="custom">Custom Range</Option>
+              </Select>
+            </Col>
+            
+            {selectedDateFilter === 'custom' && (
+              <Col xs={24} sm={12} md={8}>
+                <RangePicker
+                  value={customDateRange}
+                  onChange={setCustomDateRange}
+                  style={{ width: '100%' }}
+                  size="small"
+                  placeholder={['Start Date', 'End Date']}
+                />
+              </Col>
+            )}
+            
+            <Col xs={24} sm={8} md={6}>
               <Select
                 value={selectedType}
                 onChange={setSelectedType}
-                style={{ width: 120 }}
+                style={{ width: '100%' }}
                 size="small"
               >
                 <Option value="all">All Types</Option>
@@ -537,11 +655,13 @@ const DailyLogs = ({ patient }) => {
                   </Option>
                 ))}
               </Select>
-              
+            </Col>
+            
+            <Col xs={24} sm={8} md={6}>
               <Select
                 value={selectedSeverity}
                 onChange={setSelectedSeverity}
-                style={{ width: 120 }}
+                style={{ width: '100%' }}
                 size="small"
               >
                 <Option value="all">All Severity</Option>
@@ -551,8 +671,8 @@ const DailyLogs = ({ patient }) => {
                   </Option>
                 ))}
               </Select>
-            </Space>
-          </div>
+            </Col>
+          </Row>
         </div>
 
         {/* Main Content */}
@@ -561,7 +681,19 @@ const DailyLogs = ({ patient }) => {
             <div className="group-title">
               <Space>
                 <FileTextOutlined />
-                <span>Daily Logs ({filteredLogs.length})</span>
+                <span>
+                  Daily Logs ({dateFilteredLogs.length})
+                  {selectedDateFilter !== 'all' && (
+                    <Text type="secondary" style={{ fontWeight: 'normal', fontSize: '14px' }}>
+                      {selectedDateFilter === 'today' && ' • Today'}
+                      {selectedDateFilter === 'yesterday' && ' • Yesterday'}
+                      {selectedDateFilter === 'last7days' && ' • Last 7 Days'}
+                      {selectedDateFilter === 'thisweek' && ' • This Week'}
+                      {selectedDateFilter === 'custom' && customDateRange[0] && customDateRange[1] && 
+                        ` • ${customDateRange[0].format('MMM D')} - ${customDateRange[1].format('MMM D')}`}
+                    </Text>
+                  )}
+                </span>
               </Space>
             </div>
             <Button 
@@ -574,7 +706,7 @@ const DailyLogs = ({ patient }) => {
             </Button>
           </div>
 
-          {filteredLogs.length > 0 ? (
+          {dateFilteredLogs.length > 0 ? (
             <div className="logs-content">
               {viewMode === 'timeline' ? (
                 renderTimelineView()
@@ -586,9 +718,17 @@ const DailyLogs = ({ patient }) => {
             <Empty
               image={<FileTextOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
               description={
-                selectedType === 'all' && selectedSeverity === 'all'
+                selectedType === 'all' && selectedSeverity === 'all' && selectedDateFilter === 'all'
                   ? "No log entries yet"
-                  : "No entries match the selected filters"
+                  : `No entries match the selected filters${
+                      selectedDateFilter === 'today' ? ' for today' :
+                      selectedDateFilter === 'yesterday' ? ' for yesterday' :
+                      selectedDateFilter === 'last7days' ? ' for the last 7 days' :
+                      selectedDateFilter === 'thisweek' ? ' for this week' :
+                      selectedDateFilter === 'custom' && customDateRange[0] && customDateRange[1] ? 
+                        ` for ${customDateRange[0].format('MMM D')} - ${customDateRange[1].format('MMM D')}` :
+                      ''
+                    }`
               }
               style={{ padding: '40px 0' }}
             >
