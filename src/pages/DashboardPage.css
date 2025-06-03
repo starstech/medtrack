@@ -1,7 +1,7 @@
 /* Dashboard Page Styles - Mobile First */
 
 .dashboard-page {
-    padding: 0;
+    padding: 0 16px;
     animation: fadeIn 0.3s ease-in-out;
     width: 100%;
     max-width: 100%;
