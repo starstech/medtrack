@@ -233,9 +233,6 @@ const PatientDetails = ({ patient }) => {
               <Avatar size="small" icon={<UserOutlined />} />
               <div className="caregiver-info">
                 <Text strong>{caregiver.name}</Text>
-                <Text type="secondary" size="small">
-                  {caregiver.role} caregiver
-                </Text>
               </div>
               {caregiver.email && (
                 <div className="caregiver-contact">
@@ -243,8 +240,15 @@ const PatientDetails = ({ patient }) => {
                   <Text size="small">{caregiver.email}</Text>
                 </div>
               )}
-              <Tag 
-                color={caregiver.role === 'primary' ? 'green' : 'blue'}
+              <Tag                 
+                color={
+                  caregiver.role === "primary" ? 'green' :
+                  caregiver.role === "secondary" ? 'blue' :
+                  caregiver.role === "family" ? 'yellow' :
+                  caregiver.role === "medical" ? 'red' :
+                  caregiver.role === "nurse" ? 'orange' :
+                  'purple'
+                }
                 size="small"
               >
                 {caregiver.role}

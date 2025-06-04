@@ -44,6 +44,7 @@ export const PatientDropdown = () => {
           placeholder="Select a patient"
           size="large"
           className="patient-dropdown"
+          style={{ minWidth: '280px' }}
           allowClear
           showSearch
           filterOption={(input, option) =>

@@ -4,6 +4,12 @@
 
 .patient-selector .ant-select {
   transition: all 0.3s ease;
+  min-width: 280px;
+}
+
+/* Specific styling for the patient dropdown */
+.patient-dropdown {
+  min-width: 280px !important;
 }
 
 .patient-selector .ant-select:not(.ant-select-open) {
