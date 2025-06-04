@@ -140,6 +140,9 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
     try {
       const measurements = []
       
+      // Prepare shared attachment data
+      const attachments = values.devicePhoto || []
+      
       // Temperature
       if (values.temperature) {
         measurements.push({
@@ -147,7 +150,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
           value: values.temperature,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.temperatureNotes || values.generalNotes
+          notes: values.temperatureNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -159,7 +163,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
             value: values.systolic,
             recordedAt: values.recordedAt.toISOString(),
             recordedBy: values.recordedBy,
-            notes: values.bloodPressureNotes || values.generalNotes
+            notes: values.bloodPressureNotes || values.generalNotes,
+            attachments
           })
         }
         if (values.diastolic) {
@@ -168,7 +173,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
             value: values.diastolic,
             recordedAt: values.recordedAt.toISOString(),
             recordedBy: values.recordedBy,
-            notes: values.bloodPressureNotes || values.generalNotes
+            notes: values.bloodPressureNotes || values.generalNotes,
+            attachments
           })
         }
       }
@@ -180,7 +186,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
           value: values.heartRate,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.heartRateNotes || values.generalNotes
+          notes: values.heartRateNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -191,7 +198,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
           value: values.respiratoryRate,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.respiratoryNotes || values.generalNotes
+          notes: values.respiratoryNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -202,7 +210,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
           value: values.oxygenSaturation,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.oxygenNotes || values.generalNotes
+          notes: values.oxygenNotes || values.generalNotes,
+          attachments
         })
       }
 

@@ -170,6 +170,9 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
     try {
       const measurements = []
       
+      // Prepare shared attachment data
+      const attachments = values.labResultsPhoto || []
+      
       // Blood Glucose
       if (values.bloodGlucose) {
         measurements.push({
@@ -177,7 +180,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.bloodGlucose,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.glucoseNotes || values.generalNotes
+          notes: values.glucoseNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -188,7 +192,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.totalCholesterol,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cholesterolNotes || values.generalNotes
+          notes: values.cholesterolNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -198,7 +203,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.ldlCholesterol,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cholesterolNotes || values.generalNotes
+          notes: values.cholesterolNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -208,7 +214,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.hdlCholesterol,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cholesterolNotes || values.generalNotes
+          notes: values.cholesterolNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -218,7 +225,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.triglycerides,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cholesterolNotes || values.generalNotes
+          notes: values.cholesterolNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -229,7 +237,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.hemoglobin,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cbcNotes || values.generalNotes
+          notes: values.cbcNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -239,7 +248,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.hematocrit,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cbcNotes || values.generalNotes
+          notes: values.cbcNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -249,7 +259,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.wbcCount,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cbcNotes || values.generalNotes
+          notes: values.cbcNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -259,7 +270,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.rbcCount,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cbcNotes || values.generalNotes
+          notes: values.cbcNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -269,7 +281,8 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
           value: values.plateletCount,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.cbcNotes || values.generalNotes
+          notes: values.cbcNotes || values.generalNotes,
+          attachments
         })
       }
 

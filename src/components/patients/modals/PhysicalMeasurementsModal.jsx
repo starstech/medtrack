@@ -125,6 +125,9 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
     try {
       const measurements = []
       
+      // Prepare shared attachment data
+      const attachments = values.devicePhoto || []
+      
       // Height
       if (values.height) {
         measurements.push({
@@ -132,7 +135,8 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
           value: values.height,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.heightNotes || values.generalNotes
+          notes: values.heightNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -143,7 +147,8 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
           value: values.weight,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.weightNotes || values.generalNotes
+          notes: values.weightNotes || values.generalNotes,
+          attachments
         })
       }
 

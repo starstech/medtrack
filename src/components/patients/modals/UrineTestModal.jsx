@@ -115,6 +115,9 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
     try {
       const measurements = []
       
+      // Prepare shared attachment data
+      const attachments = values.dipstickPhoto || []
+      
       // Urine Protein
       if (values.urineProtein !== undefined && values.urineProtein !== null) {
         measurements.push({
@@ -122,7 +125,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineProtein,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.proteinNotes || values.generalNotes
+          notes: values.proteinNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -133,7 +137,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineGlucose,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.glucoseNotes || values.generalNotes
+          notes: values.glucoseNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -144,7 +149,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineKetones,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.ketonesNotes || values.generalNotes
+          notes: values.ketonesNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -155,7 +161,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineSpecificGravity,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.specificGravityNotes || values.generalNotes
+          notes: values.specificGravityNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -166,7 +173,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urinePH,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.phNotes || values.generalNotes
+          notes: values.phNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -177,7 +185,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineBlood,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.bloodNotes || values.generalNotes
+          notes: values.bloodNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -188,7 +197,8 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
           value: values.urineLeukocytes,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.leukocytesNotes || values.generalNotes
+          notes: values.leukocytesNotes || values.generalNotes,
+          attachments
         })
       }
 

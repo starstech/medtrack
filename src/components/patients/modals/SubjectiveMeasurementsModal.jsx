@@ -52,6 +52,9 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
     try {
       const measurements = []
       
+      // Prepare shared attachment data
+      const attachments = values.assessmentPhoto || []
+      
       // Pain Level
       if (values.painLevel !== undefined && values.painLevel !== null) {
         measurements.push({
@@ -59,7 +62,8 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
           value: values.painLevel,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.painNotes || values.generalNotes
+          notes: values.painNotes || values.generalNotes,
+          attachments
         })
       }
 
@@ -70,7 +74,8 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
           value: values.moodRating,
           recordedAt: values.recordedAt.toISOString(),
           recordedBy: values.recordedBy,
-          notes: values.moodNotes || values.generalNotes
+          notes: values.moodNotes || values.generalNotes,
+          attachments
         })
       }
 
