@@ -18,7 +18,10 @@ import {
   Statistic,
   Avatar,
   Dropdown,
-  Pagination
+  Pagination,
+  Switch,
+  Slider,
+  Divider
 } from 'antd'
 import { 
   ExperimentOutlined,
@@ -42,10 +45,19 @@ import {
   CloudOutlined,
   GoldOutlined,
   AlertOutlined,
-  BulbOutlined
+  BulbOutlined,
+  PieChartOutlined,
+  BarChartOutlined,
+  AreaChartOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { MEASUREMENT_TYPES } from '../../utils/mockData'
+import VitalSignsModal from './modals/VitalSignsModal'
+import BloodTestModal from './modals/BloodTestModal'
+import PhysicalMeasurementsModal from './modals/PhysicalMeasurementsModal'
+import SubjectiveMeasurementsModal from './modals/SubjectiveMeasurementsModal'
+import UrineTestModal from './modals/UrineTestModal'
+import TrendsModal from './modals/TrendsModal'
 import dayjs from 'dayjs'
 import './MeasurementSection.css'
 
@@ -53,11 +65,151 @@ const { Title, Text } = Typography
 const { Option } = Select
 const { TextArea } = Input
 
+// Measurement Categories - Organized by sample/test type
+const MEASUREMENT_CATEGORIES = [
+  {
+    key: 'blood',
+    title: 'Blood Tests',
+    description: 'Blood sampling and laboratory analysis',
+    icon: <DropboxOutlined style={{ color: '#ff4d4f', fontSize: 24 }} />,
+    color: '#ff4d4f',
+    subcategories: [
+      {
+        key: 'blood_glucose',
+        title: 'Glucose & Diabetes',
+        description: 'Blood glucose monitoring and diabetes markers',
+        types: ['blood_glucose'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_lipid',
+        title: 'Lipid Panel',
+        description: 'Cholesterol and triglycerides analysis',
+        types: ['cholesterol_total', 'cholesterol_ldl', 'cholesterol_hdl', 'triglycerides'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_cbc',
+        title: 'Complete Blood Count',
+        description: 'Blood cells, hemoglobin, and hematocrit',
+        types: ['hemoglobin', 'hematocrit', 'white_blood_cell_count', 'red_blood_cell_count', 'platelet_count'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_kidney',
+        title: 'Kidney Function',
+        description: 'Creatinine and BUN tests',
+        types: ['creatinine', 'blood_urea_nitrogen'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_thyroid',
+        title: 'Thyroid Function',
+        description: 'TSH, T3, and T4 hormone levels',
+        types: ['thyroid_tsh', 'thyroid_t3', 'thyroid_t4'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_vitamins',
+        title: 'Vitamins & Minerals',
+        description: 'Vitamin D, B12, iron, calcium levels',
+        types: ['vitamin_d', 'vitamin_b12', 'iron', 'calcium'],
+        modalComponent: 'BloodTestModal'
+      },
+      {
+        key: 'blood_electrolytes',
+        title: 'Electrolytes',
+        description: 'Sodium, potassium, chloride balance',
+        types: ['potassium', 'sodium', 'chloride'],
+        modalComponent: 'BloodTestModal'
+      }
+    ]
+  },
+  {
+    key: 'urine',
+    title: 'Urine Tests',
+    description: 'Urine analysis and dipstick tests',
+    icon: <ExperimentOutlined style={{ color: '#fa8c16', fontSize: 24 }} />,
+    color: '#fa8c16',
+    subcategories: [
+      {
+        key: 'urine_dipstick',
+        title: 'Dipstick Analysis',
+        description: 'Protein, glucose, ketones, pH, blood, leukocytes',
+        types: ['urine_protein', 'urine_glucose', 'urine_ketones', 'urine_specific_gravity', 'urine_ph', 'urine_blood', 'urine_leukocytes'],
+        modalComponent: 'UrineTestModal'
+      }
+    ]
+  },
+  {
+    key: 'vital_signs',
+    title: 'Vital Signs',
+    description: 'Essential physiological measurements',
+    icon: <HeartOutlined style={{ color: '#52c41a', fontSize: 24 }} />,
+    color: '#52c41a',
+    subcategories: [
+      {
+        key: 'cardiovascular',
+        title: 'Cardiovascular',
+        description: 'Heart rate and blood pressure',
+        types: ['heart_rate', 'blood_pressure_systolic', 'blood_pressure_diastolic'],
+        modalComponent: 'VitalSignsModal'
+      },
+      {
+        key: 'respiratory',
+        title: 'Respiratory',
+        description: 'Breathing rate, oxygen saturation, peak flow',
+        types: ['respiratory_rate', 'oxygen_saturation', 'peak_flow'],
+        modalComponent: 'VitalSignsModal'
+      }
+    ]
+  },
+  {
+    key: 'temperature',
+    title: 'Temperature',
+    description: 'Body temperature monitoring',
+    icon: <ThunderboltOutlined style={{ color: '#722ed1', fontSize: 24 }} />,
+    color: '#722ed1',
+    direct: true, // No subcategories - opens modal directly
+    types: ['temperature'],
+    modalComponent: 'VitalSignsModal'
+  },
+  {
+    key: 'physical',
+    title: 'Physical Measurements',
+    description: 'Height, weight, and body composition',
+    icon: <DashboardOutlined style={{ color: '#1890ff', fontSize: 24 }} />,
+    color: '#1890ff',
+    direct: true,
+    types: ['weight', 'height'],
+    modalComponent: 'PhysicalMeasurementsModal'
+  },
+  {
+    key: 'subjective',
+    title: 'Subjective Assessments',
+    description: 'Patient-reported pain and mood ratings',
+    icon: <BulbOutlined style={{ color: '#13c2c2', fontSize: 24 }} />,
+    color: '#13c2c2',
+    direct: true,
+    types: ['pain_level', 'mood_rating'],
+    modalComponent: 'SubjectiveMeasurementsModal'
+  }
+]
+
 const MeasurementSection = ({ patient }) => {
-  const { getPatientMeasurements, addMeasurement } = usePatients()
-  const [addModalVisible, setAddModalVisible] = useState(false)
+  const { getPatientMeasurements, addMeasurement, deleteMeasurement } = usePatients()
+  const [typeSelectionVisible, setTypeSelectionVisible] = useState(false)
+  const [subcategorySelectionVisible, setSubcategorySelectionVisible] = useState(false)
+  const [selectedCategory, setSelectedCategory] = useState(null)
+  const [modalVisibility, setModalVisibility] = useState({
+    vital_signs: false,
+    blood_tests: false,
+    physical: false,
+    subjective: false,
+    urine_tests: false,
+    trends: false
+  })
   const [selectedType, setSelectedType] = useState('all')
-  const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [isScrollable, setIsScrollable] = useState(false)
   const containerRef = useRef(null)
@@ -92,30 +244,6 @@ const MeasurementSection = ({ patient }) => {
     }
   }, [sortedMeasurements])
 
-  const handleAddMeasurement = async (values) => {
-    setLoading(true)
-    
-    try {
-      const measurementData = {
-        ...values,
-        recordedAt: values.recordedAt.toISOString(),
-        recordedBy: 'Current User' // TODO: Get from auth context
-      }
-
-      await addMeasurement(patient.id, measurementData)
-      
-      message.success('Measurement recorded successfully!')
-      setAddModalVisible(false)
-      form.resetFields()
-      
-    } catch (error) {
-      message.error('Failed to record measurement. Please try again.')
-      console.error('Error adding measurement:', error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const handleDeleteMeasurement = (measurementId) => {
     Modal.confirm({
       title: 'Delete Measurement',
@@ -123,11 +251,74 @@ const MeasurementSection = ({ patient }) => {
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: () => {
-        // TODO: Implement delete functionality
-        message.success('Measurement deleted successfully!')
+      onOk: async () => {
+        try {
+          await deleteMeasurement(measurementId)
+          message.success('Measurement deleted successfully!')
+        } catch (error) {
+          message.error('Failed to delete measurement. Please try again.')
+          console.error('Error deleting measurement:', error)
+        }
       }
     })
+  }
+
+  const openModal = (categoryOrSubcategory) => {
+    setTypeSelectionVisible(false)
+    setSubcategorySelectionVisible(false)
+    
+    // Handle direct modal opening (for categories with direct: true)
+    if (typeof categoryOrSubcategory === 'string') {
+      const modalKey = categoryOrSubcategory === 'urine_dipstick' ? 'urine_tests' : categoryOrSubcategory
+      setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
+      return
+    }
+    
+    // Handle subcategory object
+    if (categoryOrSubcategory.modalComponent) {
+      const modalMap = {
+        'VitalSignsModal': 'vital_signs',
+        'BloodTestModal': 'blood_tests', 
+        'PhysicalMeasurementsModal': 'physical',
+        'SubjectiveMeasurementsModal': 'subjective',
+        'UrineTestModal': 'urine_tests'
+      }
+      const modalKey = modalMap[categoryOrSubcategory.modalComponent]
+      if (modalKey) {
+        setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
+      }
+    }
+  }
+
+  const closeModal = (category) => {
+    setModalVisibility(prev => ({ ...prev, [category]: false }))
+  }
+
+  const handleCategoryClick = (category) => {
+    if (category.direct) {
+      // Direct modal opening for categories like Temperature, Physical, Subjective
+      const modalMap = {
+        'VitalSignsModal': 'vital_signs',
+        'BloodTestModal': 'blood_tests',
+        'PhysicalMeasurementsModal': 'physical', 
+        'SubjectiveMeasurementsModal': 'subjective',
+        'UrineTestModal': 'urine_tests'
+      }
+      const modalKey = modalMap[category.modalComponent]
+      if (modalKey) {
+        setTypeSelectionVisible(false)
+        setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
+      }
+    } else {
+      // Show subcategory selection for categories with subcategories
+      setSelectedCategory(category)
+      setTypeSelectionVisible(false)
+      setSubcategorySelectionVisible(true)
+    }
+  }
+
+  const handleTrendsClick = () => {
+    setModalVisibility(prev => ({ ...prev, trends: true }))
   }
 
   const getMeasurementTypeIcon = (type) => {
@@ -150,27 +341,7 @@ const MeasurementSection = ({ patient }) => {
       'white_blood_cell_count': <ExperimentOutlined style={{ color: '#fadb14' }} />,
       'red_blood_cell_count': <HeartOutlined style={{ color: '#ff7875' }} />,
       'platelet_count': <ExperimentOutlined style={{ color: '#ff9c6e' }} />,
-      'urine_protein': <DropboxOutlined style={{ color: '#40a9ff' }} />,
-      'urine_glucose': <DropboxOutlined style={{ color: '#73d13d' }} />,
-      'urine_ketones': <DropboxOutlined style={{ color: '#b37feb' }} />,
-      'urine_specific_gravity': <DropboxOutlined style={{ color: '#36cfc9' }} />,
-      'urine_ph': <ExperimentOutlined style={{ color: '#ffc53d' }} />,
-      'urine_blood': <DropboxOutlined style={{ color: '#ff4d4f' }} />,
-      'urine_leukocytes': <DropboxOutlined style={{ color: '#fadb14' }} />,
-      'creatinine': <MedicineBoxOutlined style={{ color: '#722ed1' }} />,
-      'blood_urea_nitrogen': <MedicineBoxOutlined style={{ color: '#597ef7' }} />,
-      'thyroid_tsh': <BulbOutlined style={{ color: '#fa8c16' }} />,
-      'thyroid_t3': <BulbOutlined style={{ color: '#faad14' }} />,
-      'thyroid_t4': <BulbOutlined style={{ color: '#ffc53d' }} />,
-      'vitamin_d': <GoldOutlined style={{ color: '#fadb14' }} />,
-      'vitamin_b12': <GoldOutlined style={{ color: '#f759ab' }} />,
-      'iron': <GoldOutlined style={{ color: '#8c8c8c' }} />,
-      'calcium': <GoldOutlined style={{ color: '#d9d9d9' }} />,
-      'potassium': <CloudOutlined style={{ color: '#40a9ff' }} />,
-      'sodium': <CloudOutlined style={{ color: '#36cfc9' }} />,
-      'chloride': <CloudOutlined style={{ color: '#52c41a' }} />,
       'respiratory_rate': <EyeOutlined style={{ color: '#73d13d' }} />,
-      'peak_flow': <EyeOutlined style={{ color: '#40a9ff' }} />,
       'pain_level': <AlertOutlined style={{ color: '#ff4d4f' }} />,
       'mood_rating': <BulbOutlined style={{ color: '#722ed1' }} />
     }
@@ -181,206 +352,141 @@ const MeasurementSection = ({ patient }) => {
   const getMeasurementStatus = (type, value) => {
     // Define normal ranges for common measurements based on medical standards
     const normalRanges = {
+      // Vital Signs
       'blood_pressure_systolic': { min: 90, max: 120, unit: 'mmHg', label: 'Systolic BP' },
       'blood_pressure_diastolic': { min: 60, max: 80, unit: 'mmHg', label: 'Diastolic BP' },
-      'blood_pressure': { min: null, max: null, unit: 'mmHg', label: 'Blood Pressure', status: 'Measured' },
       'heart_rate': { min: 60, max: 100, unit: 'bpm', label: 'Heart Rate' },
       'temperature': { min: 36.1, max: 37.2, unit: '°C', label: 'Temperature' },
+      'respiratory_rate': { min: 12, max: 20, unit: '/min', label: 'Respiratory Rate' },
+      'oxygen_saturation': { min: 95, max: 100, unit: '%', label: 'O2 Saturation' },
+      'peak_flow': { min: null, max: null, unit: 'L/min', label: 'Peak Flow', status: 'Measured' },
+      
+      // Physical Measurements
       'weight': { min: null, max: null, unit: 'kg', label: 'Weight', status: 'Measured' },
       'height': { min: null, max: null, unit: 'cm', label: 'Height', status: 'Measured' },
+      
+      // Blood Tests - Glucose & Diabetes
       'blood_glucose': { min: 70, max: 100, unit: 'mg/dL', label: 'Blood Glucose' },
-      'oxygen_saturation': { min: 95, max: 100, unit: '%', label: 'O2 Saturation' },
+      
+      // Blood Tests - Lipid Panel
       'cholesterol_total': { min: 0, max: 200, unit: 'mg/dL', label: 'Total Cholesterol' },
       'cholesterol_ldl': { min: 0, max: 100, unit: 'mg/dL', label: 'LDL Cholesterol' },
       'cholesterol_hdl': { min: 40, max: null, unit: 'mg/dL', label: 'HDL Cholesterol' },
       'triglycerides': { min: 0, max: 150, unit: 'mg/dL', label: 'Triglycerides' },
+      
+      // Blood Tests - Complete Blood Count
       'hemoglobin': { min: 12.0, max: 16.0, unit: 'g/dL', label: 'Hemoglobin' },
       'hematocrit': { min: 36, max: 47, unit: '%', label: 'Hematocrit' },
       'white_blood_cell_count': { min: 4500, max: 11000, unit: '/μL', label: 'WBC Count' },
       'red_blood_cell_count': { min: 3.5, max: 5.9, unit: 'million/μL', label: 'RBC Count' },
-      'platelet_count': { min: 150000, max: 400000, unit: '/μL', label: 'Platelet Count' },
-      'urine_protein': { min: 0, max: 150, unit: 'mg/24h', label: 'Urine Protein' },
-      'urine_glucose': { min: 0, max: 0, unit: 'mg/dL', label: 'Urine Glucose' },
-      'urine_ketones': { min: 0, max: 0, unit: 'mg/dL', label: 'Urine Ketones' },
-      'urine_specific_gravity': { min: 1.005, max: 1.025, unit: '', label: 'Specific Gravity' },
-      'urine_ph': { min: 4.5, max: 8.0, unit: '', label: 'Urine pH' },
-      'urine_blood': { min: 0, max: 3, unit: 'RBC/hpf', label: 'Urine Blood' },
-      'urine_leukocytes': { min: 0, max: 5, unit: 'WBC/hpf', label: 'Urine Leukocytes' },
+      'platelet_count': { min: 150000, max: 450000, unit: '/μL', label: 'Platelet Count' },
+      
+      // Urine Tests
+      'urine_protein': { min: null, max: null, unit: 'mg/dL', label: 'Urine Protein', status: 'Tested' },
+      'urine_glucose': { min: null, max: null, unit: 'mg/dL', label: 'Urine Glucose', status: 'Tested' },
+      'urine_ketones': { min: null, max: null, unit: 'mg/dL', label: 'Urine Ketones', status: 'Tested' },
+      'urine_specific_gravity': { min: 1.003, max: 1.030, unit: '', label: 'Urine Specific Gravity' },
+      'urine_ph': { min: 5.0, max: 8.0, unit: '', label: 'Urine pH' },
+      'urine_blood': { min: null, max: null, unit: 'RBC/hpf', label: 'Urine Blood', status: 'Tested' },
+      'urine_leukocytes': { min: null, max: null, unit: 'WBC/hpf', label: 'Urine Leukocytes', status: 'Tested' },
+      
+      // Kidney Function
       'creatinine': { min: 0.6, max: 1.2, unit: 'mg/dL', label: 'Creatinine' },
-      'blood_urea_nitrogen': { min: 8, max: 21, unit: 'mg/dL', label: 'BUN' },
+      'blood_urea_nitrogen': { min: 7, max: 20, unit: 'mg/dL', label: 'BUN' },
+      
+      // Thyroid Function
       'thyroid_tsh': { min: 0.4, max: 4.0, unit: 'mIU/L', label: 'TSH' },
-      'thyroid_t3': { min: 100, max: 200, unit: 'ng/dL', label: 'T3' },
+      'thyroid_t3': { min: 80, max: 200, unit: 'ng/dL', label: 'T3' },
       'thyroid_t4': { min: 5.0, max: 12.0, unit: 'μg/dL', label: 'T4' },
-      'vitamin_d': { min: 20, max: 50, unit: 'ng/mL', label: 'Vitamin D' },
-      'vitamin_b12': { min: 200, max: 800, unit: 'pg/mL', label: 'Vitamin B12' },
-      'iron': { min: 50, max: 175, unit: 'μg/dL', label: 'Iron' },
-      'calcium': { min: 8.4, max: 10.2, unit: 'mg/dL', label: 'Calcium' },
+      
+      // Vitamins & Minerals
+      'vitamin_d': { min: 30, max: 100, unit: 'ng/mL', label: 'Vitamin D' },
+      'vitamin_b12': { min: 300, max: 900, unit: 'pg/mL', label: 'Vitamin B12' },
+      'iron': { min: 60, max: 170, unit: 'μg/dL', label: 'Iron' },
+      'calcium': { min: 8.5, max: 10.5, unit: 'mg/dL', label: 'Calcium' },
+      
+      // Electrolytes
       'potassium': { min: 3.5, max: 5.0, unit: 'mEq/L', label: 'Potassium' },
       'sodium': { min: 136, max: 145, unit: 'mEq/L', label: 'Sodium' },
-      'chloride': { min: 95, max: 105, unit: 'mEq/L', label: 'Chloride' },
-      'respiratory_rate': { min: 12, max: 20, unit: '/min', label: 'Respiratory Rate' },
-      'peak_flow': { min: null, max: null, unit: 'L/min', label: 'Peak Flow', status: 'Measured' },
+      'chloride': { min: 98, max: 107, unit: 'mEq/L', label: 'Chloride' },
+      
+      // Subjective Measurements
       'pain_level': { min: 0, max: 3, unit: '/10', label: 'Pain Level' },
-      'mood_rating': { min: 6, max: 10, unit: '/10', label: 'Mood Rating' }
+      'mood_rating': { min: 7, max: 10, unit: '/10', label: 'Mood Rating' }
     }
 
     const range = normalRanges[type]
-    if (!range) {
-      return { color: 'blue', text: 'Logged', level: 'normal' }
-    }
+    if (!range) return { color: 'blue', text: 'Measured', level: 'normal' }
 
-    // For measurements without defined ranges, return their custom status
-    if (range.min === null || range.max === null) {
-      return { color: 'blue', text: range.status || 'Logged', level: 'normal' }
-    }
-
-    // Special handling for urine protein results
-    if (type === 'urine_protein') {
-      const val = value.toString().toLowerCase()
-      // Handle standard protein dipstick results
-      if (val === 'negative' || val === 'normal' || val === '0' || val === '-') {
-        return { color: 'green', text: 'Normal', level: 'normal' }
-      } else if (val === 'trace' || val.includes('trace')) {
-        return { color: 'green', text: 'Trace', level: 'normal' }
-      } else if (val === '1+' || val === '+1' || val.includes('1+')) {
-        return { color: 'orange', text: '1+ Mild', level: 'mild' }
-      } else if (val === '2+' || val === '+2' || val.includes('2+')) {
-        return { color: 'orange', text: '2+ Moderate', level: 'mild' }
-      } else if (val === '3+' || val === '+3' || val.includes('3+')) {
-        return { color: 'red', text: '3+ High', level: 'severe' }
-      } else if (val === '4+' || val === '+4' || val.includes('4+')) {
-        return { color: 'red', text: '4+ Very High', level: 'severe' }
-      } else {
-        return { color: 'blue', text: 'Tested', level: 'normal' }
-      }
-    }
-
-    // Special handling for blood pressure (combined systolic/diastolic)
-    if (type === 'blood_pressure') {
-      const bpMatch = value.toString().match(/(\d+)\/(\d+)/)
-      if (bpMatch) {
-        const systolic = parseInt(bpMatch[1])
-        const diastolic = parseInt(bpMatch[2])
-        
-        // Evaluate based on both values
-        if (systolic >= 140 || diastolic >= 90) {
-          return { color: 'red', text: 'High', level: 'severe' }
-        } else if (systolic >= 130 || diastolic >= 80) {
-          return { color: 'orange', text: 'Elevated', level: 'mild' }
-        } else if (systolic >= 90 && diastolic >= 60) {
-          return { color: 'green', text: 'Normal', level: 'normal' }
-        } else {
-          return { color: 'orange', text: 'Low', level: 'mild' }
-        }
-      } else {
-        return { color: 'blue', text: 'Measured', level: 'normal' }
-      }
-    }
+    if (range.status) return { color: 'blue', text: range.status, level: 'normal' }
 
     const numValue = parseFloat(value)
-    if (isNaN(numValue)) {
-      return { color: 'default', text: 'Invalid', level: 'unknown' }
-    }
-
-    // Special handling for HDL cholesterol (higher is better)
-    if (type === 'cholesterol_hdl') {
-      if (numValue < range.min) {
-        return { color: 'red', text: 'Low Risk', level: 'severe' }
-      } else if (numValue >= 60) {
-        return { color: 'green', text: 'Protective', level: 'normal' }
-      } else {
-        return { color: 'orange', text: 'Acceptable', level: 'mild' }
+    
+    // Handle non-numeric values (common for urine tests)
+    if (isNaN(numValue) && typeof value === 'string') {
+      const lowerValue = value.toLowerCase()
+      if (lowerValue.includes('negative') || lowerValue === 'normal') {
+        return { color: 'green', text: 'Normal', level: 'normal' }
       }
-    }
-
-    // Special handling for subjective scales (pain, mood)
-    if (type === 'pain_level') {
-      if (numValue === 0) {
-        return { color: 'green', text: 'No Pain', level: 'normal' }
-      } else if (numValue <= 3) {
-        return { color: 'green', text: 'Mild', level: 'normal' }
-      } else if (numValue <= 6) {
-        return { color: 'orange', text: 'Moderate', level: 'mild' }
-      } else {
-        return { color: 'red', text: 'Severe', level: 'severe' }
+      if (lowerValue.includes('+') || lowerValue.includes('positive')) {
+        return { color: 'orange', text: 'Positive', level: 'mild' }
       }
+      return { color: 'blue', text: 'Recorded', level: 'normal' }
     }
-
-    if (type === 'mood_rating') {
-      if (numValue >= 8) {
+    
+    if (range.min !== null && numValue < range.min) {
+      if (type === 'pain_level' || type === 'mood_rating') {
+        return type === 'pain_level' 
+          ? { color: 'green', text: 'Low Pain', level: 'normal' }
+          : { color: 'orange', text: 'Low Mood', level: 'mild' }
+      }
+      return { color: 'orange', text: 'Below Normal', level: 'mild' }
+    }
+    
+    if (range.max !== null && numValue > range.max) {
+      if (type === 'mood_rating') {
         return { color: 'green', text: 'Excellent', level: 'normal' }
-      } else if (numValue >= 6) {
-        return { color: 'green', text: 'Good', level: 'normal' }
-      } else if (numValue >= 4) {
-        return { color: 'orange', text: 'Fair', level: 'mild' }
-      } else {
-        return { color: 'red', text: 'Poor', level: 'severe' }
       }
+      if (type === 'pain_level') {
+        if (numValue >= 7) return { color: 'red', text: 'Severe Pain', level: 'severe' }
+        if (numValue >= 4) return { color: 'orange', text: 'Moderate Pain', level: 'mild' }
+      }
+      return { color: 'red', text: 'Above Normal', level: 'severe' }
     }
 
-    // Standard range evaluation
-    if (numValue < range.min) {
-      if (numValue < range.min * 0.8) {
-        return { 
-          color: 'red', 
-          text: 'Very Low', 
-          level: 'severe' 
-        }
-      } else {
-        return { 
-          color: 'orange', 
-          text: 'Low', 
-          level: 'mild' 
-        }
-      }
-    } else if (numValue > range.max) {
-      if (numValue > range.max * 1.2) {
-        return { 
-          color: 'red', 
-          text: 'Very High', 
-          level: 'severe' 
-        }
-      } else {
-        return { 
-          color: 'orange', 
-          text: 'High', 
-          level: 'mild' 
-        }
-      }
-    } else {
-      return { color: 'green', text: 'Normal', level: 'normal' }
+    if (type === 'pain_level') {
+      return { color: 'orange', text: 'Mild Pain', level: 'mild' }
     }
+    
+    return { color: 'green', text: 'Normal', level: 'normal' }
   }
 
   const getMeasurementTypeInfo = (type) => {
-    return MEASUREMENT_TYPES.find(t => t.value === type) || 
-           { label: type.replace('_', ' '), unit: '' }
+    const typeData = MEASUREMENT_TYPES.find(t => t.value === type)
+    return typeData || { label: type, unit: '' }
   }
 
   const getMeasurementTrend = (type, currentValue) => {
     const typeMeasurements = measurements
       .filter(m => m.type === type)
-      .sort((a, b) => new Date(b.recordedAt) - new Date(a.recordedAt))
+      .sort((a, b) => new Date(a.recordedAt) - new Date(b.recordedAt))
     
     if (typeMeasurements.length < 2) return null
     
-    const previous = typeMeasurements[1]
-    const current = typeMeasurements[0]
+    const previousValue = parseFloat(typeMeasurements[typeMeasurements.length - 2].value)
+    const current = parseFloat(currentValue)
     
-    if (typeof currentValue === 'string') return null
+    if (isNaN(previousValue) || isNaN(current)) return null
     
-    const prevValue = parseFloat(previous.value)
-    const currValue = parseFloat(currentValue)
+    const percentChange = ((current - previousValue) / previousValue * 100).toFixed(1)
     
-    if (isNaN(prevValue) || isNaN(currValue)) return null
-    
-    const change = currValue - prevValue
-    const percentChange = Math.abs((change / prevValue) * 100)
+    if (Math.abs(percentChange) < 1) {
+      return { direction: 'same', percent: '0' }
+    }
     
     return {
-      direction: change > 0 ? 'up' : change < 0 ? 'down' : 'same',
-      change: Math.abs(change),
-      percent: percentChange.toFixed(1)
+      direction: current > previousValue ? 'up' : 'down',
+      percent: Math.abs(percentChange)
     }
   }
 
@@ -389,10 +495,7 @@ const MeasurementSection = ({ patient }) => {
       key: 'edit',
       icon: <EditOutlined />,
       label: 'Edit Measurement',
-      onClick: () => {
-        // TODO: Implement edit functionality
-        message.info('Edit functionality coming soon!')
-      }
+      onClick: () => message.info('Edit functionality coming soon!')
     },
     {
       type: 'divider'
@@ -474,8 +577,9 @@ const MeasurementSection = ({ patient }) => {
               size="small"
               type="text"
               icon={<LineChartOutlined />}
-              onClick={() => message.info('Trend chart coming soon!')}
+              onClick={handleTrendsClick}
               className="list-action-btn"
+              title="View Trends"
             />
             <Dropdown
               menu={{ items: getMenuItems(measurement) }}
@@ -495,112 +599,122 @@ const MeasurementSection = ({ patient }) => {
     )
   }
 
-  const renderAddMeasurementModal = () => (
+  const renderTypeSelectionModal = () => (
     <Modal
       title={
         <Space>
-          <ExperimentOutlined />
-          <span>Record New Measurement</span>
+          <PlusOutlined />
+          <Title level={4} style={{ margin: 0 }}>
+            Record New Measurement
+          </Title>
         </Space>
       }
-      open={addModalVisible}
-      onCancel={() => {
-        setAddModalVisible(false)
-        form.resetFields()
-      }}
+      open={typeSelectionVisible}
+      onCancel={() => setTypeSelectionVisible(false)}
       footer={null}
-      width={500}
+      width={720}
+      centered
       destroyOnClose
+      className="type-selection-modal"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleAddMeasurement}
-        size="large"
-        initialValues={{
-          recordedAt: dayjs()
-        }}
-      >
-        <Form.Item
-          name="type"
-          label="Measurement Type"
-          rules={[
-            { required: true, message: 'Please select measurement type' }
-          ]}
-        >
-          <Select 
-            placeholder="Select measurement type"
-            showSearch
-            optionFilterProp="children"
+      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
+        Choose the type of measurement you'd like to record:
+      </Text>
+      
+      <div className="measurement-categories-grid">
+        {MEASUREMENT_CATEGORIES.map(category => (
+          <div 
+            key={category.key}
+            className="measurement-category-card"
+            onClick={() => handleCategoryClick(category)}
+            style={{ borderColor: category.color }}
           >
-            {MEASUREMENT_TYPES.map(type => (
-              <Option key={type.value} value={type.value}>
-                {type.label} {type.unit && `(${type.unit})`}
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
+            <div className="category-icon">
+              {category.icon}
+            </div>
+            <div className="category-content">
+              <Title level={5} style={{ margin: '8px 0 4px', color: category.color }}>
+                {category.title}
+              </Title>
+              <Text type="secondary" size="small">
+                {category.description}
+              </Text>
+            </div>
+          </div>
+        ))}
+      </div>
+    </Modal>
+  )
 
-        <Row gutter={16}>
-          <Col xs={24} sm={16}>
-            <Form.Item
-              name="value"
-              label="Value"
-              rules={[
-                { required: true, message: 'Please enter measurement value' }
-              ]}
-            >
-              <Input placeholder="Enter measurement value" />
-            </Form.Item>
-          </Col>
-          
-          <Col xs={24} sm={8}>
-            <Form.Item
-              name="recordedAt"
-              label="Date & Time"
-              rules={[
-                { required: true, message: 'Please select date and time' }
-              ]}
-            >
-              <DatePicker
-                showTime
-                format="MMM D, YYYY h:mm A"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item
-          name="notes"
-          label="Notes (Optional)"
+  const renderSubcategorySelectionModal = () => (
+    <Modal
+      title={
+        <Space>
+          {selectedCategory?.icon}
+          <Title level={4} style={{ margin: 0 }}>
+            {selectedCategory?.title} - Select Test Type
+          </Title>
+        </Space>
+      }
+      open={subcategorySelectionVisible}
+      onCancel={() => {
+        setSubcategorySelectionVisible(false)
+        setSelectedCategory(null)
+      }}
+      footer={[
+        <Button
+          key="back"
+          onClick={() => {
+            setSubcategorySelectionVisible(false)
+            setSelectedCategory(null)
+            setTypeSelectionVisible(true)
+          }}
         >
-          <TextArea 
-            placeholder="Any additional notes about this measurement..."
-            rows={3}
-            maxLength={500}
-            showCount
-          />
-        </Form.Item>
-
-        <div style={{ textAlign: 'right' }}>
-          <Space>
-            <Button onClick={() => {
-              setAddModalVisible(false)
-              form.resetFields()
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading}
-            >
-              Record Measurement
-            </Button>
-          </Space>
-        </div>
-      </Form>
+          Back to Categories
+        </Button>,
+        <Button
+          key="cancel"
+          onClick={() => {
+            setSubcategorySelectionVisible(false)
+            setSelectedCategory(null)
+          }}
+        >
+          Cancel
+        </Button>
+      ]}
+      width={720}
+      centered
+      destroyOnClose
+      className="subcategory-selection-modal"
+    >
+      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
+        Choose the specific test type:
+      </Text>
+      
+      <div className="subcategory-grid">
+        {selectedCategory?.subcategories?.map(subcategory => (
+          <div 
+            key={subcategory.key}
+            className="subcategory-card"
+            onClick={() => openModal(subcategory)}
+            style={{ borderColor: selectedCategory.color }}
+          >
+            <div className="subcategory-content">
+              <Title level={5} style={{ margin: '0 0 8px', color: selectedCategory.color }}>
+                {subcategory.title}
+              </Title>
+              <Text type="secondary" size="small">
+                {subcategory.description}
+              </Text>
+              <div style={{ marginTop: 8 }}>
+                <Text size="small" style={{ color: selectedCategory.color, fontWeight: 500 }}>
+                  {subcategory.types.length} measurement{subcategory.types.length > 1 ? 's' : ''}
+                </Text>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </Modal>
   )
 
@@ -649,6 +763,16 @@ const MeasurementSection = ({ patient }) => {
               </Space>
             </div>
             <Space>
+              {measurements.length > 0 && (
+                <Button 
+                  icon={<LineChartOutlined />}
+                  onClick={handleTrendsClick}
+                  size="small"
+                  type="default"
+                >
+                  Trends
+                </Button>
+              )}
               <Select
                 value={selectedType}
                 onChange={(value) => setSelectedType(value)}
@@ -665,7 +789,7 @@ const MeasurementSection = ({ patient }) => {
               <Button 
                 type="primary" 
                 icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
+                onClick={() => setTypeSelectionVisible(true)}
                 size="small"
               >
                 Record
@@ -695,7 +819,7 @@ const MeasurementSection = ({ patient }) => {
               <Button 
                 type="primary" 
                 icon={<PlusOutlined />}
-                onClick={() => setAddModalVisible(true)}
+                onClick={() => setTypeSelectionVisible(true)}
               >
                 Record First Measurement
               </Button>
@@ -704,7 +828,47 @@ const MeasurementSection = ({ patient }) => {
         </div>
       </Space>
 
-      {renderAddMeasurementModal()}
+      {/* Modals */}
+      {renderTypeSelectionModal()}
+      
+      <VitalSignsModal
+        visible={modalVisibility.vital_signs}
+        onClose={() => closeModal('vital_signs')}
+        patient={patient}
+      />
+      
+      <BloodTestModal
+        visible={modalVisibility.blood_tests}
+        onClose={() => closeModal('blood_tests')}
+        patient={patient}
+      />
+      
+      <PhysicalMeasurementsModal
+        visible={modalVisibility.physical}
+        onClose={() => closeModal('physical')}
+        patient={patient}
+      />
+      
+      <SubjectiveMeasurementsModal
+        visible={modalVisibility.subjective}
+        onClose={() => closeModal('subjective')}
+        patient={patient}
+      />
+
+      <UrineTestModal
+        visible={modalVisibility.urine_tests}
+        onClose={() => closeModal('urine_tests')}
+        patient={patient}
+      />
+
+      <TrendsModal
+        visible={modalVisibility.trends}
+        onClose={() => closeModal('trends')}
+        patient={patient}
+        measurements={measurements}
+      />
+
+      {renderSubcategorySelectionModal()}
     </div>
   )
 }

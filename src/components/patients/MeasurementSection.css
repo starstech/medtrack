@@ -263,4 +263,349 @@
   .measurement-actions .list-action-btn .anticon {
     font-size: 12px;
   }
+}
+
+/* Type Selection Modal */
+.type-selection-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.type-selection-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.type-selection-modal .ant-modal-body {
+  padding: 24px 32px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Measurement Categories Grid */
+.measurement-categories-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.measurement-category-card {
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.measurement-category-card:hover {
+  border-color: #1890ff;
+  background: #f0f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.category-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.category-content {
+  flex: 1;
+}
+
+.category-content h5 {
+  margin-bottom: 4px !important;
+  font-weight: 600;
+}
+
+.category-content .ant-typography {
+  line-height: 1.4;
+}
+
+/* Mobile responsive categories */
+@media (max-width: 768px) {
+  .measurement-categories-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .measurement-category-card {
+    padding: 16px;
+    gap: 12px;
+  }
+  
+  .category-icon {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .category-icon .anticon {
+    font-size: 20px !important;
+  }
+  
+  .category-content h5 {
+    font-size: 14px !important;
+  }
+  
+  .type-selection-modal .ant-modal-body {
+    padding: 20px;
+    max-height: 55vh;
+  }
+}
+
+/* Additional styling for measurement status breakdown */
+.measurement-group-header .group-title .ant-space .ant-tag {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+/* Measurement list item hover effects */
+.measurement-list-item:hover {
+  background: #fafafa;
+  border-radius: 6px;
+}
+
+.measurement-list-item:hover .list-action-btn {
+  opacity: 1;
+  visibility: visible;
+}
+
+.list-action-btn {
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.measurement-list-item:hover .list-action-btn,
+.list-action-btn:focus {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Trend info styling */
+.trend-info {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+  gap: 2px;
+}
+
+.trend-info .anticon {
+  font-size: 12px;
+}
+
+/* Status breakdown improvements */
+.measurement-group-header .group-title .ant-space {
+  flex-wrap: wrap;
+  gap: 4px 8px !important;
+}
+
+.measurement-group-header .group-title .ant-space .ant-tag {
+  margin: 0;
+  line-height: 1.2;
+}
+
+/* Scrollable container improvements */
+.measurement-list-container.has-scroll {
+  position: relative;
+}
+
+.measurement-list-container.has-scroll::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 20px;
+  background: linear-gradient(transparent, rgba(255, 255, 255, 0.8));
+  pointer-events: none;
+  border-radius: 0 0 8px 8px;
+}
+
+/* Empty state improvements */
+.measurement-section .ant-empty {
+  padding: 32px 24px;
+}
+
+.measurement-section .ant-empty .ant-empty-image {
+  margin-bottom: 16px;
+}
+
+.measurement-section .ant-empty .ant-empty-description {
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+/* Measurement item improvements */
+.measurement-name-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 4px;
+}
+
+.measurement-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.value-text {
+  font-size: 14px;
+  color: #262626;
+}
+
+.measurement-status {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  line-height: 1.2;
+  font-weight: 500;
+  margin: 0;
+}
+
+.measurement-details-row {
+  margin-bottom: 8px;
+}
+
+.measurement-notes {
+  background: #f8f9fa;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border-left: 3px solid #e9ecef;
+  margin-top: 8px;
+}
+
+.measurement-notes .ant-typography {
+  margin: 0;
+  line-height: 1.4;
+  font-style: italic;
+}
+
+/* Responsive improvements */
+@media (max-width: 576px) {
+  .measurement-name-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .measurement-value {
+    gap: 6px;
+  }
+  
+  .value-text {
+    font-size: 13px;
+  }
+  
+  .measurement-status {
+    font-size: 10px;
+    padding: 1px 4px;
+  }
+  
+  .trend-info .anticon {
+    font-size: 10px;
+  }
+  
+  .trend-info .ant-typography {
+    font-size: 9px !important;
+  }
+}
+
+/* Subcategory Selection Modal */
+.subcategory-selection-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.subcategory-selection-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.subcategory-selection-modal .ant-modal-body {
+  padding: 24px 32px;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.subcategory-selection-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Subcategory Grid */
+.subcategory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.subcategory-card {
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  background: #fafafa;
+}
+
+.subcategory-card:hover {
+  border-color: inherit;
+  background: #f0f9ff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.15);
+}
+
+.subcategory-content {
+  text-align: left;
+}
+
+.subcategory-content h5 {
+  font-weight: 600;
+}
+
+.subcategory-content .ant-typography {
+  line-height: 1.4;
+}
+
+/* Mobile responsive subcategories */
+@media (max-width: 768px) {
+  .subcategory-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  
+  .subcategory-card {
+    padding: 16px;
+  }
+  
+  .subcategory-selection-modal .ant-modal-body {
+    padding: 20px;
+    max-height: 55vh;
+  }
 } 

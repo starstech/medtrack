@@ -1,0 +1,251 @@
+.blood-test-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.blood-test-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.blood-test-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.blood-test-form {
+  padding: 24px 32px 0;
+}
+
+.blood-test-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Tabs styling */
+.blood-test-modal .ant-tabs {
+  margin-bottom: 0;
+}
+
+.blood-test-modal .ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.blood-test-modal .ant-tabs-tab {
+  padding: 12px 20px;
+  font-weight: 500;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s ease;
+}
+
+.blood-test-modal .ant-tabs-tab:hover {
+  color: #1890ff;
+}
+
+.blood-test-modal .ant-tabs-tab-active {
+  background: #f0f9ff;
+  border-color: #1890ff !important;
+}
+
+.blood-test-modal .ant-tabs-content-holder {
+  padding: 0;
+}
+
+.blood-test-modal .ant-tabs-tabpane {
+  padding: 0 4px;
+}
+
+/* Form sections */
+.blood-test-modal .form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+}
+
+.blood-test-modal .form-section:last-child {
+  margin-bottom: 24px;
+  padding-bottom: 0;
+}
+
+.blood-test-modal .form-section h5 {
+  color: #262626;
+  margin-bottom: 20px !important;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Form elements */
+.blood-test-modal .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.blood-test-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.blood-test-modal .ant-input,
+.blood-test-modal .ant-input-number,
+.blood-test-modal .ant-select-selector,
+.blood-test-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.blood-test-modal .ant-input:focus,
+.blood-test-modal .ant-input-number:focus,
+.blood-test-modal .ant-select-focused .ant-select-selector,
+.blood-test-modal .ant-picker:hover,
+.blood-test-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Alert styling */
+.blood-test-modal .ant-alert {
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 16px;
+}
+
+.blood-test-modal .ant-alert-success {
+  background-color: #f6ffed;
+  border-left: 4px solid #52c41a;
+}
+
+.blood-test-modal .ant-alert-warning {
+  background-color: #fffbe6;
+  border-left: 4px solid #faad14;
+}
+
+.blood-test-modal .ant-alert-error {
+  background-color: #fff2f0;
+  border-left: 4px solid #ff4d4f;
+}
+
+.blood-test-modal .ant-alert-info {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+/* Input number specific styling */
+.blood-test-modal .ant-input-number {
+  width: 100%;
+}
+
+.blood-test-modal .ant-input-number-input {
+  padding: 8px 11px;
+}
+
+/* Tooltip styling */
+.blood-test-modal .ant-tooltip {
+  font-size: 12px;
+}
+
+/* Button styling */
+.blood-test-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.blood-test-modal .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.blood-test-modal .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Divider styling */
+.blood-test-modal .ant-divider {
+  margin: 24px 0;
+  border-color: #f0f0f0;
+}
+
+/* Tab icons */
+.blood-test-modal .ant-tabs-tab .anticon {
+  margin-right: 6px;
+  font-size: 14px;
+}
+
+/* Responsive tabs */
+@media (max-width: 768px) {
+  .blood-test-modal .ant-tabs-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .blood-test-modal .ant-tabs-tab span {
+    display: none;
+  }
+  
+  .blood-test-modal .ant-tabs-tab .anticon {
+    margin-right: 0;
+    font-size: 16px;
+  }
+}
+
+/* Custom scrollbar */
+.blood-test-modal .ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.blood-test-modal .ant-modal-body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.blood-test-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 3px;
+}
+
+.blood-test-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .blood-test-modal .ant-modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  
+  .blood-test-modal .ant-modal-header,
+  .blood-test-modal .ant-modal-footer {
+    padding: 16px 20px;
+  }
+  
+  .blood-test-form {
+    padding: 20px 20px 0;
+  }
+  
+  .blood-test-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .blood-test-modal .ant-modal-footer {
+    text-align: center;
+  }
+  
+  .blood-test-modal .ant-modal-footer .ant-btn {
+    margin: 0 4px;
+  }
+
+  .blood-test-modal .form-section h5 {
+    font-size: 14px;
+  }
+} 

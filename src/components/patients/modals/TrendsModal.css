@@ -1,0 +1,469 @@
+.trends-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.trends-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.trends-modal .ant-modal-body {
+  padding: 0;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.trends-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Controls Section */
+.trends-controls {
+  padding: 24px 32px;
+  background: #fafafa;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.trends-summary {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 100%;
+}
+
+/* Tabs Styling */
+.trends-modal .ant-tabs {
+  padding: 0 32px 24px;
+}
+
+.trends-modal .ant-tabs-nav {
+  margin-bottom: 24px;
+}
+
+.trends-modal .ant-tabs-tab {
+  padding: 12px 20px;
+  font-weight: 500;
+  border-radius: 6px 6px 0 0;
+  transition: all 0.3s ease;
+}
+
+.trends-modal .ant-tabs-tab:hover {
+  color: #1890ff;
+}
+
+.trends-modal .ant-tabs-tab-active {
+  background: #f0f9ff;
+  border-color: #1890ff !important;
+}
+
+.trends-modal .ant-tabs-content-holder {
+  padding: 0;
+}
+
+/* Trend Summary Cards */
+.trend-summary-card {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.trend-summary-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.trend-summary-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.trend-type-name {
+  font-size: 14px;
+  color: #262626;
+}
+
+.trend-summary-stats {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.trend-summary-stats .ant-statistic {
+  margin-bottom: 4px;
+}
+
+.trend-summary-details {
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.trend-mini-chart {
+  height: 60px;
+  margin-top: 16px;
+}
+
+/* Mock Chart Styles */
+.mock-chart {
+  border: 2px solid #e8e8e8;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+  height: 100%;
+  min-height: 200px;
+  position: relative;
+}
+
+.mock-chart .chart-header {
+  margin-bottom: 12px;
+  text-align: center;
+}
+
+.mock-chart .chart-content {
+  height: calc(100% - 40px);
+  position: relative;
+}
+
+/* Line Chart Styles */
+.line-chart .chart-line {
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.chart-points {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+
+.chart-point {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chart-point:hover {
+  transform: scale(1.5);
+  z-index: 10;
+}
+
+/* Bar Chart Styles */
+.bar-chart .chart-bars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-around;
+  height: 100%;
+  padding: 0 8px;
+}
+
+.chart-bar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  flex: 1;
+  margin: 0 2px;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 40px;
+  border-radius: 4px 4px 0 0;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.chart-bar:hover {
+  opacity: 0.8;
+  transform: scaleX(1.1);
+}
+
+.chart-bar-container .ant-typography {
+  transform: rotate(-45deg);
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Mini Charts in Summary Cards */
+.trend-mini-chart .mock-chart {
+  min-height: 60px;
+  padding: 8px;
+  border: 1px solid #e8e8e8;
+}
+
+.trend-mini-chart .chart-header {
+  display: none;
+}
+
+.trend-mini-chart .chart-point {
+  width: 4px;
+  height: 4px;
+  border-width: 1px;
+}
+
+/* Chart Stats */
+.chart-stats {
+  border-top: 1px solid #f0f0f0;
+  padding-top: 16px;
+}
+
+.chart-stats .ant-statistic {
+  text-align: center;
+}
+
+.chart-stats .ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+}
+
+/* Trend Analysis */
+.trend-analysis-list {
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.trend-analysis-item {
+  padding: 12px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.trend-analysis-item:last-child {
+  border-bottom: none;
+}
+
+.trend-analysis-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.trend-analysis-details {
+  color: #8c8c8c;
+}
+
+/* Form Elements */
+.trends-modal .ant-select,
+.trends-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.trends-modal .ant-select:hover,
+.trends-modal .ant-picker:hover {
+  border-color: #1890ff;
+}
+
+.trends-modal .ant-select-focused,
+.trends-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Tags */
+.trends-modal .ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+  padding: 2px 8px;
+  border: none;
+}
+
+/* Statistics */
+.trends-modal .ant-statistic-title {
+  font-size: 12px;
+  color: #8c8c8c;
+  margin-bottom: 4px;
+}
+
+.trends-modal .ant-statistic-content {
+  font-weight: 600;
+}
+
+/* Alert */
+.trends-modal .ant-alert {
+  border-radius: 6px;
+  border: none;
+}
+
+.trends-modal .ant-alert-info {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+/* Button Styling */
+.trends-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.trends-modal .ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Cards */
+.trends-modal .ant-card {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.trends-modal .ant-card-head {
+  border-bottom: 1px solid #f0f0f0;
+  padding: 16px 24px;
+}
+
+.trends-modal .ant-card-head-title {
+  font-weight: 600;
+  color: #262626;
+}
+
+.trends-modal .ant-card-body {
+  padding: 24px;
+}
+
+/* Custom Scrollbar */
+.trends-modal .ant-modal-body::-webkit-scrollbar,
+.trend-analysis-list::-webkit-scrollbar {
+  width: 6px;
+}
+
+.trends-modal .ant-modal-body::-webkit-scrollbar-track,
+.trend-analysis-list::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.trends-modal .ant-modal-body::-webkit-scrollbar-thumb,
+.trend-analysis-list::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 3px;
+}
+
+.trends-modal .ant-modal-body::-webkit-scrollbar-thumb:hover,
+.trend-analysis-list::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+/* Empty State */
+.trends-modal .ant-empty {
+  padding: 60px 20px;
+}
+
+.trends-modal .ant-empty-image {
+  margin-bottom: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .trends-modal .ant-modal {
+    width: 95vw !important;
+    max-width: none;
+    margin: 20px auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .trends-modal .ant-modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  
+  .trends-modal .ant-modal-header,
+  .trends-modal .ant-modal-footer {
+    padding: 16px 20px;
+  }
+  
+  .trends-controls {
+    padding: 16px 20px;
+  }
+  
+  .trends-modal .ant-tabs {
+    padding: 0 20px 20px;
+  }
+  
+  .trends-modal .ant-modal-body {
+    max-height: 60vh;
+  }
+  
+  .trends-modal .ant-modal-footer {
+    text-align: center;
+  }
+
+  .trends-modal .ant-tabs-tab {
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+  
+  .trends-modal .ant-tabs-tab span {
+    display: none;
+  }
+  
+  .trends-modal .ant-tabs-tab .anticon {
+    margin-right: 0;
+    font-size: 16px;
+  }
+  
+  .trend-summary-card {
+    margin-bottom: 16px;
+  }
+  
+  .mock-chart {
+    min-height: 150px;
+    padding: 12px;
+  }
+  
+  .chart-bar-container .ant-typography {
+    font-size: 10px;
+  }
+  
+  .trends-summary {
+    margin-top: 12px;
+  }
+  
+  .trends-controls .ant-col {
+    margin-bottom: 12px;
+  }
+}
+
+@media (max-width: 576px) {
+  .trends-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .trend-summary-stats .ant-statistic-content {
+    font-size: 20px !important;
+  }
+  
+  .mock-chart {
+    min-height: 120px;
+    padding: 8px;
+  }
+  
+  .chart-stats .ant-row .ant-col {
+    margin-bottom: 8px;
+  }
+} 

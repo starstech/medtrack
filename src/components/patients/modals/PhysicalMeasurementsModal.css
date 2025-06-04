@@ -1,0 +1,248 @@
+.physical-measurements-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.physical-measurements-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.physical-measurements-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.physical-measurements-form {
+  padding: 24px 32px;
+}
+
+.physical-measurements-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Form sections */
+.physical-measurements-modal .form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.physical-measurements-modal .form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.physical-measurements-modal .form-section h5 {
+  color: #262626;
+  margin-bottom: 20px !important;
+  font-weight: 600;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+}
+
+/* Form elements */
+.physical-measurements-modal .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.physical-measurements-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.physical-measurements-modal .ant-input,
+.physical-measurements-modal .ant-input-number,
+.physical-measurements-modal .ant-select-selector,
+.physical-measurements-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.physical-measurements-modal .ant-input:focus,
+.physical-measurements-modal .ant-input-number:focus,
+.physical-measurements-modal .ant-select-focused .ant-select-selector,
+.physical-measurements-modal .ant-picker:hover,
+.physical-measurements-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Alert styling */
+.physical-measurements-modal .ant-alert {
+  border-radius: 6px;
+  border: none;
+}
+
+.physical-measurements-modal .ant-alert-success {
+  background-color: #f6ffed;
+  border-left: 4px solid #52c41a;
+}
+
+.physical-measurements-modal .ant-alert-warning {
+  background-color: #fffbe6;
+  border-left: 4px solid #faad14;
+}
+
+.physical-measurements-modal .ant-alert-error {
+  background-color: #fff2f0;
+  border-left: 4px solid #ff4d4f;
+}
+
+.physical-measurements-modal .ant-alert-info {
+  background-color: #e6f7ff;
+  border-left: 4px solid #1890ff;
+}
+
+/* Input number specific styling */
+.physical-measurements-modal .ant-input-number {
+  width: 100%;
+}
+
+.physical-measurements-modal .ant-input-number-input {
+  padding: 8px 11px;
+}
+
+/* BMI Card styling */
+.physical-measurements-modal .ant-card {
+  border-radius: 8px;
+  border: 1px solid #e8e8e8;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.physical-measurements-modal .ant-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.physical-measurements-modal .ant-statistic {
+  text-align: center;
+}
+
+.physical-measurements-modal .ant-statistic-title {
+  font-size: 14px;
+  color: #8c8c8c;
+  margin-bottom: 8px;
+}
+
+.physical-measurements-modal .ant-statistic-content {
+  font-size: 32px;
+  line-height: 1.2;
+}
+
+/* Tag styling */
+.physical-measurements-modal .ant-tag {
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  padding: 4px 8px;
+}
+
+/* Tooltip styling */
+.physical-measurements-modal .ant-tooltip {
+  font-size: 12px;
+}
+
+/* Button styling */
+.physical-measurements-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.physical-measurements-modal .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.physical-measurements-modal .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* BMI categories text styling */
+.physical-measurements-modal .bmi-categories {
+  background: #fafafa;
+  padding: 12px;
+  border-radius: 6px;
+  border-left: 4px solid #1890ff;
+  margin-top: 16px;
+}
+
+.physical-measurements-modal .bmi-categories strong {
+  color: #262626;
+}
+
+/* Custom scrollbar */
+.physical-measurements-modal .ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.physical-measurements-modal .ant-modal-body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.physical-measurements-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 3px;
+}
+
+.physical-measurements-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .physical-measurements-modal .ant-modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  
+  .physical-measurements-modal .ant-modal-header,
+  .physical-measurements-modal .ant-modal-footer {
+    padding: 16px 20px;
+  }
+  
+  .physical-measurements-form {
+    padding: 20px;
+  }
+  
+  .physical-measurements-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .physical-measurements-modal .ant-modal-footer {
+    text-align: center;
+  }
+  
+  .physical-measurements-modal .ant-modal-footer .ant-btn {
+    margin: 0 4px;
+  }
+
+  .physical-measurements-modal .form-section h5 {
+    font-size: 14px;
+  }
+  
+  .physical-measurements-modal .ant-statistic-content {
+    font-size: 24px !important;
+  }
+  
+  .physical-measurements-modal .bmi-categories {
+    padding: 8px;
+    font-size: 12px;
+  }
+} 
