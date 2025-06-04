@@ -9,12 +9,18 @@ import {
   TeamOutlined,
   MailOutlined
 } from '@ant-design/icons'
+import { useState } from 'react'
 import dayjs from 'dayjs'
+import EditPatientModal from './EditPatientModal'
+import ManageCaregiversModal from './ManageCaregiversModal'
 import './PatientDetails.css'
 
 const { Title, Text } = Typography
 
 const PatientDetails = ({ patient }) => {
+  const [editModalVisible, setEditModalVisible] = useState(false)
+  const [manageCaregiversModalVisible, setManageCaregiversModalVisible] = useState(false)
+
   const getPatientAge = (dateOfBirth) => {
     const today = new Date()
     const birth = new Date(dateOfBirth)
@@ -29,8 +35,11 @@ const PatientDetails = ({ patient }) => {
   }
 
   const handleEditPatient = () => {
-    // TODO: Open edit patient modal
-    console.log('Edit patient:', patient.id)
+    setEditModalVisible(true)
+  }
+
+  const handleManageCaregivers = () => {
+    setManageCaregiversModalVisible(true)
   }
 
   const renderBasicInfo = () => (
@@ -220,6 +229,7 @@ const PatientDetails = ({ patient }) => {
           type="text" 
           icon={<EditOutlined />}
           className="card-action-btn"
+          onClick={handleManageCaregivers}
         >
           Manage
         </Button>
@@ -270,6 +280,19 @@ const PatientDetails = ({ patient }) => {
         {renderEmergencyContact()}
         {renderCaregivers()}
       </Space>
+
+      {/* Modals */}
+      <EditPatientModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        patient={patient}
+      />
+      
+      <ManageCaregiversModal
+        visible={manageCaregiversModalVisible}
+        onClose={() => setManageCaregiversModalVisible(false)}
+        patient={patient}
+      />
     </div>
   )
 }

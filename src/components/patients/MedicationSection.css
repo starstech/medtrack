@@ -194,4 +194,108 @@
     width: 28px;
     height: 28px;
   }
+}
+
+/* Add Medication Modal */
+.add-medication-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.add-medication-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.add-medication-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.add-medication-form {
+  padding: 24px 32px;
+}
+
+.add-medication-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Form elements */
+.add-medication-modal .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.add-medication-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.add-medication-modal .ant-input,
+.add-medication-modal .ant-select-selector,
+.add-medication-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.add-medication-modal .ant-input:focus,
+.add-medication-modal .ant-select-focused .ant-select-selector,
+.add-medication-modal .ant-picker:hover,
+.add-medication-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.add-medication-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.add-medication-modal .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.add-medication-modal .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .add-medication-modal .ant-modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  
+  .add-medication-modal .ant-modal-header,
+  .add-medication-modal .ant-modal-footer {
+    padding: 16px 20px;
+  }
+  
+  .add-medication-form {
+    padding: 20px;
+  }
+  
+  .add-medication-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .add-medication-modal .ant-modal-footer {
+    text-align: center;
+  }
+  
+  .add-medication-modal .ant-modal-footer .ant-btn {
+    margin: 0 4px;
+  }
 } 

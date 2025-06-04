@@ -32,6 +32,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { MEDICATION_FREQUENCIES, MEDICATION_FORMS } from '../../utils/mockData'
+import EditMedicationModal from './EditMedicationModal'
 import dayjs from 'dayjs'
 import './MedicationSection.css'
 
@@ -41,7 +42,7 @@ const { TextArea } = Input
 const { RangePicker } = DatePicker
 
 const MedicationSection = ({ patient }) => {
-  const { getPatientMedications, addMedication } = usePatients()
+  const { getPatientMedications, addMedication, updateMedication, deleteMedication } = usePatients()
   const [addModalVisible, setAddModalVisible] = useState(false)
   const [editModalVisible, setEditModalVisible] = useState(false)
   const [selectedMedication, setSelectedMedication] = useState(null)
@@ -63,6 +64,9 @@ const MedicationSection = ({ patient }) => {
         isActive: true
       }
 
+      // Remove dateRange from the data since it's not part of the medication schema
+      delete medicationData.dateRange
+
       await addMedication(patient.id, medicationData)
       
       message.success('Medication added successfully!')
@@ -80,13 +84,20 @@ const MedicationSection = ({ patient }) => {
   const handleEditMedication = (medication) => {
     setSelectedMedication(medication)
     setEditModalVisible(true)
-    form.setFieldsValue({
-      ...medication,
-      dateRange: [
-        dayjs(medication.startDate),
-        medication.endDate ? dayjs(medication.endDate) : null
-      ]
-    })
+  }
+
+  const handleToggleMedication = async (medication) => {
+    try {
+      await updateMedication(medication.id, {
+        ...medication,
+        isActive: !medication.isActive
+      })
+      
+      message.success(`Medication marked as ${medication.isActive ? 'inactive' : 'active'}!`)
+    } catch (error) {
+      message.error('Failed to update medication status. Please try again.')
+      console.error('Error updating medication:', error)
+    }
   }
 
   const handleDeleteMedication = (medicationId) => {
@@ -96,9 +107,14 @@ const MedicationSection = ({ patient }) => {
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: () => {
-        // TODO: Implement delete functionality
-        message.success('Medication deleted successfully!')
+      onOk: async () => {
+        try {
+          await deleteMedication(medicationId)
+          message.success('Medication deleted successfully!')
+        } catch (error) {
+          message.error('Failed to delete medication. Please try again.')
+          console.error('Error deleting medication:', error)
+        }
       }
     })
   }
@@ -114,10 +130,7 @@ const MedicationSection = ({ patient }) => {
       key: 'toggle',
       icon: medication.isActive ? <ExclamationCircleOutlined /> : <CheckCircleOutlined />,
       label: medication.isActive ? 'Mark Inactive' : 'Mark Active',
-      onClick: () => {
-        // TODO: Implement toggle functionality
-        message.success(`Medication marked as ${medication.isActive ? 'inactive' : 'active'}!`)
-      }
+      onClick: () => handleToggleMedication(medication)
     },
     {
       type: 'divider'
@@ -141,9 +154,9 @@ const MedicationSection = ({ patient }) => {
       const today = dayjs()
       
       if (endDate.isBefore(today)) {
-        return { color: 'red', text: 'Expired' }
+        return { color: 'yellow', text: 'Course Completed' }
       } else if (endDate.diff(today, 'days') <= 7) {
-        return { color: 'orange', text: 'Ending Soon' }
+        return { color: 'orange', text: 'Course Ending Soon' }
       }
     }
     
@@ -228,7 +241,9 @@ const MedicationSection = ({ patient }) => {
       title={
         <Space>
           <MedicineBoxOutlined />
-          <span>Add New Medication</span>
+          <Title level={4} style={{ margin: 0 }}>
+            Add New Medication
+          </Title>
         </Space>
       }
       open={addModalVisible}
@@ -236,15 +251,41 @@ const MedicationSection = ({ patient }) => {
         setAddModalVisible(false)
         form.resetFields()
       }}
-      footer={null}
-      width={600}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={() => {
+            setAddModalVisible(false)
+            form.resetFields()
+          }}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="add-medication-form"
+        >
+          {loading ? 'Adding...' : 'Add Medication'}
+        </Button>
+      ]}
+      width={800}
       destroyOnClose
+      className="add-medication-modal"
+      centered
     >
       <Form
+        id="add-medication-form"
         form={form}
         layout="vertical"
         onFinish={handleAddMedication}
         size="large"
+        className="add-medication-form"
       >
         <Row gutter={16}>
           <Col xs={24} sm={12}>
@@ -342,24 +383,6 @@ const MedicationSection = ({ patient }) => {
             rows={3}
           />
         </Form.Item>
-
-        <div style={{ textAlign: 'right' }}>
-          <Space>
-            <Button onClick={() => {
-              setAddModalVisible(false)
-              form.resetFields()
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading}
-            >
-              Add Medication
-            </Button>
-          </Space>
-        </div>
       </Form>
     </Modal>
   )
@@ -441,7 +464,14 @@ const MedicationSection = ({ patient }) => {
         </div>
       </Space>
 
+      {/* Modals */}
       {renderAddMedicationModal()}
+      
+      <EditMedicationModal
+        visible={editModalVisible}
+        onClose={() => setEditModalVisible(false)}
+        medication={selectedMedication}
+      />
     </div>
   )
 }

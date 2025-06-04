@@ -1,0 +1,151 @@
+.edit-medication-modal .ant-modal-content {
+  padding: 0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.edit-medication-modal .ant-modal-header {
+  padding: 24px 32px;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 0;
+}
+
+.edit-medication-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.edit-medication-form {
+  padding: 24px 32px;
+}
+
+.edit-medication-modal .ant-modal-footer {
+  padding: 16px 32px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 0;
+  text-align: right;
+}
+
+/* Form sections */
+.edit-medication-modal .form-section {
+  margin-bottom: 32px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.edit-medication-modal .form-section:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.edit-medication-modal .form-section h5 {
+  color: #262626;
+  margin-bottom: 20px !important;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+/* Form elements */
+.edit-medication-modal .ant-form-item {
+  margin-bottom: 24px;
+}
+
+.edit-medication-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+}
+
+.edit-medication-modal .ant-input,
+.edit-medication-modal .ant-select-selector,
+.edit-medication-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.edit-medication-modal .ant-input:focus,
+.edit-medication-modal .ant-select-focused .ant-select-selector,
+.edit-medication-modal .ant-picker:hover,
+.edit-medication-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Switch styling */
+.edit-medication-modal .ant-switch {
+  background-color: #00b96b;
+}
+
+.edit-medication-modal .ant-switch:not(.ant-switch-checked) {
+  background-color: #ff4d4f;
+}
+
+/* Button styling */
+.edit-medication-modal .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.edit-medication-modal .ant-btn-primary {
+  background: #1890ff;
+  border-color: #1890ff;
+}
+
+.edit-medication-modal .ant-btn-primary:hover {
+  background: #40a9ff;
+  border-color: #40a9ff;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3);
+}
+
+/* Custom scrollbar */
+.edit-medication-modal .ant-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.edit-medication-modal .ant-modal-body::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 3px;
+}
+
+.edit-medication-modal .ant-modal-body::-webkit-scrollbar-thumb {
+  background: #bfbfbf;
+  border-radius: 3px;
+}
+
+.edit-medication-modal .ant-modal-body::-webkit-scrollbar-thumb:hover {
+  background: #8c8c8c;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .edit-medication-modal .ant-modal {
+    margin: 16px;
+    max-width: calc(100vw - 32px);
+  }
+  
+  .edit-medication-modal .ant-modal-header,
+  .edit-medication-modal .ant-modal-footer {
+    padding: 16px 20px;
+  }
+  
+  .edit-medication-form {
+    padding: 20px;
+  }
+  
+  .edit-medication-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .edit-medication-modal .ant-modal-footer {
+    text-align: center;
+  }
+  
+  .edit-medication-modal .ant-modal-footer .ant-btn {
+    margin: 0 4px;
+  }
+} 

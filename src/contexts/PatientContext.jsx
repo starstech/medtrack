@@ -37,6 +37,11 @@ const patientReducer = (state, action) => {
           m.id === action.payload.id ? action.payload : m
         )
       }
+    case 'DELETE_MEDICATION':
+      return {
+        ...state,
+        medications: state.medications.filter(m => m.id !== action.payload.medicationId)
+      }
     case 'SET_MEASUREMENTS':
       return { ...state, measurements: action.payload }
     case 'ADD_MEASUREMENT':
@@ -116,6 +121,22 @@ export const PatientProvider = ({ children }) => {
     return newPatient
   }
 
+  const updatePatient = async (patientId, patientData) => {
+    const updatedPatient = {
+      ...patientData,
+      id: patientId
+    }
+    
+    dispatch({ type: 'UPDATE_PATIENT', payload: updatedPatient })
+    
+    // Update selected patient if it's the one being updated
+    if (state.selectedPatient?.id === patientId) {
+      dispatch({ type: 'SET_SELECTED_PATIENT', payload: updatedPatient })
+    }
+    
+    return updatedPatient
+  }
+
   const addMedication = async (patientId, medicationData) => {
     const newMedication = {
       id: Date.now().toString(),
@@ -127,6 +148,23 @@ export const PatientProvider = ({ children }) => {
     
     dispatch({ type: 'ADD_MEDICATION', payload: newMedication })
     return newMedication
+  }
+
+  const updateMedication = async (medicationId, medicationData) => {
+    const updatedMedication = {
+      ...medicationData,
+      id: medicationId
+    }
+    
+    dispatch({ type: 'UPDATE_MEDICATION', payload: updatedMedication })
+    return updatedMedication
+  }
+
+  const deleteMedication = async (medicationId) => {
+    dispatch({
+      type: 'DELETE_MEDICATION',
+      payload: { medicationId }
+    })
   }
 
   const addMeasurement = async (patientId, measurementData) => {
@@ -208,7 +246,10 @@ export const PatientProvider = ({ children }) => {
     loading: state.loading,
     selectPatient,
     addPatient,
+    updatePatient,
     addMedication,
+    updateMedication,
+    deleteMedication,
     addMeasurement,
     addDailyLog,
     markDose,
