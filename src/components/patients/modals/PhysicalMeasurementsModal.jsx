@@ -15,7 +15,9 @@ import {
   Tooltip,
   Card,
   Statistic,
-  Tag
+  Tag,
+  Switch,
+  Select
 } from 'antd'
 import { 
   DashboardOutlined,
@@ -30,18 +32,58 @@ import './PhysicalMeasurementsModal.css'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
+const { Option } = Select
+
+// Predefined values for physical measurements
+const PHYSICAL_STANDARDS = {
+  weight: [
+    { value: '50', label: '50 kg' },
+    { value: '55', label: '55 kg' },
+    { value: '60', label: '60 kg' },
+    { value: '65', label: '65 kg' },
+    { value: '70', label: '70 kg' },
+    { value: '75', label: '75 kg' },
+    { value: '80', label: '80 kg' },
+    { value: '85', label: '85 kg' },
+    { value: '90', label: '90 kg' },
+    { value: '95', label: '95 kg' },
+    { value: '100', label: '100 kg' }
+  ],
+  height: [
+    { value: '150', label: '150 cm (4\'11")' },
+    { value: '155', label: '155 cm (5\'1")' },
+    { value: '160', label: '160 cm (5\'3")' },
+    { value: '165', label: '165 cm (5\'5")' },
+    { value: '170', label: '170 cm (5\'7")' },
+    { value: '175', label: '175 cm (5\'9")' },
+    { value: '180', label: '180 cm (5\'11")' },
+    { value: '185', label: '185 cm (6\'1")' },
+    { value: '190', label: '190 cm (6\'3")' }
+  ]
+}
 
 const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
   const [calculatedBMI, setCalculatedBMI] = useState(null)
+  
+  // State for input types (standard vs custom)
+  const [inputTypes, setInputTypes] = useState({
+    height: 'standard',
+    weight: 'standard'
+  })
 
   useEffect(() => {
     if (visible) {
       form.setFieldsValue({
         recordedAt: dayjs(),
         recordedBy: 'Current User'
+      })
+      // Reset input types when modal opens
+      setInputTypes({
+        height: 'standard',
+        weight: 'standard'
       })
     }
   }, [visible, form])
@@ -54,6 +96,17 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
       return bmi.toFixed(1)
     }
     return null
+  }
+
+  const handleInputTypeChange = (field, type) => {
+    setInputTypes(prev => ({ ...prev, [field]: type }))
+    // Clear the field value when switching types
+    form.setFieldsValue({ [field]: undefined })
+    // Recalculate BMI
+    const height = field === 'height' ? undefined : form.getFieldValue('height')
+    const weight = field === 'weight' ? undefined : form.getFieldValue('weight')
+    const bmi = calculateBMI(height, weight)
+    setCalculatedBMI(bmi)
   }
 
   const handleFormChange = (changedFields, allFields) => {
@@ -110,6 +163,10 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
   const handleClose = () => {
     form.resetFields()
     setCalculatedBMI(null)
+    setInputTypes({
+      height: 'standard',
+      weight: 'standard'
+    })
     onClose()
   }
 
@@ -227,42 +284,107 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
   const bmiStatus = getBMIStatus(calculatedBMI)
   const idealWeight = getIdealWeightRange(form.getFieldValue('height'))
 
+  const renderFieldWithToggle = (fieldName, label, unit, icon, placeholder) => {
+    const standards = PHYSICAL_STANDARDS[fieldName]
+    const inputType = inputTypes[fieldName]
+
+    return (
+      <Card size="small" className="physical-measurement-card">
+        <Row align="middle" gutter={[16, 12]}>
+          <Col span={24}>
+            <Space>
+              {icon}
+              <Text strong>{label}</Text>
+            </Space>
+          </Col>
+          
+          <Col span={24}>
+            <div className="input-type-toggle">
+              <div className="toggle-content">
+                <div className="toggle-info">
+                  <Text strong>
+                    {inputType === 'standard' ? 'Common Values' : 'Custom Value'}
+                  </Text>
+                  <br />
+                  <Text type="secondary" size="small">
+                    {inputType === 'standard' 
+                      ? 'Select from typical ranges' 
+                      : 'Enter exact measurement'
+                    }
+                  </Text>
+                </div>
+                <Switch
+                  checked={inputType === 'standard'}
+                  onChange={(checked) => handleInputTypeChange(fieldName, checked ? 'standard' : 'custom')}
+                  size="small"
+                />
+              </div>
+            </div>
+          </Col>
+
+          <Col span={24}>
+            <Form.Item 
+              name={fieldName}
+              rules={[{ required: false }]}
+              style={{ marginBottom: 0 }}
+            >
+              {inputType === 'standard' ? (
+                <Select
+                  placeholder={`Select ${label.toLowerCase()}`}
+                  size="middle"
+                  allowClear
+                  onChange={(value) => {
+                    // Trigger BMI calculation when value changes
+                    setTimeout(() => {
+                      const height = fieldName === 'height' ? value : form.getFieldValue('height')
+                      const weight = fieldName === 'weight' ? value : form.getFieldValue('weight')
+                      const bmi = calculateBMI(height, weight)
+                      setCalculatedBMI(bmi)
+                    }, 0)
+                  }}
+                >
+                  {standards?.map(option => (
+                    <Option key={option.value} value={parseFloat(option.value)}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              ) : (
+                <InputNumber
+                  placeholder={placeholder}
+                  suffix={unit}
+                  size="middle"
+                  style={{ width: '100%' }}
+                  step={fieldName === 'height' ? 1 : 0.1}
+                  onChange={(value) => {
+                    // Trigger BMI calculation when value changes
+                    const height = fieldName === 'height' ? value : form.getFieldValue('height')
+                    const weight = fieldName === 'weight' ? value : form.getFieldValue('weight')
+                    const bmi = calculateBMI(height, weight)
+                    setCalculatedBMI(bmi)
+                  }}
+                />
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
+      </Card>
+    )
+  }
+
   return (
     <Modal
       title={
         <Space>
-          <DashboardOutlined style={{ color: '#52c41a' }} />
-          <Title level={4} style={{ margin: 0 }}>
-            Record Physical Measurements
-          </Title>
+          <DashboardOutlined style={{ color: '#722ed1' }} />
+          <span>Record Physical Measurements</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={handleClose}
-          size="large"
-          disabled={loading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          htmlType="submit"
-          loading={loading}
-          size="large"
-          form="physical-measurements-form"
-        >
-          {loading ? 'Recording...' : 'Record Measurements'}
-        </Button>
-      ]}
       width={800}
-      destroyOnClose
+      footer={null}
       className="physical-measurements-modal"
-      centered
     >
       <Alert
         message="Physical Measurements Recording"
@@ -273,139 +395,63 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
       />
 
       <Form
-        id="physical-measurements-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
         onFieldsChange={handleFormChange}
-        size="large"
-        className="physical-measurements-form"
+        initialValues={{
+          recordedAt: dayjs(),
+          recordedBy: 'Current User'
+        }}
       >
-        {/* Height Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <ScissorOutlined style={{ color: '#722ed1', marginRight: 8 }} />
-            Height Measurement
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={16}>
-              <Form.Item
-                name="height"
-                label={
-                  <Space>
-                    <span>Height (cm)</span>
-                    <Tooltip title="Enter height in centimeters (e.g., 175 cm)">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 50, max: 250, message: 'Please enter a valid height (50-250 cm)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="175"
-                  style={{ width: '100%' }}
-                  addonAfter="cm"
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={8}>
-              <Form.Item name="heightNotes" label="Height Notes">
-                <Input placeholder="Standing, lying, measurement method" />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Row gutter={[16, 16]}>
+          {/* Date and Recorded By */}
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Date & Time"
+              name="recordedAt"
+              rules={[{ required: true, message: 'Please select date and time' }]}
+            >
+              <DatePicker 
+                showTime 
+                format="YYYY-MM-DD HH:mm"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Col>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.height !== currentValues.height}>
-            {({ getFieldValue }) => {
-              const heightStatus = getHeightStatus(getFieldValue('height'))
-              return heightStatus ? (
-                <Alert
-                  message={heightStatus.message}
-                  type={heightStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Recorded By"
+              name="recordedBy"
+              rules={[{ required: true, message: 'Please enter who recorded this' }]}
+            >
+              <Input placeholder="Enter name" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        {/* Weight Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <FireOutlined style={{ color: '#1890ff', marginRight: 8 }} />
-            Weight Measurement
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={16}>
-              <Form.Item
-                name="weight"
-                label={
-                  <Space>
-                    <span>Weight (kg)</span>
-                    <Tooltip title="Enter weight in kilograms (e.g., 70 kg)">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 20, max: 300, message: 'Please enter a valid weight (20-300 kg)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="70"
-                  step={0.1}
-                  precision={1}
-                  style={{ width: '100%' }}
-                  addonAfter="kg"
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={8}>
-              <Form.Item name="weightNotes" label="Weight Notes">
-                <Input placeholder="Clothed, fasting, time of day" />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+          <DashboardOutlined /> Physical Measurements
+        </Title>
 
-          {idealWeight && (
-            <Alert
-              message={`Ideal weight range: ${idealWeight.min} - ${idealWeight.max} kg`}
-              type="info"
-              size="small"
-              style={{ marginBottom: 16 }}
-            />
-          )}
+        <Row gutter={[16, 16]}>
+          {/* Height */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('height', 'Height', 'cm', <ScissorOutlined style={{ color: '#722ed1' }} />, '175')}
+          </Col>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => 
-            prevValues.weight !== currentValues.weight || prevValues.height !== currentValues.height
-          }>
-            {({ getFieldValue }) => {
-              const weightStatus = getWeightStatus(getFieldValue('weight'), calculatedBMI)
-              return weightStatus ? (
-                <Alert
-                  message={weightStatus.message}
-                  type={weightStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+          {/* Weight */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('weight', 'Weight', 'kg', <FireOutlined style={{ color: '#1890ff' }} />, '70')}
+          </Col>
+        </Row>
 
         {/* BMI Calculation Section */}
         {calculatedBMI && (
-          <div className="form-section">
-            <Title level={5}>
-              <HeartOutlined style={{ color: '#fa8c16', marginRight: 8 }} />
-              Body Mass Index (BMI)
+          <div style={{ marginTop: 24 }}>
+            <Title level={4} style={{ marginBottom: 16 }}>
+              <HeartOutlined style={{ color: '#fa8c16' }} /> Body Mass Index (BMI)
             </Title>
             
             <Row gutter={16} align="middle">
@@ -444,10 +490,11 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
                     description={bmiStatus.message}
                     type={bmiStatus.type}
                     showIcon
+                    style={{ marginBottom: 16 }}
                   />
                 )}
                 
-                <div style={{ marginTop: 16 }}>
+                <div>
                   <Text type="secondary" size="small">
                     <strong>BMI Categories:</strong><br />
                     • Underweight: &lt; 18.5<br />
@@ -461,49 +508,34 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
           </div>
         )}
 
-        {/* General Information */}
-        <div className="form-section">
-          <Title level={5}>General Information</Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedAt"
-                label="Date & Time"
-                rules={[
-                  { required: true, message: 'Please select date and time' }
-                ]}
-              >
-                <DatePicker
-                  showTime
-                  format="MMM D, YYYY h:mm A"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedBy"
-                label="Recorded By"
-                rules={[
-                  { required: true, message: 'Please enter who recorded this' }
-                ]}
-              >
-                <Input placeholder="Current User" />
-              </Form.Item>
-            </Col>
-          </Row>
+        {/* General Notes */}
+        <Form.Item
+          label={
+            <Space>
+              <InfoCircleOutlined />
+              <span>General Notes</span>
+            </Space>
+          }
+          name="generalNotes"
+          style={{ marginTop: 24 }}
+        >
+          <TextArea 
+            rows={3} 
+            placeholder="Measurement conditions, patient position, clothing status..."
+          />
+        </Form.Item>
 
-          <Form.Item name="generalNotes" label="General Notes">
-            <TextArea 
-              placeholder="Measurement conditions, patient position, clothing status..."
-              rows={3}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-        </div>
+        {/* Submit Button */}
+        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
+          <Space>
+            <Button onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Record Measurements
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </Modal>
   )

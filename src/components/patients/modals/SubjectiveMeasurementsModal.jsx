@@ -187,251 +187,152 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
       title={
         <Space>
           <BulbOutlined style={{ color: '#722ed1' }} />
-          <Title level={4} style={{ margin: 0 }}>
-            Record Subjective Assessments
-          </Title>
+          <span>Record Subjective Assessments</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={handleClose}
-          size="large"
-          disabled={loading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          htmlType="submit"
-          loading={loading}
-          size="large"
-          form="subjective-measurements-form"
-        >
-          {loading ? 'Recording...' : 'Record Assessments'}
-        </Button>
-      ]}
       width={800}
-      destroyOnClose
+      footer={null}
       className="subjective-measurements-modal"
-      centered
     >
       <Alert
-        message="Subjective Assessment Recording"
-        description="Record patient-reported measurements like pain levels and mood. These help track comfort and mental state."
+        message="Subjective Assessments"
+        description="Record patient-reported measurements such as pain levels and mood ratings."
         type="info"
         showIcon
         style={{ marginBottom: 24 }}
       />
 
       <Form
-        id="subjective-measurements-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        size="large"
-        className="subjective-measurements-form"
+        initialValues={{
+          recordedAt: dayjs(),
+          recordedBy: 'Current User'
+        }}
       >
-        {/* Pain Level Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <AlertOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
-            Pain Level Assessment
-          </Title>
-          
-          <Row gutter={24}>
-            <Col xs={24} lg={16}>
+        <Row gutter={[16, 16]}>
+          {/* Date and Recorded By */}
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Date & Time"
+              name="recordedAt"
+              rules={[{ required: true, message: 'Please select date and time' }]}
+            >
+              <DatePicker 
+                showTime 
+                format="YYYY-MM-DD HH:mm"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Col>
+
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Recorded By"
+              name="recordedBy"
+              rules={[{ required: true, message: 'Please enter who recorded this' }]}
+            >
+              <Input placeholder="Enter name" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+          <BulbOutlined /> Subjective Assessments
+        </Title>
+
+        {/* Pain Level */}
+        <Card style={{ marginBottom: 16 }}>
+          <Row align="top" gutter={[16, 16]}>
+            <Col span={24}>
+              <Space>
+                <AlertOutlined style={{ color: '#ff4d4f' }} />
+                <Text strong>Pain Level Assessment</Text>
+              </Space>
+            </Col>
+            
+            <Col span={24}>
               <Form.Item
                 name="painLevel"
-                label="Pain Level (0-10 Scale)"
+                label="Pain Level (0-10 scale)"
+                rules={[{ type: 'number', min: 0, max: 10, message: 'Pain level must be between 0 and 10' }]}
               >
-                <div className="pain-slider-container">
-                  <Slider
-                    min={0}
-                    max={10}
-                    marks={painMarks}
-                    step={1}
-                    tipFormatter={(value) => `${value}/10 - ${getPainLevelDescription(value)}`}
-                    trackStyle={{ backgroundColor: '#ff4d4f' }}
-                    handleStyle={{ borderColor: '#ff4d4f' }}
-                  />
-                </div>
+                <Slider
+                  min={0}
+                  max={10}
+                  marks={{
+                    0: '0 - No Pain',
+                    2: '2',
+                    4: '4',
+                    6: '6 - Moderate',
+                    8: '8',
+                    10: '10 - Severe'
+                  }}
+                  step={1}
+                  tipFormatter={(value) => `${value} - ${getPainLevelDescription(value)}`}
+                />
               </Form.Item>
-              
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.painLevel !== currentValues.painLevel}>
-                {({ getFieldValue }) => {
-                  const painLevel = getFieldValue('painLevel')
-                  const description = getPainLevelDescription(painLevel)
-                  return painLevel !== undefined && painLevel !== null ? (
-                    <Card size="small" className="assessment-description">
-                      <Text strong>Pain Level {painLevel}/10: </Text>
-                      <Text>{description}</Text>
-                    </Card>
-                  ) : null
-                }}
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} lg={8}>
-              <div className="pain-scale-reference">
-                <Title level={6}>Pain Scale Reference:</Title>
-                <Text size="small" type="secondary">
-                  <strong>0:</strong> No pain<br />
-                  <strong>1-3:</strong> Mild pain<br />
-                  <strong>4-6:</strong> Moderate pain<br />
-                  <strong>7-10:</strong> Severe pain
-                </Text>
-              </div>
             </Col>
           </Row>
+        </Card>
 
-          <Form.Item name="painNotes" label="Pain Notes">
-            <TextArea 
-              placeholder="Location, type of pain, triggers, what helps..."
-              rows={2}
-              maxLength={300}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.painLevel !== currentValues.painLevel}>
-            {({ getFieldValue }) => {
-              const painStatus = getPainLevelStatus(getFieldValue('painLevel'))
-              return painStatus ? (
-                <Alert
-                  message={painStatus.message}
-                  type={painStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
-
-        {/* Mood Rating Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <SmileOutlined style={{ color: '#722ed1', marginRight: 8 }} />
-            Mood Rating Assessment
-          </Title>
-          
-          <Row gutter={24}>
-            <Col xs={24} lg={16}>
+        {/* Mood Rating */}
+        <Card style={{ marginBottom: 16 }}>
+          <Row align="top" gutter={[16, 16]}>
+            <Col span={24}>
+              <Space>
+                <SmileOutlined style={{ color: '#52c41a' }} />
+                <Text strong>Mood Rating</Text>
+              </Space>
+            </Col>
+            
+            <Col span={24}>
               <Form.Item
                 name="moodRating"
-                label="Mood Rating (1-10 Scale)"
+                label="Overall Mood (1-5 stars)"
+                rules={[{ type: 'number', min: 1, max: 5, message: 'Mood rating must be between 1 and 5' }]}
               >
-                <div className="mood-slider-container">
-                  <Slider
-                    min={1}
-                    max={10}
-                    marks={moodMarks}
-                    step={1}
-                    tipFormatter={(value) => `${value}/10 - ${getMoodDescription(value)}`}
-                    trackStyle={{ backgroundColor: '#722ed1' }}
-                    handleStyle={{ borderColor: '#722ed1' }}
-                  />
-                </div>
-              </Form.Item>
-              
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.moodRating !== currentValues.moodRating}>
-                {({ getFieldValue }) => {
-                  const moodRating = getFieldValue('moodRating')
-                  const description = getMoodDescription(moodRating)
-                  return moodRating !== undefined && moodRating !== null ? (
-                    <Card size="small" className="assessment-description">
-                      <Text strong>Mood Rating {moodRating}/10: </Text>
-                      <Text>{description}</Text>
-                    </Card>
-                  ) : null
-                }}
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} lg={8}>
-              <div className="mood-scale-reference">
-                <Title level={6}>Mood Scale Reference:</Title>
-                <Text size="small" type="secondary">
-                  <strong>1-3:</strong> Very low mood<br />
-                  <strong>4-5:</strong> Below average<br />
-                  <strong>6-7:</strong> Good mood<br />
-                  <strong>8-10:</strong> Excellent mood
-                </Text>
-              </div>
-            </Col>
-          </Row>
-
-          <Form.Item name="moodNotes" label="Mood Notes">
-            <TextArea 
-              placeholder="Current feelings, energy level, sleep quality, stress factors..."
-              rows={2}
-              maxLength={300}
-              showCount
-            />
-          </Form.Item>
-
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.moodRating !== currentValues.moodRating}>
-            {({ getFieldValue }) => {
-              const moodStatus = getMoodStatus(getFieldValue('moodRating'))
-              return moodStatus ? (
-                <Alert
-                  message={moodStatus.message}
-                  type={moodStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
-
-        {/* General Information */}
-        <div className="form-section">
-          <Title level={5}>General Information</Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedAt"
-                label="Date & Time"
-                rules={[
-                  { required: true, message: 'Please select date and time' }
-                ]}
-              >
-                <DatePicker
-                  showTime
-                  format="MMM D, YYYY h:mm A"
-                  style={{ width: '100%' }}
+                <Rate 
+                  character={<SmileOutlined />}
+                  style={{ fontSize: 32 }}
+                  tooltips={['Very Poor', 'Poor', 'Average', 'Good', 'Excellent']}
                 />
               </Form.Item>
             </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedBy"
-                label="Recorded By"
-                rules={[
-                  { required: true, message: 'Please enter who recorded this' }
-                ]}
-              >
-                <Input placeholder="Current User" />
-              </Form.Item>
-            </Col>
           </Row>
+        </Card>
 
-          <Form.Item name="generalNotes" label="General Notes">
-            <TextArea 
-              placeholder="Overall condition, environmental factors, medication effects..."
-              rows={3}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-        </div>
+        {/* General Notes */}
+        <Form.Item
+          label={
+            <Space>
+              <InfoCircleOutlined />
+              <span>General Notes</span>
+            </Space>
+          }
+          name="generalNotes"
+          style={{ marginTop: 24 }}
+        >
+          <TextArea 
+            rows={3} 
+            placeholder="Additional context, triggers, activities that affect pain/mood..."
+          />
+        </Form.Item>
+
+        {/* Submit Button */}
+        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
+          <Space>
+            <Button onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Record Assessments
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </Modal>
   )

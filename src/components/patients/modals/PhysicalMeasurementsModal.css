@@ -12,7 +12,7 @@
 }
 
 .physical-measurements-modal .ant-modal-body {
-  padding: 0;
+  padding: 24px;
   max-height: 60vh;
   overflow-y: auto;
 }
@@ -22,10 +22,11 @@
 }
 
 .physical-measurements-modal .ant-modal-footer {
-  padding: 16px 32px;
+  position: sticky;
+  bottom: 0;
+  background: white;
   border-top: 1px solid #f0f0f0;
-  margin-top: 0;
-  text-align: right;
+  padding: 16px 24px;
 }
 
 /* Form sections */
@@ -82,6 +83,7 @@
 .physical-measurements-modal .ant-alert {
   border-radius: 6px;
   border: none;
+  margin-bottom: 16px;
 }
 
 .physical-measurements-modal .ant-alert-success {
@@ -207,9 +209,22 @@
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
+  .physical-measurements-modal {
+    margin: 0;
+    max-width: 100vw;
+  }
+  
   .physical-measurements-modal .ant-modal {
-    margin: 16px;
-    max-width: calc(100vw - 32px);
+    margin: 0;
+    max-width: 100vw;
+  }
+  
+  .physical-measurement-card {
+    margin-bottom: 8px;
+  }
+  
+  .physical-measurement-card .ant-card-body {
+    padding: 12px;
   }
   
   .physical-measurements-modal .ant-modal-header,
@@ -245,4 +260,45 @@
     padding: 8px;
     font-size: 12px;
   }
+}
+
+.physical-measurement-card {
+  margin-bottom: 12px;
+  border: 1px solid #e8e8e8;
+  transition: all 0.3s ease;
+}
+
+.physical-measurement-card:hover {
+  border-color: #1890ff;
+  box-shadow: 0 2px 8px rgba(24, 144, 255, 0.1);
+}
+
+.physical-measurement-card .ant-card-body {
+  padding: 16px;
+}
+
+.physical-measurement-card .input-type-toggle {
+  padding: 8px 0;
+}
+
+.physical-measurement-card .toggle-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.physical-measurement-card .toggle-info {
+  flex: 1;
+}
+
+.physical-measurement-card .ant-switch {
+  flex-shrink: 0;
+  margin-left: 16px;
+}
+
+.physical-measurement-card .ant-select,
+.physical-measurement-card .ant-input,
+.physical-measurement-card .ant-input-number {
+  width: 100%;
 } 

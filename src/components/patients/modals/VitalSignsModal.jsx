@@ -13,7 +13,9 @@ import {
   message,
   Alert,
   Tooltip,
-  Card
+  Card,
+  Switch,
+  Select
 } from 'antd'
 import { 
   HeartOutlined,
@@ -28,12 +30,82 @@ import './VitalSignsModal.css'
 
 const { Title, Text } = Typography
 const { TextArea } = Input
+const { Option } = Select
+
+// Predefined clinical values for vital signs
+const VITAL_STANDARDS = {
+  temperature: [
+    { value: '36.1', label: '36.1°C (Normal)' },
+    { value: '36.5', label: '36.5°C (Normal)' },
+    { value: '37.0', label: '37.0°C (Normal)' },
+    { value: '37.2', label: '37.2°C (Normal)' },
+    { value: '37.5', label: '37.5°C (Low fever)' },
+    { value: '38.0', label: '38.0°C (Fever)' },
+    { value: '38.5', label: '38.5°C (Fever)' },
+    { value: '39.0', label: '39.0°C (High fever)' },
+    { value: '39.5', label: '39.5°C (High fever)' }
+  ],
+  heartRate: [
+    { value: '60', label: '60 bpm (Normal)' },
+    { value: '70', label: '70 bpm (Normal)' },
+    { value: '80', label: '80 bpm (Normal)' },
+    { value: '90', label: '90 bpm (Normal)' },
+    { value: '100', label: '100 bpm (Normal)' },
+    { value: '110', label: '110 bpm (Elevated)' },
+    { value: '120', label: '120 bpm (Elevated)' }
+  ],
+  systolic: [
+    { value: '90', label: '90 mmHg (Low)' },
+    { value: '100', label: '100 mmHg (Normal)' },
+    { value: '110', label: '110 mmHg (Normal)' },
+    { value: '120', label: '120 mmHg (Normal)' },
+    { value: '130', label: '130 mmHg (Elevated)' },
+    { value: '140', label: '140 mmHg (High)' },
+    { value: '150', label: '150 mmHg (High)' },
+    { value: '160', label: '160 mmHg (High)' }
+  ],
+  diastolic: [
+    { value: '60', label: '60 mmHg (Normal)' },
+    { value: '70', label: '70 mmHg (Normal)' },
+    { value: '80', label: '80 mmHg (Normal)' },
+    { value: '90', label: '90 mmHg (Elevated)' },
+    { value: '100', label: '100 mmHg (High)' },
+    { value: '110', label: '110 mmHg (High)' }
+  ],
+  respiratoryRate: [
+    { value: '12', label: '12 breaths/min (Normal)' },
+    { value: '14', label: '14 breaths/min (Normal)' },
+    { value: '16', label: '16 breaths/min (Normal)' },
+    { value: '18', label: '18 breaths/min (Normal)' },
+    { value: '20', label: '20 breaths/min (Normal)' },
+    { value: '22', label: '22 breaths/min (Elevated)' },
+    { value: '24', label: '24 breaths/min (Elevated)' }
+  ],
+  oxygenSaturation: [
+    { value: '95', label: '95% (Low normal)' },
+    { value: '96', label: '96% (Normal)' },
+    { value: '97', label: '97% (Normal)' },
+    { value: '98', label: '98% (Normal)' },
+    { value: '99', label: '99% (Normal)' },
+    { value: '100', label: '100% (Normal)' }
+  ]
+}
 
 const VitalSignsModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
   const [bloodPressureMode, setBloodPressureMode] = useState('separate') // 'separate' or 'combined'
+  
+  // State for input types (standard vs custom)
+  const [inputTypes, setInputTypes] = useState({
+    temperature: 'standard',
+    heartRate: 'standard',
+    systolic: 'standard',
+    diastolic: 'standard',
+    respiratoryRate: 'standard',
+    oxygenSaturation: 'standard'
+  })
 
   useEffect(() => {
     if (visible) {
@@ -41,8 +113,23 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
         recordedAt: dayjs(),
         recordedBy: 'Current User'
       })
+      // Reset input types when modal opens
+      setInputTypes({
+        temperature: 'standard',
+        heartRate: 'standard',
+        systolic: 'standard',
+        diastolic: 'standard',
+        respiratoryRate: 'standard',
+        oxygenSaturation: 'standard'
+      })
     }
   }, [visible, form])
+
+  const handleInputTypeChange = (field, type) => {
+    setInputTypes(prev => ({ ...prev, [field]: type }))
+    // Clear the field value when switching types
+    form.setFieldsValue({ [field]: undefined })
+  }
 
   const handleSubmit = async (values) => {
     setLoading(true)
@@ -134,6 +221,14 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
 
   const handleClose = () => {
     form.resetFields()
+    setInputTypes({
+      temperature: 'standard',
+      heartRate: 'standard',
+      systolic: 'standard',
+      diastolic: 'standard',
+      respiratoryRate: 'standard',
+      oxygenSaturation: 'standard'
+    })
     onClose()
   }
 
@@ -189,42 +284,91 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
     return { type: 'success', message: 'Normal oxygen saturation' }
   }
 
+  const renderFieldWithToggle = (fieldName, label, unit, icon, placeholder) => {
+    const standards = VITAL_STANDARDS[fieldName]
+    const inputType = inputTypes[fieldName]
+
+    return (
+      <Card size="small" className="vital-sign-card">
+        <Row align="middle" gutter={[16, 12]}>
+          <Col span={24}>
+            <Space>
+              {icon}
+              <Text strong>{label}</Text>
+            </Space>
+          </Col>
+          
+          <Col span={24}>
+            <div className="input-type-toggle">
+              <div className="toggle-content">
+                <div className="toggle-info">
+                  <Text strong>
+                    {inputType === 'standard' ? 'Standard Values' : 'Custom Value'}
+                  </Text>
+                  <br />
+                  <Text type="secondary" size="small">
+                    {inputType === 'standard' 
+                      ? 'Use common clinical values' 
+                      : 'Enter exact measured value'
+                    }
+                  </Text>
+                </div>
+                <Switch
+                  checked={inputType === 'standard'}
+                  onChange={(checked) => handleInputTypeChange(fieldName, checked ? 'standard' : 'custom')}
+                  size="small"
+                />
+              </div>
+            </div>
+          </Col>
+
+          <Col span={24}>
+            <Form.Item 
+              name={fieldName}
+              rules={[{ required: false }]}
+              style={{ marginBottom: 0 }}
+            >
+              {inputType === 'standard' ? (
+                <Select
+                  placeholder={`Select ${label.toLowerCase()}`}
+                  size="middle"
+                  allowClear
+                >
+                  {standards?.map(option => (
+                    <Option key={option.value} value={parseFloat(option.value)}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              ) : (
+                <InputNumber
+                  placeholder={placeholder}
+                  suffix={unit}
+                  size="middle"
+                  style={{ width: '100%' }}
+                  step={fieldName === 'temperature' ? 0.1 : 1}
+                />
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
+      </Card>
+    )
+  }
+
   return (
     <Modal
       title={
         <Space>
           <HeartOutlined style={{ color: '#ff4d4f' }} />
-          <Title level={4} style={{ margin: 0 }}>
-            Record Vital Signs
-          </Title>
+          <span>Record Vital Signs</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={handleClose}
-          size="large"
-          disabled={loading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          htmlType="submit"
-          loading={loading}
-          size="large"
-          form="vital-signs-form"
-        >
-          {loading ? 'Recording...' : 'Record Vital Signs'}
-        </Button>
-      ]}
       width={800}
-      destroyOnClose
+      footer={null}
       className="vital-signs-modal"
-      centered
     >
       <Alert
         message="Vital Signs Recording"
@@ -235,346 +379,105 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
       />
 
       <Form
-        id="vital-signs-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        size="large"
-        className="vital-signs-form"
+        initialValues={{
+          recordedAt: dayjs(),
+          recordedBy: 'Current User'
+        }}
       >
-        {/* Temperature Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <ThunderboltOutlined style={{ color: '#fa8c16', marginRight: 8 }} />
-            Body Temperature
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="temperature"
-                label={
-                  <Space>
-                    <span>Temperature (°C)</span>
-                    <Tooltip title="Normal range: 36.1-37.2°C">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 30, max: 45, message: 'Please enter a valid temperature (30-45°C)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="36.5"
-                  step={0.1}
-                  precision={1}
-                  style={{ width: '100%' }}
-                  onChange={(value) => {
-                    const status = getTemperatureStatus(value)
-                    // You could show status here if needed
-                  }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item name="temperatureNotes" label="Temperature Notes">
-                <Input placeholder="Method (oral, rectal, axillary), location" />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Row gutter={[16, 16]}>
+          {/* Date and Recorded By */}
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Date & Time"
+              name="recordedAt"
+              rules={[{ required: true, message: 'Please select date and time' }]}
+            >
+              <DatePicker 
+                showTime 
+                format="YYYY-MM-DD HH:mm"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Col>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.temperature !== currentValues.temperature}>
-            {({ getFieldValue }) => {
-              const tempStatus = getTemperatureStatus(getFieldValue('temperature'))
-              return tempStatus ? (
-                <Alert
-                  message={tempStatus.message}
-                  type={tempStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Recorded By"
+              name="recordedBy"
+              rules={[{ required: true, message: 'Please enter who recorded this' }]}
+            >
+              <Input placeholder="Enter name" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-        {/* Blood Pressure Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <HeartOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
-            Blood Pressure
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={8}>
-              <Form.Item
-                name="systolic"
-                label={
-                  <Space>
-                    <span>Systolic (mmHg)</span>
-                    <Tooltip title="Normal range: 90-120 mmHg">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 50, max: 250, message: 'Please enter a valid systolic pressure (50-250 mmHg)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="120"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={8}>
-              <Form.Item
-                name="diastolic"
-                label={
-                  <Space>
-                    <span>Diastolic (mmHg)</span>
-                    <Tooltip title="Normal range: 60-80 mmHg">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 30, max: 150, message: 'Please enter a valid diastolic pressure (30-150 mmHg)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="80"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={8}>
-              <Form.Item name="bloodPressureNotes" label="BP Notes">
-                <Input placeholder="Position, cuff size, arm used" />
-              </Form.Item>
-            </Col>
-          </Row>
+        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+          <HeartOutlined /> Vital Signs Measurements
+        </Title>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => 
-            prevValues.systolic !== currentValues.systolic || prevValues.diastolic !== currentValues.diastolic
-          }>
-            {({ getFieldValue }) => {
-              const bpStatus = getBloodPressureStatus(getFieldValue('systolic'), getFieldValue('diastolic'))
-              return bpStatus ? (
-                <Alert
-                  message={bpStatus.message}
-                  type={bpStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+        <Row gutter={[16, 16]}>
+          {/* Temperature */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('temperature', 'Temperature', '°C', <ThunderboltOutlined style={{ color: '#fa8c16' }} />, '36.5')}
+          </Col>
 
-        {/* Heart Rate Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <HeartOutlined style={{ color: '#52c41a', marginRight: 8 }} />
-            Heart Rate
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="heartRate"
-                label={
-                  <Space>
-                    <span>Heart Rate (bpm)</span>
-                    <Tooltip title="Normal range: 60-100 bpm">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 30, max: 200, message: 'Please enter a valid heart rate (30-200 bpm)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="72"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item name="heartRateNotes" label="Heart Rate Notes">
-                <Input placeholder="Method (pulse, monitor), rhythm" />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* Heart Rate */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('heartRate', 'Heart Rate', 'bpm', <HeartOutlined style={{ color: '#52c41a' }} />, '72')}
+          </Col>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.heartRate !== currentValues.heartRate}>
-            {({ getFieldValue }) => {
-              const hrStatus = getHeartRateStatus(getFieldValue('heartRate'))
-              return hrStatus ? (
-                <Alert
-                  message={hrStatus.message}
-                  type={hrStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+          {/* Systolic Blood Pressure */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('systolic', 'Systolic BP', 'mmHg', <HeartOutlined style={{ color: '#ff4d4f' }} />, '120')}
+          </Col>
 
-        {/* Respiratory Rate Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <EyeOutlined style={{ color: '#73d13d', marginRight: 8 }} />
-            Respiratory Rate
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="respiratoryRate"
-                label={
-                  <Space>
-                    <span>Respiratory Rate (/min)</span>
-                    <Tooltip title="Normal range: 12-20 breaths per minute">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 5, max: 60, message: 'Please enter a valid respiratory rate (5-60 /min)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="16"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item name="respiratoryNotes" label="Respiratory Notes">
-                <Input placeholder="Depth, effort, rhythm" />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* Diastolic Blood Pressure */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('diastolic', 'Diastolic BP', 'mmHg', <HeartOutlined style={{ color: '#f5222d' }} />, '80')}
+          </Col>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.respiratoryRate !== currentValues.respiratoryRate}>
-            {({ getFieldValue }) => {
-              const rrStatus = getRespiratoryStatus(getFieldValue('respiratoryRate'))
-              return rrStatus ? (
-                <Alert
-                  message={rrStatus.message}
-                  type={rrStatus.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+          {/* Respiratory Rate */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('respiratoryRate', 'Respiratory Rate', '/min', <EyeOutlined style={{ color: '#1890ff' }} />, '16')}
+          </Col>
 
-        {/* Oxygen Saturation Section */}
-        <div className="form-section">
-          <Title level={5}>
-            <DashboardOutlined style={{ color: '#13c2c2', marginRight: 8 }} />
-            Oxygen Saturation
-          </Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="oxygenSaturation"
-                label={
-                  <Space>
-                    <span>Oxygen Saturation (%)</span>
-                    <Tooltip title="Normal range: 95-100%">
-                      <InfoCircleOutlined />
-                    </Tooltip>
-                  </Space>
-                }
-                rules={[
-                  { type: 'number', min: 70, max: 100, message: 'Please enter a valid oxygen saturation (70-100%)' }
-                ]}
-              >
-                <InputNumber
-                  placeholder="98"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item name="oxygenNotes" label="Oxygen Notes">
-                <Input placeholder="Room air, supplemental O2" />
-              </Form.Item>
-            </Col>
-          </Row>
+          {/* Oxygen Saturation */}
+          <Col xs={24} lg={12}>
+            {renderFieldWithToggle('oxygenSaturation', 'Oxygen Saturation', '%', <DashboardOutlined style={{ color: '#722ed1' }} />, '98')}
+          </Col>
+        </Row>
 
-          <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.oxygenSaturation !== currentValues.oxygenSaturation}>
-            {({ getFieldValue }) => {
-              const o2Status = getOxygenStatus(getFieldValue('oxygenSaturation'))
-              return o2Status ? (
-                <Alert
-                  message={o2Status.message}
-                  type={o2Status.type}
-                  size="small"
-                  style={{ marginBottom: 16 }}
-                />
-              ) : null
-            }}
-          </Form.Item>
-        </div>
+        {/* General Notes */}
+        <Form.Item
+          label={
+            <Space>
+              <InfoCircleOutlined />
+              <span>General Notes</span>
+            </Space>
+          }
+          name="generalNotes"
+          style={{ marginTop: 24 }}
+        >
+          <TextArea 
+            rows={3} 
+            placeholder="Enter any additional notes about the vital signs measurements..."
+          />
+        </Form.Item>
 
-        {/* General Information */}
-        <div className="form-section">
-          <Title level={5}>General Information</Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedAt"
-                label="Date & Time"
-                rules={[
-                  { required: true, message: 'Please select date and time' }
-                ]}
-              >
-                <DatePicker
-                  showTime
-                  format="MMM D, YYYY h:mm A"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedBy"
-                label="Recorded By"
-                rules={[
-                  { required: true, message: 'Please enter who recorded this' }
-                ]}
-              >
-                <Input placeholder="Current User" />
-              </Form.Item>
-            </Col>
-          </Row>
-
-          <Form.Item name="generalNotes" label="General Notes">
-            <TextArea 
-              placeholder="Any additional observations about the patient's condition..."
-              rows={3}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
-        </div>
+        {/* Submit Button */}
+        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
+          <Space>
+            <Button onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Record Vital Signs
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </Modal>
   )

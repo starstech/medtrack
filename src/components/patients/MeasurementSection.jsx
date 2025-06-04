@@ -263,58 +263,41 @@ const MeasurementSection = ({ patient }) => {
     })
   }
 
-  const openModal = (categoryOrSubcategory) => {
-    setTypeSelectionVisible(false)
-    setSubcategorySelectionVisible(false)
-    
-    // Handle direct modal opening (for categories with direct: true)
-    if (typeof categoryOrSubcategory === 'string') {
-      const modalKey = categoryOrSubcategory === 'urine_dipstick' ? 'urine_tests' : categoryOrSubcategory
-      setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
-      return
+  const openModal = (modalComponent) => {
+    const modalMap = {
+      'VitalSignsModal': 'vital_signs',
+      'BloodTestModal': 'blood_tests',
+      'PhysicalMeasurementsModal': 'physical', 
+      'SubjectiveMeasurementsModal': 'subjective',
+      'UrineTestModal': 'urine_tests'
     }
-    
-    // Handle subcategory object
-    if (categoryOrSubcategory.modalComponent) {
-      const modalMap = {
-        'VitalSignsModal': 'vital_signs',
-        'BloodTestModal': 'blood_tests', 
-        'PhysicalMeasurementsModal': 'physical',
-        'SubjectiveMeasurementsModal': 'subjective',
-        'UrineTestModal': 'urine_tests'
-      }
-      const modalKey = modalMap[categoryOrSubcategory.modalComponent]
-      if (modalKey) {
-        setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
-      }
+    const modalKey = modalMap[modalComponent]
+    if (modalKey) {
+      setTypeSelectionVisible(false)
+      setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
     }
   }
 
-  const closeModal = (category) => {
-    setModalVisibility(prev => ({ ...prev, [category]: false }))
+  const closeModal = (modalKey) => {
+    setModalVisibility(prev => ({ ...prev, [modalKey]: false }))
   }
 
   const handleCategoryClick = (category) => {
     if (category.direct) {
-      // Direct modal opening for categories like Temperature, Physical, Subjective
-      const modalMap = {
-        'VitalSignsModal': 'vital_signs',
-        'BloodTestModal': 'blood_tests',
-        'PhysicalMeasurementsModal': 'physical', 
-        'SubjectiveMeasurementsModal': 'subjective',
-        'UrineTestModal': 'urine_tests'
-      }
-      const modalKey = modalMap[category.modalComponent]
-      if (modalKey) {
-        setTypeSelectionVisible(false)
-        setModalVisibility(prev => ({ ...prev, [modalKey]: true }))
-      }
-    } else {
-      // Show subcategory selection for categories with subcategories
+      // Direct modals don't need subcategory selection
+      openModal(category.modalComponent)
+    } else if (category.subcategories) {
+      // Categories with subcategories need further selection
       setSelectedCategory(category)
       setTypeSelectionVisible(false)
       setSubcategorySelectionVisible(true)
     }
+  }
+
+  const handleSubcategoryClick = (subcategory) => {
+    openModal(subcategory.modalComponent)
+    setSubcategorySelectionVisible(false)
+    setSelectedCategory(null)
   }
 
   const handleTrendsClick = () => {
@@ -661,34 +644,14 @@ const MeasurementSection = ({ patient }) => {
         setSubcategorySelectionVisible(false)
         setSelectedCategory(null)
       }}
-      footer={[
-        <Button
-          key="back"
-          onClick={() => {
-            setSubcategorySelectionVisible(false)
-            setSelectedCategory(null)
-            setTypeSelectionVisible(true)
-          }}
-        >
-          Back to Categories
-        </Button>,
-        <Button
-          key="cancel"
-          onClick={() => {
-            setSubcategorySelectionVisible(false)
-            setSelectedCategory(null)
-          }}
-        >
-          Cancel
-        </Button>
-      ]}
+      footer={null}
       width={720}
       centered
       destroyOnClose
       className="subcategory-selection-modal"
     >
       <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
-        Choose the specific test type:
+        Select the specific type of {selectedCategory?.title.toLowerCase()} you'd like to record:
       </Text>
       
       <div className="subcategory-grid">
@@ -696,24 +659,43 @@ const MeasurementSection = ({ patient }) => {
           <div 
             key={subcategory.key}
             className="subcategory-card"
-            onClick={() => openModal(subcategory)}
-            style={{ borderColor: selectedCategory.color }}
+            onClick={() => handleSubcategoryClick(subcategory)}
           >
+            <div className="subcategory-icon">
+              {subcategory.icon}
+            </div>
             <div className="subcategory-content">
-              <Title level={5} style={{ margin: '0 0 8px', color: selectedCategory.color }}>
+              <Title level={5} style={{ margin: '8px 0 4px', color: selectedCategory.color }}>
                 {subcategory.title}
               </Title>
               <Text type="secondary" size="small">
                 {subcategory.description}
               </Text>
-              <div style={{ marginTop: 8 }}>
-                <Text size="small" style={{ color: selectedCategory.color, fontWeight: 500 }}>
-                  {subcategory.types.length} measurement{subcategory.types.length > 1 ? 's' : ''}
-                </Text>
-              </div>
             </div>
           </div>
         ))}
+      </div>
+      
+      <div style={{ textAlign: 'center', marginTop: 24 }}>
+        <Space>
+          <Button
+            onClick={() => {
+              setSubcategorySelectionVisible(false)
+              setSelectedCategory(null)
+              setTypeSelectionVisible(true)
+            }}
+          >
+            Back to Categories
+          </Button>
+          <Button
+            onClick={() => {
+              setSubcategorySelectionVisible(false)
+              setSelectedCategory(null)
+            }}
+          >
+            Cancel
+          </Button>
+        </Space>
       </div>
     </Modal>
   )

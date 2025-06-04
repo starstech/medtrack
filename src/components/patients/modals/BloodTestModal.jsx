@@ -14,7 +14,10 @@ import {
   Alert,
   Tooltip,
   Tabs,
-  Divider
+  Divider,
+  Switch,
+  Select,
+  Card
 } from 'antd'
 import { 
   ExperimentOutlined,
@@ -31,12 +34,105 @@ import './BloodTestModal.css'
 const { Title, Text } = Typography
 const { TextArea } = Input
 const { TabPane } = Tabs
+const { Option } = Select
+
+// Predefined clinical values for blood tests
+const BLOOD_STANDARDS = {
+  bloodGlucose: [
+    { value: '70', label: '70 mg/dL (Normal fasting)' },
+    { value: '80', label: '80 mg/dL (Normal fasting)' },
+    { value: '90', label: '90 mg/dL (Normal fasting)' },
+    { value: '100', label: '100 mg/dL (Normal fasting)' },
+    { value: '110', label: '110 mg/dL (Elevated)' },
+    { value: '126', label: '126 mg/dL (Diabetes threshold)' },
+    { value: '140', label: '140 mg/dL (Post-meal normal)' },
+    { value: '200', label: '200 mg/dL (Diabetes)' }
+  ],
+  totalCholesterol: [
+    { value: '150', label: '150 mg/dL (Optimal)' },
+    { value: '180', label: '180 mg/dL (Desirable)' },
+    { value: '200', label: '200 mg/dL (Borderline)' },
+    { value: '220', label: '220 mg/dL (Borderline high)' },
+    { value: '240', label: '240 mg/dL (High)' },
+    { value: '260', label: '260 mg/dL (High)' }
+  ],
+  ldlCholesterol: [
+    { value: '70', label: '70 mg/dL (Optimal)' },
+    { value: '100', label: '100 mg/dL (Near optimal)' },
+    { value: '130', label: '130 mg/dL (Borderline)' },
+    { value: '160', label: '160 mg/dL (High)' },
+    { value: '190', label: '190 mg/dL (Very high)' }
+  ],
+  hdlCholesterol: [
+    { value: '35', label: '35 mg/dL (Low)' },
+    { value: '40', label: '40 mg/dL (Low normal)' },
+    { value: '50', label: '50 mg/dL (Normal)' },
+    { value: '60', label: '60 mg/dL (High - protective)' },
+    { value: '70', label: '70 mg/dL (High - protective)' }
+  ],
+  triglycerides: [
+    { value: '100', label: '100 mg/dL (Normal)' },
+    { value: '150', label: '150 mg/dL (Borderline)' },
+    { value: '200', label: '200 mg/dL (High)' },
+    { value: '250', label: '250 mg/dL (High)' },
+    { value: '500', label: '500 mg/dL (Very high)' }
+  ],
+  hemoglobin: [
+    { value: '12.0', label: '12.0 g/dL (Female low)' },
+    { value: '13.5', label: '13.5 g/dL (Female normal)' },
+    { value: '14.0', label: '14.0 g/dL (Male low)' },
+    { value: '15.0', label: '15.0 g/dL (Normal)' },
+    { value: '16.0', label: '16.0 g/dL (Normal)' },
+    { value: '17.0', label: '17.0 g/dL (Male high)' }
+  ],
+  hematocrit: [
+    { value: '36', label: '36% (Female low)' },
+    { value: '40', label: '40% (Female normal)' },
+    { value: '42', label: '42% (Male low)' },
+    { value: '45', label: '45% (Normal)' },
+    { value: '48', label: '48% (Normal)' },
+    { value: '52', label: '52% (Male high)' }
+  ],
+  wbcCount: [
+    { value: '4000', label: '4,000 /μL (Low normal)' },
+    { value: '6000', label: '6,000 /μL (Normal)' },
+    { value: '8000', label: '8,000 /μL (Normal)' },
+    { value: '10000', label: '10,000 /μL (High normal)' },
+    { value: '12000', label: '12,000 /μL (Elevated)' }
+  ],
+  rbcCount: [
+    { value: '4.2', label: '4.2 M/μL (Female normal)' },
+    { value: '4.5', label: '4.5 M/μL (Normal)' },
+    { value: '5.0', label: '5.0 M/μL (Male normal)' },
+    { value: '5.5', label: '5.5 M/μL (High)' }
+  ],
+  plateletCount: [
+    { value: '150000', label: '150,000 /μL (Low normal)' },
+    { value: '250000', label: '250,000 /μL (Normal)' },
+    { value: '350000', label: '350,000 /μL (Normal)' },
+    { value: '450000', label: '450,000 /μL (High)' }
+  ]
+}
 
 const BloodTestModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('glucose')
+  
+  // State for input types (standard vs custom)
+  const [inputTypes, setInputTypes] = useState({
+    bloodGlucose: 'standard',
+    totalCholesterol: 'standard',
+    ldlCholesterol: 'standard',
+    hdlCholesterol: 'standard',
+    triglycerides: 'standard',
+    hemoglobin: 'standard',
+    hematocrit: 'standard',
+    wbcCount: 'standard',
+    rbcCount: 'standard',
+    plateletCount: 'standard'
+  })
 
   useEffect(() => {
     if (visible) {
@@ -44,8 +140,27 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
         recordedAt: dayjs(),
         recordedBy: 'Current User'
       })
+      // Reset input types when modal opens
+      setInputTypes({
+        bloodGlucose: 'standard',
+        totalCholesterol: 'standard',
+        ldlCholesterol: 'standard',
+        hdlCholesterol: 'standard',
+        triglycerides: 'standard',
+        hemoglobin: 'standard',
+        hematocrit: 'standard',
+        wbcCount: 'standard',
+        rbcCount: 'standard',
+        plateletCount: 'standard'
+      })
     }
   }, [visible, form])
+
+  const handleInputTypeChange = (field, type) => {
+    setInputTypes(prev => ({ ...prev, [field]: type }))
+    // Clear the field value when switching types
+    form.setFieldsValue({ [field]: undefined })
+  }
 
   const handleSubmit = async (values) => {
     setLoading(true)
@@ -174,7 +289,91 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
 
   const handleClose = () => {
     form.resetFields()
+    setInputTypes({
+      bloodGlucose: 'standard',
+      totalCholesterol: 'standard',
+      ldlCholesterol: 'standard',
+      hdlCholesterol: 'standard',
+      triglycerides: 'standard',
+      hemoglobin: 'standard',
+      hematocrit: 'standard',
+      wbcCount: 'standard',
+      rbcCount: 'standard',
+      plateletCount: 'standard'
+    })
     onClose()
+  }
+
+  const renderFieldWithToggle = (fieldName, label, unit, icon, placeholder) => {
+    const standards = BLOOD_STANDARDS[fieldName]
+    const inputType = inputTypes[fieldName]
+
+    return (
+      <Card size="small" className="blood-test-card">
+        <Row align="middle" gutter={[16, 12]}>
+          <Col span={24}>
+            <Space>
+              {icon}
+              <Text strong>{label}</Text>
+            </Space>
+          </Col>
+          
+          <Col span={24}>
+            <div className="input-type-toggle">
+              <div className="toggle-content">
+                <div className="toggle-info">
+                  <Text strong>
+                    {inputType === 'standard' ? 'Clinical Ranges' : 'Custom Value'}
+                  </Text>
+                  <br />
+                  <Text type="secondary" size="small">
+                    {inputType === 'standard' 
+                      ? 'Select from typical lab values' 
+                      : 'Enter exact lab result'
+                    }
+                  </Text>
+                </div>
+                <Switch
+                  checked={inputType === 'standard'}
+                  onChange={(checked) => handleInputTypeChange(fieldName, checked ? 'standard' : 'custom')}
+                  size="small"
+                />
+              </div>
+            </div>
+          </Col>
+
+          <Col span={24}>
+            <Form.Item 
+              name={fieldName}
+              rules={[{ required: false }]}
+              style={{ marginBottom: 0 }}
+            >
+              {inputType === 'standard' ? (
+                <Select
+                  placeholder={`Select ${label.toLowerCase()} value`}
+                  size="middle"
+                  allowClear
+                >
+                  {standards?.map(option => (
+                    <Option key={option.value} value={parseFloat(option.value)}>
+                      {option.label}
+                    </Option>
+                  ))}
+                </Select>
+              ) : (
+                <InputNumber
+                  placeholder={placeholder}
+                  suffix={unit}
+                  size="middle"
+                  style={{ width: '100%' }}
+                  step={fieldName.includes('Count') ? 1000 : (fieldName === 'rbcCount' ? 0.1 : 1)}
+                />
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
+      </Card>
+    )
   }
 
   // Status checking functions
@@ -252,485 +451,148 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
       title={
         <Space>
           <ExperimentOutlined style={{ color: '#1890ff' }} />
-          <Title level={4} style={{ margin: 0 }}>
-            Record Blood Tests
-          </Title>
+          <span>Record Blood Tests</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
-      footer={[
-        <Button
-          key="cancel"
-          onClick={handleClose}
-          size="large"
-          disabled={loading}
-        >
-          Cancel
-        </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          htmlType="submit"
-          loading={loading}
-          size="large"
-          form="blood-test-form"
-        >
-          {loading ? 'Recording...' : 'Record Blood Tests'}
-        </Button>
-      ]}
       width={800}
-      destroyOnClose
+      footer={null}
       className="blood-test-modal"
-      centered
     >
       <Alert
-        message="Blood Test Recording"
-        description="Enter blood test results. All fields are optional - record only available test results."
+        message="Blood Test Results"
+        description="Record blood test results from laboratory analysis. All fields are optional - record only available results."
         type="info"
         showIcon
         style={{ marginBottom: 24 }}
       />
 
       <Form
-        id="blood-test-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        size="large"
-        className="blood-test-form"
+        initialValues={{
+          recordedAt: dayjs(),
+          recordedBy: 'Current User'
+        }}
       >
-        <Tabs activeKey={activeTab} onChange={setActiveTab} type="card">
-          {/* Blood Glucose Tab */}
-          <TabPane 
-            tab={
-              <Space>
-                <ThunderboltOutlined />
-                <span>Blood Glucose</span>
-              </Space>
-            } 
-            key="glucose"
-          >
-            <div className="form-section">
-              <Row gutter={16}>
-                <Col xs={24} sm={16}>
-                  <Form.Item
-                    name="bloodGlucose"
-                    label={
-                      <Space>
-                        <span>Blood Glucose (mg/dL)</span>
-                        <Tooltip title="Fasting: 70-100 mg/dL Normal | Random: <140 mg/dL Normal">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 30, max: 600, message: 'Please enter a valid glucose level (30-600 mg/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="95"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={8}>
-                  <Form.Item name="glucoseNotes" label="Glucose Notes">
-                    <Input placeholder="Fasting, random, post-meal" />
-                  </Form.Item>
-                </Col>
-              </Row>
+        <Row gutter={[16, 16]}>
+          {/* Date and Recorded By */}
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Date & Time"
+              name="recordedAt"
+              rules={[{ required: true, message: 'Please select date and time' }]}
+            >
+              <DatePicker 
+                showTime 
+                format="YYYY-MM-DD HH:mm"
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Col>
 
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.bloodGlucose !== currentValues.bloodGlucose}>
-                {({ getFieldValue }) => {
-                  const glucoseStatus = getGlucoseStatus(getFieldValue('bloodGlucose'))
-                  return glucoseStatus ? (
-                    <Alert
-                      message={glucoseStatus.message}
-                      type={glucoseStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-            </div>
-          </TabPane>
+          <Col xs={24} sm={12}>
+            <Form.Item
+              label="Recorded By"
+              name="recordedBy"
+              rules={[{ required: true, message: 'Please enter who recorded this' }]}
+            >
+              <Input placeholder="Enter name" />
+            </Form.Item>
+          </Col>
+        </Row>
 
-          {/* Lipid Panel Tab */}
-          <TabPane 
-            tab={
-              <Space>
-                <DropboxOutlined />
-                <span>Lipid Panel</span>
-              </Space>
-            } 
-            key="lipid"
-          >
-            <div className="form-section">
-              <Title level={5}>Cholesterol Panel</Title>
-              
-              <Row gutter={16}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="totalCholesterol"
-                    label={
-                      <Space>
-                        <span>Total Cholesterol (mg/dL)</span>
-                        <Tooltip title="Desirable: <200 mg/dL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 100, max: 500, message: 'Please enter a valid cholesterol level (100-500 mg/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="190"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="ldlCholesterol"
-                    label={
-                      <Space>
-                        <span>LDL Cholesterol (mg/dL)</span>
-                        <Tooltip title="Optimal: <100 mg/dL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 50, max: 400, message: 'Please enter a valid LDL level (50-400 mg/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="110"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
+        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+          <ExperimentOutlined /> Blood Test Results
+        </Title>
 
-              <Row gutter={16}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="hdlCholesterol"
-                    label={
-                      <Space>
-                        <span>HDL Cholesterol (mg/dL)</span>
-                        <Tooltip title="Good: ≥40 mg/dL (men), ≥50 mg/dL (women)">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 20, max: 150, message: 'Please enter a valid HDL level (20-150 mg/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="45"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="triglycerides"
-                    label={
-                      <Space>
-                        <span>Triglycerides (mg/dL)</span>
-                        <Tooltip title="Normal: <150 mg/dL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 30, max: 1000, message: 'Please enter a valid triglyceride level (30-1000 mg/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="130"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item name="cholesterolNotes" label="Lipid Panel Notes">
-                <Input placeholder="Fasting status, medications affecting results" />
-              </Form.Item>
-
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => 
-                prevValues.totalCholesterol !== currentValues.totalCholesterol ||
-                prevValues.ldlCholesterol !== currentValues.ldlCholesterol ||
-                prevValues.hdlCholesterol !== currentValues.hdlCholesterol
-              }>
-                {({ getFieldValue }) => {
-                  const cholesterolStatus = getCholesterolStatus(
-                    getFieldValue('totalCholesterol'),
-                    getFieldValue('ldlCholesterol'),
-                    getFieldValue('hdlCholesterol')
-                  )
-                  return cholesterolStatus ? (
-                    <Alert
-                      message={cholesterolStatus.message}
-                      type={cholesterolStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.triglycerides !== currentValues.triglycerides}>
-                {({ getFieldValue }) => {
-                  const trigStatus = getTriglycerideStatus(getFieldValue('triglycerides'))
-                  return trigStatus ? (
-                    <Alert
-                      message={trigStatus.message}
-                      type={trigStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-            </div>
-          </TabPane>
-
-          {/* Complete Blood Count Tab */}
-          <TabPane 
-            tab={
-              <Space>
-                <HeartOutlined />
-                <span>Blood Count (CBC)</span>
-              </Space>
-            } 
-            key="cbc"
-          >
-            <div className="form-section">
-              <Title level={5}>Complete Blood Count</Title>
-              
-              <Row gutter={16}>
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="hemoglobin"
-                    label={
-                      <Space>
-                        <span>Hemoglobin (g/dL)</span>
-                        <Tooltip title="Normal: 12-16 g/dL (women), 14-18 g/dL (men)">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 6, max: 25, message: 'Please enter a valid hemoglobin level (6-25 g/dL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="14.0"
-                      step={0.1}
-                      precision={1}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={12}>
-                  <Form.Item
-                    name="hematocrit"
-                    label={
-                      <Space>
-                        <span>Hematocrit (%)</span>
-                        <Tooltip title="Normal: 36-47% (women), 42-52% (men)">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 15, max: 70, message: 'Please enter a valid hematocrit (15-70%)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="42"
-                      step={0.1}
-                      precision={1}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Row gutter={16}>
-                <Col xs={24} sm={8}>
-                  <Form.Item
-                    name="wbcCount"
-                    label={
-                      <Space>
-                        <span>WBC Count (/μL)</span>
-                        <Tooltip title="Normal: 4,500-11,000 /μL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 1000, max: 50000, message: 'Please enter a valid WBC count (1,000-50,000 /μL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="7500"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={8}>
-                  <Form.Item
-                    name="rbcCount"
-                    label={
-                      <Space>
-                        <span>RBC Count (M/μL)</span>
-                        <Tooltip title="Normal: 4.0-5.9 million/μL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 2, max: 8, message: 'Please enter a valid RBC count (2-8 M/μL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="4.5"
-                      step={0.1}
-                      precision={1}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-                
-                <Col xs={24} sm={8}>
-                  <Form.Item
-                    name="plateletCount"
-                    label={
-                      <Space>
-                        <span>Platelet Count (/μL)</span>
-                        <Tooltip title="Normal: 150,000-450,000 /μL">
-                          <InfoCircleOutlined />
-                        </Tooltip>
-                      </Space>
-                    }
-                    rules={[
-                      { type: 'number', min: 50000, max: 1000000, message: 'Please enter a valid platelet count (50,000-1,000,000 /μL)' }
-                    ]}
-                  >
-                    <InputNumber
-                      placeholder="300000"
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-
-              <Form.Item name="cbcNotes" label="CBC Notes">
-                <Input placeholder="Additional CBC details, differential results" />
-              </Form.Item>
-
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.hemoglobin !== currentValues.hemoglobin}>
-                {({ getFieldValue }) => {
-                  const hbStatus = getHemoglobinStatus(getFieldValue('hemoglobin'))
-                  return hbStatus ? (
-                    <Alert
-                      message={hbStatus.message}
-                      type={hbStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.wbcCount !== currentValues.wbcCount}>
-                {({ getFieldValue }) => {
-                  const wbcStatus = getWBCStatus(getFieldValue('wbcCount'))
-                  return wbcStatus ? (
-                    <Alert
-                      message={wbcStatus.message}
-                      type={wbcStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-
-              <Form.Item noStyle shouldUpdate={(prevValues, currentValues) => prevValues.plateletCount !== currentValues.plateletCount}>
-                {({ getFieldValue }) => {
-                  const pltStatus = getPlateletStatus(getFieldValue('plateletCount'))
-                  return pltStatus ? (
-                    <Alert
-                      message={pltStatus.message}
-                      type={pltStatus.type}
-                      size="small"
-                      style={{ marginBottom: 16 }}
-                    />
-                  ) : null
-                }}
-              </Form.Item>
-            </div>
-          </TabPane>
-        </Tabs>
-
-        {/* General Information */}
-        <Divider />
-        <div className="form-section">
-          <Title level={5}>General Information</Title>
-          
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedAt"
-                label="Date & Time"
-                rules={[
-                  { required: true, message: 'Please select date and time' }
-                ]}
-              >
-                <DatePicker
-                  showTime
-                  format="MMM D, YYYY h:mm A"
-                  style={{ width: '100%' }}
-                />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="recordedBy"
-                label="Recorded By"
-                rules={[
-                  { required: true, message: 'Please enter who recorded this' }
-                ]}
-              >
-                <Input placeholder="Current User" />
-              </Form.Item>
+        {/* Glucose & Diabetes Section */}
+        <div style={{ marginBottom: 24 }}>
+          <Title level={5} style={{ marginBottom: 16 }}>
+            <DashboardOutlined style={{ color: '#fa8c16' }} /> Glucose & Diabetes
+          </Title>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('bloodGlucose', 'Blood Glucose', 'mg/dL', <DashboardOutlined style={{ color: '#fa8c16' }} />, '95')}
             </Col>
           </Row>
-
-          <Form.Item name="generalNotes" label="General Notes">
-            <TextArea 
-              placeholder="Laboratory, fasting status, any medication effects..."
-              rows={3}
-              maxLength={500}
-              showCount
-            />
-          </Form.Item>
         </div>
+
+        {/* Lipid Panel Section */}
+        <div style={{ marginBottom: 24 }}>
+          <Title level={5} style={{ marginBottom: 16 }}>
+            <HeartOutlined style={{ color: '#ff4d4f' }} /> Cholesterol & Lipids
+          </Title>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('totalCholesterol', 'Total Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#ff4d4f' }} />, '190')}
+            </Col>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('ldlCholesterol', 'LDL Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#f5222d' }} />, '110')}
+            </Col>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('hdlCholesterol', 'HDL Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#52c41a' }} />, '45')}
+            </Col>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('triglycerides', 'Triglycerides', 'mg/dL', <HeartOutlined style={{ color: '#fa8c16' }} />, '130')}
+            </Col>
+          </Row>
+        </div>
+
+        {/* Complete Blood Count Section */}
+        <div style={{ marginBottom: 24 }}>
+          <Title level={5} style={{ marginBottom: 16 }}>
+            <DropboxOutlined style={{ color: '#722ed1' }} /> Complete Blood Count (CBC)
+          </Title>
+          <Row gutter={[16, 16]}>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('hemoglobin', 'Hemoglobin', 'g/dL', <DropboxOutlined style={{ color: '#722ed1' }} />, '14.0')}
+            </Col>
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('hematocrit', 'Hematocrit', '%', <DropboxOutlined style={{ color: '#eb2f96' }} />, '42')}
+            </Col>
+            <Col xs={24} lg={8}>
+              {renderFieldWithToggle('wbcCount', 'WBC Count', '/μL', <ThunderboltOutlined style={{ color: '#1890ff' }} />, '7500')}
+            </Col>
+            <Col xs={24} lg={8}>
+              {renderFieldWithToggle('rbcCount', 'RBC Count', 'M/μL', <ThunderboltOutlined style={{ color: '#f5222d' }} />, '4.5')}
+            </Col>
+            <Col xs={24} lg={8}>
+              {renderFieldWithToggle('plateletCount', 'Platelet Count', '/μL', <ThunderboltOutlined style={{ color: '#52c41a' }} />, '300000')}
+            </Col>
+          </Row>
+        </div>
+
+        {/* General Notes */}
+        <Form.Item
+          label={
+            <Space>
+              <InfoCircleOutlined />
+              <span>General Notes</span>
+            </Space>
+          }
+          name="generalNotes"
+          style={{ marginTop: 24 }}
+        >
+          <TextArea 
+            rows={3} 
+            placeholder="Laboratory details, fasting status, medications affecting results..."
+          />
+        </Form.Item>
+
+        {/* Submit Button */}
+        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
+          <Space>
+            <Button onClick={handleClose}>
+              Cancel
+            </Button>
+            <Button type="primary" htmlType="submit" loading={loading}>
+              Record Blood Tests
+            </Button>
+          </Space>
+        </Form.Item>
       </Form>
     </Modal>
   )
