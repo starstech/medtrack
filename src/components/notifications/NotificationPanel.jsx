@@ -29,11 +29,13 @@ import {
 } from '@ant-design/icons'
 import { useNotificationContext } from '../../contexts/NotificationContext'
 import { formatDistanceToNow } from 'date-fns'
+import { useNavigate } from 'react-router-dom'
 import './NotificationPanel.css'
 
 const { Title, Text } = Typography
 
 const NotificationPanel = () => {
+  const navigate = useNavigate()
   const { 
     notifications, 
     markAsRead, 
@@ -99,24 +101,9 @@ const NotificationPanel = () => {
     // TODO: Add navigation logic based on notification type
   }
 
-  const getNotificationMenuItems = (notification) => [
-    {
-      key: 'read',
-      icon: notification.read ? <EyeOutlined /> : <CheckOutlined />,
-      label: notification.read ? 'Mark as Unread' : 'Mark as Read',
-      onClick: () => markAsRead(notification.id)
-    },
-    {
-      type: 'divider'
-    },
-    {
-      key: 'delete',
-      icon: <DeleteOutlined />,
-      label: 'Delete',
-      onClick: () => deleteNotification(notification.id),
-      danger: true
-    }
-  ]
+  const handleViewAllNotifications = () => {
+    navigate('/notifications')
+  }
 
   const visibleNotifications = notifications.slice(0, visibleCount)
   const hasMoreNotifications = notifications.length > visibleCount
@@ -173,19 +160,30 @@ const NotificationPanel = () => {
               <List.Item 
                 className={`notification-item ${!notification.read ? 'unread' : ''}`}
                 actions={[
-                  <Dropdown
-                    key="actions"
-                    menu={{ items: getNotificationMenuItems(notification) }}
-                    placement="bottomRight"
-                    trigger={['click']}
-                  >
+                  <div key="actions" className="notification-action-btns">
                     <Button 
                       type="text" 
-                      icon={<EllipsisOutlined />} 
+                      icon={notification.read ? <EyeOutlined /> : <CheckOutlined />} 
                       size="small"
-                      className="notification-menu-btn"
+                      className="notification-action-btn read-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        markAsRead(notification.id)
+                      }}
+                      title={notification.read ? 'Mark as unread' : 'Mark as read'}
                     />
-                  </Dropdown>
+                    <Button 
+                      type="text" 
+                      icon={<DeleteOutlined />} 
+                      size="small"
+                      className="notification-action-btn delete-btn"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        deleteNotification(notification.id)
+                      }}
+                      title="Delete notification"
+                    />
+                  </div>
                 ]}
               >
                 <div 
@@ -278,6 +276,7 @@ const NotificationPanel = () => {
                 type="text" 
                 size="small"
                 className="view-all-btn"
+                onClick={handleViewAllNotifications}
               >
                 View all
               </Button>

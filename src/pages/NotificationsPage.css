@@ -1,0 +1,422 @@
+/* Notifications Page - Professional Design */
+.notifications-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding: 0;
+}
+
+/* Header Section */
+.notifications-header {
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  margin-bottom: 24px;
+}
+
+.header-content {
+  padding: 24px 32px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.header-title {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.back-button {
+  margin-top: 8px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.title-section {
+  flex: 1;
+}
+
+.title-section .ant-typography {
+  margin-bottom: 4px;
+}
+
+.title-section .ant-badge {
+  margin-left: 12px;
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+/* Filters Card */
+.filters-card {
+  margin: 0 32px 24px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.filters-card .ant-card-body {
+  padding: 16px 20px;
+}
+
+.filters-card .ant-select,
+.filters-card .ant-input-affix-wrapper {
+  border-radius: 6px;
+}
+
+.filters-card .ant-input-affix-wrapper:focus,
+.filters-card .ant-input-affix-wrapper-focused,
+.filters-card .ant-select-focused .ant-select-selector {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Notifications Content */
+.notifications-content {
+  margin: 0 32px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  min-height: 400px;
+}
+
+.notifications-content .ant-card-body {
+  padding: 0;
+}
+
+/* Select All Header */
+.select-all-header {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.select-all-header .ant-checkbox-wrapper {
+  font-weight: 500;
+  color: #595959;
+}
+
+/* Notification Items */
+.notifications-content .ant-list {
+  margin: 0;
+}
+
+.notifications-content .ant-list-item {
+  padding: 16px 24px;
+  border-bottom: 1px solid #f5f5f5;
+  margin: 0;
+  transition: all 0.2s ease;
+}
+
+.notifications-content .ant-list-item:last-child {
+  border-bottom: none;
+}
+
+.notifications-content .ant-list-item:hover {
+  background-color: #fafafa;
+}
+
+.notifications-content .notification-item.unread {
+  background-color: rgba(24, 144, 255, 0.02);
+  border-left: 4px solid #1890ff;
+  padding-left: 20px;
+}
+
+.notification-content-full {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  width: 100%;
+}
+
+.notification-checkbox {
+  margin-top: 2px;
+}
+
+.notifications-content .ant-list-item-meta {
+  align-items: flex-start;
+  margin-bottom: 0;
+}
+
+.notifications-content .ant-list-item-meta-avatar {
+  margin-right: 16px;
+  margin-top: 2px;
+}
+
+.notifications-content .ant-list-item-action {
+  margin-left: 16px;
+  margin-top: 2px;
+}
+
+/* Notification Avatar */
+.notifications-content .notification-avatar {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border-radius: 10px;
+  transition: all 0.2s ease;
+}
+
+.notifications-content .notification-item.unread .notification-avatar {
+  background: rgba(24, 144, 255, 0.1);
+}
+
+.notifications-content .unread-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 8px;
+  height: 8px;
+  background: #1890ff;
+  border: 2px solid #fff;
+  border-radius: 50%;
+}
+
+/* Notification Content */
+.notifications-content .notification-title {
+  margin-bottom: 6px;
+}
+
+.notifications-content .notification-title .ant-typography {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.4;
+}
+
+.notifications-content .unread-title {
+  color: #262626 !important;
+  font-weight: 600 !important;
+}
+
+.notifications-content .notification-description {
+  margin-top: 4px;
+}
+
+.notifications-content .notification-description .ant-typography {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #8c8c8c;
+}
+
+.notifications-content .unread-description {
+  color: #595959 !important;
+}
+
+.notifications-content .notification-time {
+  margin-top: 6px;
+}
+
+.notifications-content .notification-time .ant-typography {
+  font-size: 12px;
+  color: #bfbfbf;
+}
+
+/* Tags */
+.notifications-content .notification-title .ant-tag {
+  margin: 0;
+  border-radius: 4px;
+  border: none;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 10px;
+  padding: 2px 6px;
+}
+
+/* Action Buttons */
+.notifications-content .ant-list-item-action .ant-btn {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.notifications-content .ant-list-item-action .ant-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Empty State */
+.notifications-content .ant-empty {
+  padding: 80px 40px;
+}
+
+.notifications-content .ant-empty-description {
+  color: #8c8c8c;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.notifications-content .ant-empty .ant-typography {
+  margin: 0;
+  color: #bfbfbf;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .notifications-page {
+    padding: 0;
+  }
+
+  .header-content {
+    padding: 16px 20px 12px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  .header-title {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .header-actions {
+    margin-top: 0;
+    justify-content: flex-end;
+  }
+
+  .filters-card {
+    margin: 0 20px 20px;
+  }
+
+  .filters-card .ant-card-body {
+    padding: 12px 16px;
+  }
+
+  .filters-card .ant-row {
+    gap: 8px 0;
+  }
+
+  .notifications-content {
+    margin: 0 20px;
+  }
+
+  .select-all-header {
+    padding: 12px 16px;
+  }
+
+  .notifications-content .ant-list-item {
+    padding: 12px 16px;
+  }
+
+  .notifications-content .notification-item.unread {
+    padding-left: 12px;
+  }
+
+  .notification-content-full {
+    gap: 8px;
+  }
+
+  .notifications-content .ant-list-item-meta-avatar {
+    margin-right: 12px;
+  }
+
+  .notifications-content .notification-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .notifications-content .notification-title .ant-typography {
+    font-size: 14px;
+  }
+
+  .notifications-content .notification-description .ant-typography {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 576px) {
+  .header-content {
+    padding: 12px 16px 8px;
+  }
+
+  .filters-card {
+    margin: 0 16px 16px;
+  }
+
+  .notifications-content {
+    margin: 0 16px;
+  }
+
+  .select-all-header {
+    padding: 10px 12px;
+  }
+
+  .notifications-content .ant-list-item {
+    padding: 10px 12px;
+  }
+
+  .title-section .ant-typography h2 {
+    font-size: 20px;
+  }
+
+  .notifications-content .notification-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .notifications-content .notification-title .ant-typography {
+    font-size: 13px;
+  }
+
+  .notifications-content .notification-description .ant-typography {
+    font-size: 12px;
+  }
+
+  .notifications-content .notification-time .ant-typography {
+    font-size: 11px;
+  }
+}
+
+/* Animation */
+.notifications-content .notification-item {
+  animation: slideInUp 0.3s ease-out;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Hover Effects */
+.notifications-content .notification-item:hover {
+  transform: translateX(2px);
+}
+
+.notifications-content .notification-item:hover .notification-avatar {
+  transform: scale(1.05);
+}
+
+/* Focus States */
+.notifications-content .notification-item:focus-within {
+  outline: 2px solid rgba(24, 144, 255, 0.2);
+  outline-offset: -2px;
+}
+
+/* Loading and Transitions */
+.notifications-content {
+  transition: all 0.3s ease;
+}
+
+.filters-card {
+  transition: all 0.3s ease;
+}
+
+.filters-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.notifications-content:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+} 

@@ -10,6 +10,7 @@ import PatientDetailsPage from './pages/PatientDetailsPage'
 import TodaysDosesPage from './pages/TodaysDosesPage'
 import CalendarPage from './pages/CalendarPage'
 import ProfilePage from './pages/ProfilePage'
+import NotificationsPage from './pages/NotificationsPage'
 import { useAuth } from './hooks/useAuth'
 
 function AppContent() {
@@ -32,6 +33,7 @@ function AppContent() {
         <Route path="/todays-doses" element={<TodaysDosesPage />} />
         <Route path="/calendar" element={<CalendarPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/notifications" element={<NotificationsPage />} />
       </Routes>
     </AppLayout>
   )
