@@ -6,6 +6,7 @@ import PatientDetails from '../components/patients/PatientDetails'
 import MedicationSection from '../components/patients/MedicationSection'
 import MeasurementSection from '../components/patients/MeasurementSection'
 import DailyLogs from '../components/patients/DailyLogs'
+import PatientAppointments from '../components/patients/PatientAppointments'
 import { usePatients } from '../hooks/usePatients'
 import { mockPatients } from '../utils/mockData'
 import LoadingSpinner from '../components/common/LoadingSpinner'
@@ -72,6 +73,11 @@ const PatientDetailsPage = () => {
       key: 'measurements',
       label: 'Measurements',
       children: <MeasurementSection patient={patient} />
+    },
+    {
+      key: 'appointments',
+      label: 'Appointments',
+      children: <PatientAppointments patient={patient} />
     },
     {
       key: 'logs',

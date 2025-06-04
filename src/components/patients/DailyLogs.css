@@ -299,4 +299,74 @@
 
 .date-group-logs {
   /* No additional styling needed - inherits from log items */
+}
+
+/* Daily Log Modal */
+.daily-log-modal .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.daily-log-modal .ant-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.daily-log-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.daily-log-modal .modal-form {
+  padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Form Elements */
+.daily-log-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+}
+
+.daily-log-modal .ant-input,
+.daily-log-modal .ant-select-selector,
+.daily-log-modal .ant-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 14px;
+}
+
+.daily-log-modal .ant-input:focus,
+.daily-log-modal .ant-input-focused,
+.daily-log-modal .ant-select-focused .ant-select-selector,
+.daily-log-modal .ant-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Prevent horizontal scroll */
+.daily-log-modal .modal-form .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.daily-log-modal .modal-form .ant-col {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
+}
+
+/* Mobile Responsive Modal */
+@media (max-width: 576px) {
+  .daily-log-modal .ant-modal-body {
+    max-height: 55vh;
+  }
+  
+  .daily-log-modal .modal-form {
+    padding: 16px 20px;
+  }
 } 

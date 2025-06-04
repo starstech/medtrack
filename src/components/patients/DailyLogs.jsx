@@ -424,152 +424,159 @@ const DailyLogs = ({ patient }) => {
         setAddModalVisible(false)
         form.resetFields()
       }}
-      footer={null}
+      footer={[
+        <Button 
+          key="cancel"
+          onClick={() => {
+            setAddModalVisible(false)
+            form.resetFields()
+          }}
+          size="large"
+        >
+          Cancel
+        </Button>,
+        <Button 
+          key="submit"
+          type="primary" 
+          htmlType="submit"
+          loading={loading}
+          form="daily-log-form"
+          size="large"
+        >
+          {loading ? 'Adding...' : 'Add Log Entry'}
+        </Button>
+      ]}
       width={600}
       destroyOnClose
+      className="daily-log-modal"
     >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleAddLog}
-        size="large"
-        initialValues={{
-          timestamp: dayjs(),
-          type: 'general',
-          severity: 'normal'
-        }}
-      >
-        <Row gutter={16}>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="type"
-              label="Log Type"
-              rules={[
-                { required: true, message: 'Please select log type' }
-              ]}
-            >
-              <Select placeholder="Select log type">
-                {LOG_TYPES.map(type => (
-                  <Option key={type.value} value={type.value}>
-                    <Space>
-                      <div
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          backgroundColor: type.color
-                        }}
-                      />
-                      {type.label}
-                    </Space>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-          
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="severity"
-              label="Severity"
-              rules={[
-                { required: true, message: 'Please select severity level' }
-              ]}
-            >
-              <Select placeholder="Select severity">
-                {SEVERITY_LEVELS.map(severity => (
-                  <Option key={severity.value} value={severity.value}>
-                    <Space>
-                      <div
-                        style={{
-                          width: 12,
-                          height: 12,
-                          borderRadius: '50%',
-                          backgroundColor: severity.color
-                        }}
-                      />
-                      {severity.label}
-                    </Space>
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Form.Item
-          name="title"
-          label="Title"
-          rules={[
-            { required: true, message: 'Please enter a title' },
-            { min: 3, message: 'Title must be at least 3 characters' }
-          ]}
+      <div className="modal-form">
+        <Form
+          id="daily-log-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleAddLog}
+          size="large"
+          initialValues={{
+            timestamp: dayjs(),
+            type: 'general',
+            severity: 'normal'
+          }}
         >
-          <Input placeholder="e.g., Threw up after breakfast" />
-        </Form.Item>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="type"
+                label="Log Type"
+                rules={[
+                  { required: true, message: 'Please select log type' }
+                ]}
+              >
+                <Select placeholder="Select log type">
+                  {LOG_TYPES.map(type => (
+                    <Option key={type.value} value={type.value}>
+                      <Space>
+                        <div
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: type.color
+                          }}
+                        />
+                        {type.label}
+                      </Space>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="severity"
+                label="Severity"
+                rules={[
+                  { required: true, message: 'Please select severity level' }
+                ]}
+              >
+                <Select placeholder="Select severity">
+                  {SEVERITY_LEVELS.map(severity => (
+                    <Option key={severity.value} value={severity.value}>
+                      <Space>
+                        <div
+                          style={{
+                            width: 12,
+                            height: 12,
+                            borderRadius: '50%',
+                            backgroundColor: severity.color
+                          }}
+                        />
+                        {severity.label}
+                      </Space>
+                    </Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Form.Item
-          name="description"
-          label="Description"
-          rules={[
-            { required: true, message: 'Please enter a description' },
-            { min: 10, message: 'Description must be at least 10 characters' }
-          ]}
-        >
-          <TextArea 
-            placeholder="Detailed description of what happened, when it occurred, any relevant circumstances..."
-            rows={4}
-            maxLength={1000}
-            showCount
-          />
-        </Form.Item>
+          <Form.Item
+            name="title"
+            label="Title"
+            rules={[
+              { required: true, message: 'Please enter a title' },
+              { min: 3, message: 'Title must be at least 3 characters' }
+            ]}
+          >
+            <Input placeholder="e.g., Threw up after breakfast" />
+          </Form.Item>
 
-        <Row gutter={16}>
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="timestamp"
-              label="Date & Time"
-              rules={[
-                { required: true, message: 'Please select date and time' }
-              ]}
-            >
-              <DatePicker
-                showTime
-                format="MMM D, YYYY h:mm A"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-          
-          <Col xs={24} sm={12}>
-            <Form.Item
-              name="tags"
-              label="Tags (Optional)"
-              help="Separate multiple tags with commas"
-            >
-              <Input placeholder="e.g., breakfast, nausea, recovery" />
-            </Form.Item>
-          </Col>
-        </Row>
+          <Form.Item
+            name="description"
+            label="Description"
+            rules={[
+              { required: true, message: 'Please enter a description' },
+              { min: 10, message: 'Description must be at least 10 characters' }
+            ]}
+          >
+            <TextArea 
+              placeholder="Detailed description of what happened, when it occurred, any relevant circumstances..."
+              rows={4}
+              maxLength={1000}
+              showCount
+            />
+          </Form.Item>
 
-        <div style={{ textAlign: 'right' }}>
-          <Space>
-            <Button onClick={() => {
-              setAddModalVisible(false)
-              form.resetFields()
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading}
-            >
-              Add Log Entry
-            </Button>
-          </Space>
-        </div>
-      </Form>
+          <Row gutter={16}>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="timestamp"
+                label="Date & Time"
+                rules={[
+                  { required: true, message: 'Please select date and time' }
+                ]}
+              >
+                <DatePicker
+                  showTime
+                  format="MMM D, YYYY h:mm A"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
+            
+            <Col xs={24} sm={12}>
+              <Form.Item
+                name="tags"
+                label="Tags (Optional)"
+                help="Separate multiple tags with commas"
+              >
+                <Input placeholder="e.g., breakfast, nausea, recovery" />
+              </Form.Item>
+            </Col>
+          </Row>
+        </Form>
+      </div>
     </Modal>
   )
 
