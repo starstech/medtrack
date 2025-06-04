@@ -39,11 +39,14 @@ const { Option } = Select
 const CaregiverManagement = () => {
   const { patients } = usePatients()
   const [inviteModalVisible, setInviteModalVisible] = useState(false)
+  const [editRoleModalVisible, setEditRoleModalVisible] = useState(false)
+  const [selectedCaregiver, setSelectedCaregiver] = useState(null)
   const [form] = Form.useForm()
+  const [editForm] = Form.useForm()
   const [loading, setLoading] = useState(false)
 
   // Mock caregiver invitations and connections
-  const [invitations] = useState([
+  const [invitations, setInvitations] = useState([
     {
       id: 'inv1',
       email: 'john.doe@example.com',
@@ -62,7 +65,7 @@ const CaregiverManagement = () => {
     }
   ])
 
-  const [caregiverConnections] = useState([
+  const [caregiverConnections, setCaregiverConnections] = useState([
     {
       id: 'cg1',
       name: 'Dr. Sarah Wilson',
@@ -111,35 +114,120 @@ const CaregiverManagement = () => {
     }
   }
 
-  const handleRemoveCaregiver = (caregiverId) => {
+  const handleEditRole = (caregiver) => {
+    setSelectedCaregiver(caregiver)
+    setEditRoleModalVisible(true)
+    editForm.setFieldsValue({
+      role: caregiver.role
+    })
+  }
+
+  const handleSaveRoleChange = async (values) => {
+    try {
+      // Update caregiver role
+      setCaregiverConnections(prev => 
+        prev.map(cg => 
+          cg.id === selectedCaregiver.id 
+            ? { ...cg, role: values.role }
+            : cg
+        )
+      )
+      
+      message.success(`${selectedCaregiver.name}'s role updated to ${values.role}!`)
+      setEditRoleModalVisible(false)
+      setSelectedCaregiver(null)
+      editForm.resetFields()
+      
+    } catch (error) {
+      message.error('Failed to update role. Please try again.')
+      console.error('Error updating role:', error)
+    }
+  }
+
+  const handleToggleStatus = (caregiver) => {
+    const newStatus = caregiver.status === 'active' ? 'inactive' : 'active'
+    const action = newStatus === 'active' ? 'activate' : 'deactivate'
+    
     Modal.confirm({
-      title: 'Remove Caregiver',
-      content: 'Are you sure you want to remove this caregiver? They will lose access to patient information.',
-      okText: 'Remove',
-      okType: 'danger',
+      title: `${action.charAt(0).toUpperCase() + action.slice(1)} Caregiver`,
+      content: `Are you sure you want to ${action} ${caregiver.name}? ${newStatus === 'inactive' ? 'They will temporarily lose access to patient information.' : 'They will regain access to patient information.'}`,
+      okText: action.charAt(0).toUpperCase() + action.slice(1),
+      okType: newStatus === 'inactive' ? 'danger' : 'primary',
       cancelText: 'Cancel',
       onOk: () => {
-        // TODO: Implement remove caregiver
-        message.success('Caregiver removed successfully!')
+        setCaregiverConnections(prev => 
+          prev.map(cg => 
+            cg.id === caregiver.id 
+              ? { ...cg, status: newStatus }
+              : cg
+          )
+        )
+        message.success(`${caregiver.name} has been ${action}d successfully!`)
       }
     })
   }
 
-  const handleResendInvite = (inviteId) => {
-    // TODO: Implement resend invite
-    message.success('Invitation resent!')
+  const handleRemoveCaregiver = (caregiver) => {
+    Modal.confirm({
+      title: (
+        <Space>
+          <DeleteOutlined style={{ color: '#ff4d4f' }} />
+          <span>Remove Caregiver</span>
+        </Space>
+      ),
+      content: (
+        <div style={{ marginTop: 16 }}>
+          <Text>Are you sure you want to remove <Text strong>{caregiver.name}</Text> from your caregiver network?</Text>
+          <br />
+          <br />
+          <Text type="secondary">
+            This action will:
+          </Text>
+          <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
+            <li><Text type="secondary">Remove their access to patient information</Text></li>
+            <li><Text type="secondary">Stop all notifications to them</Text></li>
+            <li><Text type="secondary">Remove them from patient care teams</Text></li>
+          </ul>
+          <Text strong style={{ color: '#ff4d4f' }}>
+            This action cannot be undone.
+          </Text>
+        </div>
+      ),
+      okText: 'Remove Caregiver',
+      okType: 'danger',
+      cancelText: 'Cancel',
+      width: 500,
+      icon: null,
+      onOk: () => {
+        setCaregiverConnections(prev => prev.filter(cg => cg.id !== caregiver.id))
+        message.success(`${caregiver.name} has been removed from your caregiver network.`)
+      }
+    })
   }
 
-  const handleCancelInvite = (inviteId) => {
+  const handleResendInvite = (invite) => {
+    Modal.confirm({
+      title: 'Resend Invitation',
+      content: `Are you sure you want to resend the invitation to ${invite.email}?`,
+      okText: 'Resend',
+      cancelText: 'Cancel',
+      onOk: () => {
+        // TODO: Implement resend invite API
+        message.success(`Invitation resent to ${invite.email}!`)
+      }
+    })
+  }
+
+  const handleCancelInvite = (invite) => {
     Modal.confirm({
       title: 'Cancel Invitation',
-      content: 'Are you sure you want to cancel this invitation?',
+      content: `Are you sure you want to cancel the invitation to ${invite.email}? They will not be able to join your caregiver network using this invitation.`,
       okText: 'Cancel Invitation',
       okType: 'danger',
       cancelText: 'Keep Invitation',
       onOk: () => {
-        // TODO: Implement cancel invite
-        message.success('Invitation cancelled!')
+        setInvitations(prev => prev.filter(inv => inv.id !== invite.id))
+        message.success('Invitation cancelled successfully!')
       }
     })
   }
@@ -176,19 +264,13 @@ const CaregiverManagement = () => {
       key: 'edit',
       icon: <EditOutlined />,
       label: 'Edit Role',
-      onClick: () => {
-        // TODO: Implement edit caregiver role
-        message.info('Edit functionality coming soon!')
-      }
+      onClick: () => handleEditRole(caregiver)
     },
     {
       key: 'toggle',
       icon: caregiver.status === 'active' ? <CloseCircleOutlined /> : <CheckCircleOutlined />,
       label: caregiver.status === 'active' ? 'Deactivate' : 'Activate',
-      onClick: () => {
-        // TODO: Implement toggle caregiver status
-        message.success(`Caregiver ${caregiver.status === 'active' ? 'deactivated' : 'activated'}!`)
-      }
+      onClick: () => handleToggleStatus(caregiver)
     },
     {
       type: 'divider'
@@ -197,7 +279,7 @@ const CaregiverManagement = () => {
       key: 'remove',
       icon: <DeleteOutlined />,
       label: 'Remove Caregiver',
-      onClick: () => handleRemoveCaregiver(caregiver.id),
+      onClick: () => handleRemoveCaregiver(caregiver),
       danger: true
     }
   ]
@@ -207,7 +289,7 @@ const CaregiverManagement = () => {
       key: 'resend',
       icon: <SendOutlined />,
       label: 'Resend Invitation',
-      onClick: () => handleResendInvite(invite.id),
+      onClick: () => handleResendInvite(invite),
       disabled: invite.status === 'accepted'
     },
     {
@@ -217,7 +299,7 @@ const CaregiverManagement = () => {
       key: 'cancel',
       icon: <DeleteOutlined />,
       label: 'Cancel Invitation',
-      onClick: () => handleCancelInvite(invite.id),
+      onClick: () => handleCancelInvite(invite),
       danger: true,
       disabled: invite.status === 'accepted'
     }
@@ -504,6 +586,77 @@ const CaregiverManagement = () => {
               ]}
             >
               <Select placeholder="Select caregiver role">
+                <Option value="secondary">Secondary Caregiver</Option>
+                <Option value="family">Family Member</Option>
+                <Option value="medical">Medical Professional</Option>
+                <Option value="nurse">Nurse</Option>
+                <Option value="other">Other</Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
+
+      {/* Edit Role Modal */}
+      <Modal
+        title={
+          <Space>
+            <EditOutlined />
+            <span>Edit Caregiver Role</span>
+          </Space>
+        }
+        open={editRoleModalVisible}
+        onCancel={() => {
+          setEditRoleModalVisible(false)
+          setSelectedCaregiver(null)
+          editForm.resetFields()
+        }}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setEditRoleModalVisible(false)
+              setSelectedCaregiver(null)
+              editForm.resetFields()
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="submit"
+            type="primary" 
+            htmlType="submit"
+            form="edit-role-form"
+          >
+            Update Role
+          </Button>
+        ]}
+        destroyOnClose
+        className="edit-role-modal"
+      >
+        <div className="modal-form">
+          {selectedCaregiver && (
+            <div style={{ marginBottom: 16 }}>
+              <Text type="secondary">
+                Updating role for <Text strong>{selectedCaregiver.name}</Text>
+              </Text>
+            </div>
+          )}
+          <Form
+            id="edit-role-form"
+            form={editForm}
+            layout="vertical"
+            onFinish={handleSaveRoleChange}
+          >
+            <Form.Item
+              name="role"
+              label="New Role"
+              rules={[
+                { required: true, message: 'Please select a role' }
+              ]}
+            >
+              <Select placeholder="Select caregiver role">
+                <Option value="primary">Primary Caregiver</Option>
                 <Option value="secondary">Secondary Caregiver</Option>
                 <Option value="family">Family Member</Option>
                 <Option value="medical">Medical Professional</Option>

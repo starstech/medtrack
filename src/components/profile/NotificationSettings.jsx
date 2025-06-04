@@ -118,7 +118,7 @@ const NotificationSettings = () => {
           </div>
           
           <div className="settings-content">
-            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+            <Space direction="vertical" size="small" style={{ width: '100%' }}>
               <div className="notification-option">
                 <div className="option-header">
                   <div className="option-info">

@@ -119,38 +119,45 @@
 }
 
 /* Invite Caregiver Modal */
-.invite-caregiver-modal .ant-modal-content {
+.invite-caregiver-modal .ant-modal-content,
+.edit-role-modal .ant-modal-content {
   border-radius: 12px !important;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
-.invite-caregiver-modal .ant-modal-header {
+.invite-caregiver-modal .ant-modal-header,
+.edit-role-modal .ant-modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.invite-caregiver-modal .ant-modal-body {
+.invite-caregiver-modal .ant-modal-body,
+.edit-role-modal .ant-modal-body {
   padding: 0;
   max-height: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.invite-caregiver-modal .modal-form {
+.invite-caregiver-modal .modal-form,
+.edit-role-modal .modal-form {
   padding: 20px 24px;
   width: 100%;
   box-sizing: border-box;
 }
 
-.invite-caregiver-modal .ant-form-item-label > label {
+.invite-caregiver-modal .ant-form-item-label > label,
+.edit-role-modal .ant-form-item-label > label {
   font-weight: 500;
   color: #262626;
   font-size: 14px;
 }
 
 .invite-caregiver-modal .ant-input,
-.invite-caregiver-modal .ant-select-selector {
+.invite-caregiver-modal .ant-select-selector,
+.edit-role-modal .ant-input,
+.edit-role-modal .ant-select-selector {
   border-radius: 6px;
   border: 1px solid #d9d9d9;
   font-size: 14px;
@@ -158,7 +165,10 @@
 
 .invite-caregiver-modal .ant-input:focus,
 .invite-caregiver-modal .ant-input-focused,
-.invite-caregiver-modal .ant-select-focused .ant-select-selector {
+.invite-caregiver-modal .ant-select-focused .ant-select-selector,
+.edit-role-modal .ant-input:focus,
+.edit-role-modal .ant-input-focused,
+.edit-role-modal .ant-select-focused .ant-select-selector {
   border-color: #1890ff;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
 }
@@ -187,7 +197,8 @@
     margin-top: 4px;
   }
   
-  .invite-caregiver-modal .modal-form {
+  .invite-caregiver-modal .modal-form,
+  .edit-role-modal .modal-form {
     padding: 16px 20px;
   }
 }
@@ -205,7 +216,8 @@
     font-size: 15px;
   }
   
-  .invite-caregiver-modal .modal-form {
+  .invite-caregiver-modal .modal-form,
+  .edit-role-modal .modal-form {
     padding: 12px 16px;
   }
 }

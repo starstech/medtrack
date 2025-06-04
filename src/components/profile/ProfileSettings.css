@@ -154,11 +154,11 @@
 
 /* Account Info */
 .account-info {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .info-item {
-  padding: 6px 0;
+  padding: 4px 0;
 }
 
 .info-item .ant-typography {
@@ -167,14 +167,14 @@
 
 /* Privacy Settings */
 .privacy-settings {
-  margin-top: 12px;
+  margin-top: 8px;
 }
 
 .privacy-option {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  padding: 10px 0;
+  padding: 8px 0;
   gap: 16px;
 }
 
