@@ -94,6 +94,51 @@ export const NotificationProvider = ({ children }) => {
         timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
         read: true,
         patientId: 'patient1'
+      },
+      {
+        id: '4',
+        type: 'measurement_reminder',
+        title: 'Measurement Reminder',
+        message: 'Time to check Emma\'s blood pressure',
+        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
+        read: false,
+        patientId: 'patient1'
+      },
+      {
+        id: '5',
+        type: 'system_alert',
+        title: 'System Alert',
+        message: 'Your subscription expires in 7 days',
+        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
+        read: true
+      },
+      {
+        id: '6',
+        type: 'medication_reminder',
+        title: 'Missed Dose Alert',
+        message: 'Emma missed her evening Lisinopril dose',
+        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
+        read: false,
+        patientId: 'patient1',
+        medicationId: 'med2'
+      },
+      {
+        id: '7',
+        type: 'caregiver_update',
+        title: 'New Caregiver Joined',
+        message: 'Dr. Sarah Wilson accepted your invitation',
+        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        read: true,
+        patientId: 'patient1'
+      },
+      {
+        id: '8',
+        type: 'appointment_reminder',
+        title: 'Upcoming Lab Work',
+        message: 'Emma\'s blood work is scheduled for next Tuesday',
+        timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
+        read: true,
+        patientId: 'patient1'
       }
     ]
 
@@ -177,7 +222,18 @@ export const NotificationProvider = ({ children }) => {
   }
 
   const markAsRead = (notificationId) => {
-    dispatch({ type: 'MARK_READ', payload: notificationId })
+    const notification = state.notifications.find(n => n.id === notificationId)
+    if (notification) {
+      dispatch({ type: 'MARK_READ', payload: notificationId })
+    }
+  }
+
+  const toggleReadStatus = (notificationId) => {
+    const notification = state.notifications.find(n => n.id === notificationId)
+    if (notification) {
+      // For now, we'll just mark as read. In a real app, you'd have a TOGGLE_READ action
+      dispatch({ type: 'MARK_READ', payload: notificationId })
+    }
   }
 
   const markAllAsRead = () => {
@@ -204,6 +260,7 @@ export const NotificationProvider = ({ children }) => {
     scheduleMedicationReminder,
     scheduleAppointmentReminder,
     markAsRead,
+    toggleReadStatus,
     markAllAsRead,
     deleteNotification,
     updatePreferences,

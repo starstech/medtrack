@@ -16,6 +16,7 @@ import { useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
 import { useNotifications } from '../../hooks/useNotifications'
 import { usePatients } from '../../hooks/usePatients'
+import NotificationPanel from '../notifications/NotificationPanel'
 
 const { Header, Sider, Content } = Layout
 const { Title, Text } = Typography
@@ -295,19 +296,26 @@ const AppLayout = ({ children }) => {
             </Title>
           </Space>
           <Space>
-            <Badge dot={true} offset={[-8, 8]}>
-              <Button 
-                type="text" 
-                icon={<BellOutlined />}
-                style={{
-                  fontSize: '16px',
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '8px',
-                  transition: 'all 0.3s ease'
-                }}
-              />
-            </Badge>
+            <Dropdown
+              overlay={<NotificationPanel />}
+              trigger={['click']}
+              placement="bottomRight"
+              arrow={{ pointAtCenter: true }}
+            >
+              <Badge count={getUnreadCount()} offset={[-8, 8]}>
+                <Button 
+                  type="text" 
+                  icon={<BellOutlined />}
+                  style={{
+                    fontSize: '16px',
+                    width: '40px',
+                    height: '40px',
+                    borderRadius: '8px',
+                    transition: 'all 0.3s ease'
+                  }}
+                />
+              </Badge>
+            </Dropdown>
             <Dropdown menu={{ items: userMenuItems }}>
               <Space style={{ 
                 cursor: 'pointer',
