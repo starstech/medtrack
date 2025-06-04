@@ -208,7 +208,7 @@ const AppLayout = ({ children }) => {
       >
         {/* Logo Section */}
         <div style={{ 
-          padding: '24px 20px', 
+          padding: '12px 20px', 
           borderBottom: '1px solid #f5f5f5',
           display: 'flex', 
           alignItems: 'center',

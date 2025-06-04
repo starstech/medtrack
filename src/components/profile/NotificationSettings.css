@@ -5,7 +5,7 @@
 
 /* Settings Groups - Reusing from ProfileSettings */
 .notification-settings-section .settings-group {
-  margin-bottom: 32px;
+  margin-bottom: 24px;
   border: 1px solid #f0f0f0;
   border-radius: 12px;
   background: #fff;
@@ -21,7 +21,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
 }
@@ -36,12 +36,12 @@
 }
 
 .notification-settings-section .settings-content {
-  padding: 24px;
+  padding: 20px;
 }
 
 /* Notification Options */
 .notification-option {
-  margin-bottom: 16px;
+  margin-bottom: 12px;
 }
 
 .notification-option:last-child {
@@ -67,7 +67,7 @@
 
 /* Reminder Times */
 .reminder-times {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .reminder-times .ant-tag {
@@ -90,13 +90,13 @@
 .notification-preview {
   border: 1px solid #f0f0f0;
   border-radius: 8px;
-  padding: 16px;
+  padding: 12px;
   background: #fafafa;
-  margin: 12px 0;
+  margin: 8px 0;
 }
 
 .preview-notification {
-  padding: 8px 0;
+  padding: 6px 0;
   border-bottom: 1px solid #f5f5f5;
 }
 
@@ -114,9 +114,9 @@
 .settings-actions {
   display: flex;
   justify-content: center;
-  padding-top: 20px;
+  padding-top: 16px;
   border-top: 1px solid #f0f0f0;
-  margin-top: 32px;
+  margin-top: 24px;
 }
 
 /* Form Elements */
@@ -142,11 +142,11 @@
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
   .notification-settings-section .settings-group-header {
-    padding: 16px 20px;
+    padding: 12px 16px;
   }
   
   .notification-settings-section .settings-content {
-    padding: 20px;
+    padding: 16px;
   }
   
   .option-header {
@@ -175,11 +175,11 @@
 
 @media (max-width: 576px) {
   .notification-settings-section .settings-group-header {
-    padding: 12px 16px;
+    padding: 10px 12px;
   }
   
   .notification-settings-section .settings-content {
-    padding: 16px;
+    padding: 12px;
   }
   
   .notification-settings-section .group-title {
@@ -187,11 +187,11 @@
   }
   
   .notification-preview {
-    padding: 12px;
+    padding: 10px;
   }
   
   .preview-notification {
-    padding: 6px 0;
+    padding: 4px 0;
   }
 }
 

@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { 
-  Card, 
   List, 
   Button, 
   Space, 
@@ -32,6 +31,7 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
+import './CaregiverManagement.css'
 
 const { Title, Text } = Typography
 const { Option } = Select
@@ -223,295 +223,297 @@ const CaregiverManagement = () => {
     }
   ]
 
-  const renderInviteModal = () => (
-    <Modal
-      title={
-        <Space>
-          <TeamOutlined />
-          <span>Invite Caregiver</span>
-        </Space>
-      }
-      open={inviteModalVisible}
-      onCancel={() => {
-        setInviteModalVisible(false)
-        form.resetFields()
-      }}
-      footer={null}
-      width={500}
-      destroyOnClose
-    >
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSendInvite}
-        size="large"
-      >
-        <Form.Item
-          name="email"
-          label="Email Address"
-          rules={[
-            { required: true, message: 'Please enter email address' },
-            { type: 'email', message: 'Please enter a valid email address' }
-          ]}
-        >
-          <Input 
-            prefix={<MailOutlined />}
-            placeholder="caregiver@example.com" 
-          />
-        </Form.Item>
-
-        <Form.Item
-          name="patientId"
-          label="Patient"
-          rules={[
-            { required: true, message: 'Please select a patient' }
-          ]}
-        >
-          <Select placeholder="Select patient to share">
-            {patients.map(patient => (
-              <Option key={patient.id} value={patient.id}>
-                <Space>
-                  <UserOutlined />
-                  {patient.name}
-                </Space>
-              </Option>
-            ))}
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="role"
-          label="Role"
-          rules={[
-            { required: true, message: 'Please select a role' }
-          ]}
-        >
-          <Select placeholder="Select caregiver role">
-            <Option value="secondary">Secondary Caregiver</Option>
-            <Option value="family">Family Member</Option>
-            <Option value="medical">Medical Professional</Option>
-            <Option value="nurse">Nurse</Option>
-            <Option value="other">Other</Option>
-          </Select>
-        </Form.Item>
-
-        <Form.Item
-          name="message"
-          label="Personal Message (Optional)"
-        >
-          <Input.TextArea 
-            placeholder="Add a personal message to the invitation..."
-            rows={3}
-            maxLength={500}
-            showCount
-          />
-        </Form.Item>
-
-        <div style={{ textAlign: 'right' }}>
-          <Space>
-            <Button onClick={() => {
-              setInviteModalVisible(false)
-              form.resetFields()
-            }}>
-              Cancel
-            </Button>
-            <Button 
-              type="primary" 
-              htmlType="submit"
-              loading={loading}
-              icon={<SendOutlined />}
-            >
-              Send Invitation
-            </Button>
-          </Space>
-        </div>
-      </Form>
-    </Modal>
-  )
-
   return (
-    <div className="caregiver-management">
+    <div className="caregiver-management-section">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Active Caregivers */}
-        <Card
-          title={
-            <Space>
-              <TeamOutlined />
-              <span>Caregiver Network ({caregiverConnections.filter(cg => cg.status === 'active').length})</span>
-            </Space>
-          }
-          extra={
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <TeamOutlined />
+                <span>Caregiver Network ({caregiverConnections.filter(cg => cg.status === 'active').length})</span>
+              </Space>
+            </div>
             <Button 
               type="primary" 
               icon={<PlusOutlined />}
               onClick={() => setInviteModalVisible(true)}
+              size="small"
             >
               Invite Caregiver
             </Button>
-          }
-          className="caregivers-card"
-        >
-          {caregiverConnections.length > 0 ? (
-            <List
-              dataSource={caregiverConnections}
-              renderItem={(caregiver) => (
-                <List.Item className="caregiver-list-item">
-                  <Card size="small" className="caregiver-card">
-                    <div className="caregiver-content">
-                      <div className="caregiver-header">
-                        <Space>
-                          <Avatar 
-                            icon={<UserOutlined />}
-                            style={{ 
-                              backgroundColor: caregiver.status === 'active' ? '#52c41a' : '#8c8c8c' 
-                            }}
-                          />
-                          <div className="caregiver-info">
-                            <Title level={5} className="caregiver-name">
-                              {caregiver.name}
-                            </Title>
-                            <Text type="secondary" size="small">
-                              {caregiver.email}
-                            </Text>
-                          </div>
-                        </Space>
-                        
-                        <Space>
-                          <Tag color={getRoleColor(caregiver.role)} size="small">
-                            {caregiver.role}
-                          </Tag>
-                          <div className="caregiver-status">
-                            {getStatusIcon(caregiver.status)}
-                            <Text size="small" className="status-text">
-                              {caregiver.status}
-                            </Text>
-                          </div>
-                          <Dropdown
-                            menu={{ items: getCaregiverMenuItems(caregiver) }}
-                            placement="bottomRight"
-                            trigger={['click']}
-                          >
-                            <Button type="text" icon={<MoreOutlined />} size="small" />
-                          </Dropdown>
-                        </Space>
-                      </div>
+          </div>
 
-                      <div className="caregiver-details">
-                        <Row gutter={[16, 8]}>
-                          <Col xs={24} sm={12}>
-                            <Text type="secondary" size="small">Patients: </Text>
-                            <div>
-                              {caregiver.patients.map((patient, index) => (
-                                <Tag key={index} size="small" color="blue">
-                                  {patient}
-                                </Tag>
-                              ))}
+          <div className="settings-content">
+            {caregiverConnections.length > 0 ? (
+              <List
+                dataSource={caregiverConnections}
+                renderItem={(caregiver) => (
+                  <List.Item
+                    className="caregiver-list-item"
+                    actions={[
+                      <Dropdown
+                        key="actions"
+                        menu={{ items: getCaregiverMenuItems(caregiver) }}
+                        placement="bottomRight"
+                        trigger={['click']}
+                      >
+                        <Button type="text" icon={<MoreOutlined />} size="small" />
+                      </Dropdown>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={
+                        <Avatar 
+                          icon={<UserOutlined />}
+                          style={{ 
+                            backgroundColor: caregiver.status === 'active' ? '#52c41a' : '#8c8c8c' 
+                          }}
+                        />
+                      }
+                      title={
+                        <div className="caregiver-header-info">
+                          <Space>
+                            <Text strong>{caregiver.name}</Text>
+                            <Tag color={getRoleColor(caregiver.role)} size="small">
+                              {caregiver.role}
+                            </Tag>
+                            <div className="status-indicator">
+                              {getStatusIcon(caregiver.status)}
+                              <Text size="small" type={caregiver.status === 'active' ? 'success' : 'secondary'}>
+                                {caregiver.status}
+                              </Text>
                             </div>
-                          </Col>
-                          <Col xs={24} sm={12}>
+                          </Space>
+                        </div>
+                      }
+                      description={
+                        <div className="caregiver-details">
+                          <Text type="secondary" style={{ display: 'block' }}>{caregiver.email}</Text>
+                          <Space split="•" size="small" style={{ marginTop: 4 }}>
+                            <Text type="secondary" size="small">
+                              Patients: {caregiver.patients.join(', ')}
+                            </Text>
                             <Text type="secondary" size="small">
                               Joined {new Date(caregiver.joinedAt).toLocaleDateString()}
                             </Text>
-                          </Col>
-                        </Row>
-                      </div>
-                    </div>
-                  </Card>
-                </List.Item>
-              )}
-            />
-          ) : (
-            <Empty
-              image={<TeamOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
-              description="No caregivers in your network yet"
-              style={{ padding: '40px 0' }}
-            >
-              <Button 
-                type="primary" 
-                icon={<PlusOutlined />}
-                onClick={() => setInviteModalVisible(true)}
+                          </Space>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            ) : (
+              <Empty
+                image={<TeamOutlined style={{ fontSize: 48, color: '#d9d9d9' }} />}
+                description="No caregivers in your network yet"
+                style={{ padding: '40px 0' }}
               >
-                Invite Your First Caregiver
-              </Button>
-            </Empty>
-          )}
-        </Card>
+                <Button 
+                  type="primary" 
+                  icon={<PlusOutlined />}
+                  onClick={() => setInviteModalVisible(true)}
+                >
+                  Invite Your First Caregiver
+                </Button>
+              </Empty>
+            )}
+          </div>
+        </div>
 
         {/* Pending Invitations */}
         {invitations.length > 0 && (
-          <Card
-            title={
-              <Space>
-                <SendOutlined />
-                <span>Pending Invitations ({invitations.filter(inv => inv.status === 'pending').length})</span>
-              </Space>
-            }
-            className="invitations-card"
-          >
-            <List
-              dataSource={invitations}
-              renderItem={(invite) => (
-                <List.Item className="invitation-list-item">
-                  <div className="invitation-content">
-                    <div className="invitation-info">
-                      <Space>
-                        <Avatar icon={<MailOutlined />} size="small" />
-                        <div>
-                          <Text strong>{invite.email}</Text>
-                          <br />
-                          <Text type="secondary" size="small">
-                            Invited to care for {invite.patientName} as {invite.role} caregiver
-                          </Text>
-                          <br />
-                          <Text type="secondary" size="small">
-                            Sent {new Date(invite.sentAt).toLocaleDateString()}
-                          </Text>
-                        </div>
-                      </Space>
-                    </div>
-                    
-                    <Space>
-                      <div className="invitation-status">
-                        {getStatusIcon(invite.status)}
-                        <Text size="small">{invite.status}</Text>
-                      </div>
+          <div className="settings-group">
+            <div className="settings-group-header">
+              <div className="group-title">
+                <Space>
+                  <SendOutlined />
+                  <span>Pending Invitations ({invitations.filter(inv => inv.status === 'pending').length})</span>
+                </Space>
+              </div>
+            </div>
+
+            <div className="settings-content">
+              <List
+                dataSource={invitations}
+                renderItem={(invite) => (
+                  <List.Item
+                    className="invitation-list-item"
+                    actions={[
                       <Dropdown
+                        key="actions"
                         menu={{ items: getInviteMenuItems(invite) }}
                         placement="bottomRight"
                         trigger={['click']}
                       >
                         <Button type="text" icon={<MoreOutlined />} size="small" />
                       </Dropdown>
-                    </Space>
-                  </div>
-                </List.Item>
-              )}
-            />
-          </Card>
+                    ]}
+                  >
+                    <List.Item.Meta
+                      avatar={<Avatar icon={<MailOutlined />} size="default" />}
+                      title={
+                        <div className="invitation-header-info">
+                          <Space>
+                            <Text strong>{invite.email}</Text>
+                            <Tag color={getRoleColor(invite.role)} size="small">
+                              {invite.role}
+                            </Tag>
+                            <div className="status-indicator">
+                              {getStatusIcon(invite.status)}
+                              <Text size="small" type={invite.status === 'accepted' ? 'success' : 'secondary'}>
+                                {invite.status}
+                              </Text>
+                            </div>
+                          </Space>
+                        </div>
+                      }
+                      description={
+                        <div className="invitation-details">
+                          <Text type="secondary" style={{ display: 'block' }}>
+                            Invited to care for {invite.patientName} as {invite.role} caregiver
+                          </Text>
+                          <Text type="secondary" size="small">
+                            Sent {new Date(invite.sentAt).toLocaleDateString()}
+                          </Text>
+                        </div>
+                      }
+                    />
+                  </List.Item>
+                )}
+              />
+            </div>
+          </div>
         )}
 
         {/* Help Section */}
-        <Card title="Need Help?" size="small" className="help-card">
-          <div className="help-content">
-            <Text type="secondary">
-              Caregivers you invite will be able to:
-            </Text>
-            <ul style={{ marginTop: 8, marginBottom: 0 }}>
-              <li><Text size="small">View patient medical information</Text></li>
-              <li><Text size="small">Track medications and doses</Text></li>
-              <li><Text size="small">Add measurements and daily logs</Text></li>
-              <li><Text size="small">Receive notifications about the patient</Text></li>
-            </ul>
-            <div style={{ marginTop: 16 }}>
-              <Text type="secondary" size="small">
-                You can control caregiver permissions and remove access at any time.
-              </Text>
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <TeamOutlined />
+                <span>Need Help?</span>
+              </Space>
             </div>
           </div>
-        </Card>
+
+          <div className="settings-content">
+            <div className="help-content">
+              <Text type="secondary">
+                Caregivers you invite will be able to:
+              </Text>
+              <ul style={{ marginTop: 8, marginBottom: 0 }}>
+                <li><Text size="small">View patient medical information</Text></li>
+                <li><Text size="small">Track medications and doses</Text></li>
+                <li><Text size="small">Add measurements and daily logs</Text></li>
+                <li><Text size="small">Receive notifications about the patient</Text></li>
+              </ul>
+              <div style={{ marginTop: 12 }}>
+                <Text type="secondary" size="small">
+                  You can control caregiver permissions and remove access at any time.
+                </Text>
+              </div>
+            </div>
+          </div>
+        </div>
       </Space>
 
-      {renderInviteModal()}
+      {/* Invite Caregiver Modal */}
+      <Modal
+        title={
+          <Space>
+            <TeamOutlined />
+            <span>Invite Caregiver</span>
+          </Space>
+        }
+        open={inviteModalVisible}
+        onCancel={() => {
+          setInviteModalVisible(false)
+          form.resetFields()
+        }}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setInviteModalVisible(false)
+              form.resetFields()
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="submit"
+            type="primary" 
+            htmlType="submit"
+            form="invite-caregiver-form"
+            loading={loading}
+          >
+            Send Invitation
+          </Button>
+        ]}
+        destroyOnClose
+        className="invite-caregiver-modal"
+      >
+        <div className="modal-form">
+          <Form
+            id="invite-caregiver-form"
+            form={form}
+            layout="vertical"
+            onFinish={handleSendInvite}
+          >
+            <Form.Item
+              name="email"
+              label="Email Address"
+              rules={[
+                { required: true, message: 'Please enter email address' },
+                { type: 'email', message: 'Please enter a valid email address' }
+              ]}
+            >
+              <Input 
+                prefix={<MailOutlined />}
+                placeholder="caregiver@example.com" 
+              />
+            </Form.Item>
+
+            <Form.Item
+              name="patientId"
+              label="Patient"
+              rules={[
+                { required: true, message: 'Please select a patient' }
+              ]}
+            >
+              <Select placeholder="Select patient to share">
+                {patients.map(patient => (
+                  <Option key={patient.id} value={patient.id}>
+                    <Space>
+                      <UserOutlined />
+                      {patient.name}
+                    </Space>
+                  </Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            <Form.Item
+              name="role"
+              label="Role"
+              rules={[
+                { required: true, message: 'Please select a role' }
+              ]}
+            >
+              <Select placeholder="Select caregiver role">
+                <Option value="secondary">Secondary Caregiver</Option>
+                <Option value="family">Family Member</Option>
+                <Option value="medical">Medical Professional</Option>
+                <Option value="nurse">Nurse</Option>
+                <Option value="other">Other</Option>
+              </Select>
+            </Form.Item>
+          </Form>
+        </div>
+      </Modal>
     </div>
   )
 }

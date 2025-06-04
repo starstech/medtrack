@@ -308,13 +308,6 @@ const ProfileSettings = ({ user }) => {
                     </Col>
                     <Col xs={24} sm={12}>
                       <div className="info-item">
-                        <Text type="secondary">User ID:</Text>
-                        <br />
-                        <Text strong>{user?.id}</Text>
-                      </div>
-                    </Col>
-                    <Col xs={24} sm={12}>
-                      <div className="info-item">
                         <Text type="secondary">Email Status:</Text>
                         <br />
                         <Text strong style={{ color: '#52c41a' }}>Verified</Text>
@@ -392,11 +385,36 @@ const ProfileSettings = ({ user }) => {
                   danger 
                   onClick={() => {
                     Modal.confirm({
-                      title: 'Delete Account',
-                      content: 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
+                      title: (
+                        <Space>
+                          <DeleteOutlined style={{ color: '#ff4d4f' }} />
+                          <span>Delete Account</span>
+                        </Space>
+                      ),
+                      content: (
+                        <div style={{ marginTop: 16 }}>
+                          <Text>Are you sure you want to delete your account?</Text>
+                          <br />
+                          <br />
+                          <Text type="secondary">
+                            This action will permanently delete:
+                          </Text>
+                          <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
+                            <li><Text type="secondary">Your profile and account data</Text></li>
+                            <li><Text type="secondary">All patient information</Text></li>
+                            <li><Text type="secondary">Medication records and history</Text></li>
+                            <li><Text type="secondary">Daily logs and measurements</Text></li>
+                          </ul>
+                          <Text strong style={{ color: '#ff4d4f' }}>
+                            This action cannot be undone.
+                          </Text>
+                        </div>
+                      ),
                       okText: 'Delete Account',
                       okType: 'danger',
                       cancelText: 'Cancel',
+                      width: 500,
+                      icon: null,
                       onOk: () => {
                         // TODO: Implement account deletion
                         message.error('Account deletion not implemented yet')

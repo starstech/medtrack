@@ -428,13 +428,22 @@ const NotificationSettings = () => {
               </div>
 
               <Button
-                type="link"
+                type="text"
                 onClick={() => {
                   // TODO: Send test notification
                   message.success('Test notification sent!')
                 }}
+                className="card-action-btn"
+                style={{
+                  color: '#1890ff',
+                  fontWeight: '500',
+                  padding: '4px 8px',
+                  fontSize: '13px',
+                  borderRadius: '4px',
+                  transition: 'all 0.2s ease'
+                }}
               >
-                Send Test Notification
+                Send Test
               </Button>
             </Space>
           </div>
