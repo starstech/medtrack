@@ -19,7 +19,9 @@ import {
   Avatar,
   Dropdown,
   Divider,
-  Segmented
+  Segmented,
+  Image,
+  Tooltip
 } from 'antd'
 import { 
   FileTextOutlined,
@@ -34,7 +36,9 @@ import {
   CalendarOutlined,
   FilterOutlined,
   UnorderedListOutlined,
-  NodeIndexOutlined
+  NodeIndexOutlined,
+  CameraOutlined,
+  EyeOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { LOG_TYPES, SEVERITY_LEVELS } from '../../utils/mockData'
@@ -166,7 +170,8 @@ const DailyLogs = ({ patient }) => {
         timestamp: values.timestamp.toISOString(),
         recordedBy: 'Current User', // TODO: Get from auth context
         followUpRequired: values.severity === 'moderate' || values.severity === 'severe',
-        tags: values.tags ? values.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : []
+        tags: values.tags ? values.tags.split(',').map(tag => tag.trim()).filter(tag => tag) : [],
+        attachments: values.attachments || []
       }
 
       await addDailyLog(patient.id, logData)
@@ -205,6 +210,63 @@ const DailyLogs = ({ patient }) => {
   const getSeverityInfo = (severity) => {
     return SEVERITY_LEVELS.find(s => s.value === severity) || 
            { label: severity, color: '#8c8c8c' }
+  }
+
+  const renderLogAttachments = (log) => {
+    if (!log.attachments || log.attachments.length === 0) {
+      return null
+    }
+
+    const attachments = log.attachments.filter(att => att.status === 'done')
+    if (attachments.length === 0) return null
+
+    return (
+      <div className="log-attachments">
+        <Space size={4}>
+          <Tooltip title={`${attachments.length} photo${attachments.length > 1 ? 's' : ''} attached`}>
+            <Button
+              type="text"
+              size="small"
+              icon={<CameraOutlined />}
+              className="attachment-indicator"
+            >
+              {attachments.length}
+            </Button>
+          </Tooltip>
+          <div className="attachment-previews">
+            <Image.PreviewGroup>
+              {attachments.slice(0, 2).map((attachment, index) => (
+                <Image
+                  key={attachment.uid}
+                  width={24}
+                  height={24}
+                  src={attachment.url}
+                  alt={attachment.name}
+                  style={{
+                    borderRadius: '4px',
+                    objectFit: 'cover',
+                    cursor: 'pointer',
+                    border: '1px solid #f0f0f0'
+                  }}
+                  preview={{
+                    mask: <EyeOutlined style={{ fontSize: '10px' }} />
+                  }}
+                />
+              ))}
+              {attachments.length > 2 && (
+                <div className="more-attachments">
+                  <Tooltip title={`+${attachments.length - 2} more photos`}>
+                    <div className="attachment-count">
+                      +{attachments.length - 2}
+                    </div>
+                  </Tooltip>
+                </div>
+              )}
+            </Image.PreviewGroup>
+          </div>
+        </Space>
+      </div>
+    )
   }
 
   const getMenuItems = (log) => [
@@ -268,6 +330,7 @@ const DailyLogs = ({ patient }) => {
               <Text type="secondary" size="small">
                 {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')} • by {log.recordedBy} • {dayjs(log.timestamp).fromNow()}
               </Text>
+              {renderLogAttachments(log)}
             </div>
             
             <div className="log-description">
@@ -379,9 +442,12 @@ const DailyLogs = ({ patient }) => {
                 </Dropdown>
               </div>
               
-              <Text type="secondary" size="small" className="timeline-log-time">
-                {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
-              </Text>
+              <div className="timeline-log-meta">
+                <Text type="secondary" size="small" className="timeline-log-time">
+                  {dayjs(log.timestamp).format('MMM D, YYYY h:mm A')}
+                </Text>
+                {renderLogAttachments(log)}
+              </div>
               
               <div className="timeline-log-description">
                 <Text>{log.description}</Text>

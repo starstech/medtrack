@@ -141,9 +141,11 @@
 }
 
 .log-details-row {
-  color: #8c8c8c;
-  font-size: 13px;
-  line-height: 1.3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 4px 0 8px 0;
+  min-height: 20px;
 }
 
 .log-description {
@@ -229,6 +231,14 @@
 
 .timeline-log-tags .ant-tag {
   margin: 2px 4px 2px 0;
+}
+
+/* Timeline specific adjustments */
+.timeline-log-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
 }
 
 /* Mobile responsiveness */
@@ -368,5 +378,123 @@
   
   .daily-log-modal .modal-form {
     padding: 16px 20px;
+  }
+}
+
+/* Log attachment display */
+.log-attachments {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.log-attachments .attachment-indicator {
+  height: 20px;
+  padding: 0 6px;
+  border-radius: 10px;
+  background: #f6f8fa;
+  border: 1px solid #e1e8ed;
+  color: #8c8c8c;
+  font-size: 11px;
+  line-height: 18px;
+  transition: all 0.3s ease;
+}
+
+.log-attachments .attachment-indicator:hover {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+  color: #1890ff;
+}
+
+.log-attachments .attachment-indicator .anticon {
+  font-size: 10px;
+  margin-right: 2px;
+}
+
+.log-attachments .attachment-previews {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 4px;
+}
+
+.log-attachments .attachment-previews .ant-image {
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.log-attachments .attachment-previews .ant-image:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.log-attachments .more-attachments {
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  border: 1px solid #d9d9d9;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.log-attachments .more-attachments:hover {
+  background: #e6f7ff;
+  border-color: #91d5ff;
+}
+
+.log-attachments .attachment-count {
+  font-size: 10px;
+  font-weight: 500;
+  color: #8c8c8c;
+  line-height: 1;
+}
+
+.log-attachments .more-attachments:hover .attachment-count {
+  color: #1890ff;
+}
+
+/* Mobile responsive attachment display */
+@media (max-width: 768px) {
+  .log-attachments {
+    margin-left: 4px;
+    margin-top: 4px;
+  }
+  
+  .log-attachments .attachment-indicator {
+    height: 18px;
+    padding: 0 4px;
+    font-size: 10px;
+    line-height: 16px;
+  }
+  
+  .log-attachments .attachment-previews .ant-image {
+    width: 20px !important;
+    height: 20px !important;
+  }
+  
+  .log-attachments .more-attachments {
+    width: 20px;
+    height: 20px;
+  }
+  
+  .log-attachments .attachment-count {
+    font-size: 9px;
+  }
+  
+  .log-details-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  
+  .timeline-log-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
   }
 } 
