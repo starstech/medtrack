@@ -1,5 +1,8 @@
-import { Typography, Tabs, Card } from 'antd'
+import { useParams, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
+import { Button, Tabs, Typography } from 'antd'
 import { 
+  ArrowLeftOutlined,
   UserOutlined, 
   BellOutlined, 
   TeamOutlined,
@@ -15,92 +18,55 @@ import './ProfilePage.css'
 const { Title, Text } = Typography
 
 const ProfilePage = () => {
+  const navigate = useNavigate()
   const { user, loading } = useAuth()
 
   if (loading) {
     return <LoadingSpinner message="Loading profile..." />
   }
 
+  const handleBack = () => {
+    navigate('/')
+  }
+
   const tabItems = [
     {
       key: 'profile',
-      label: (
-        <span>
-          <UserOutlined />
-          <span className="tab-label">Profile</span>
-        </span>
-      ),
+      label: 'Profile',
       children: <ProfileSettings user={user} />
     },
     {
       key: 'notifications',
-      label: (
-        <span>
-          <BellOutlined />
-          <span className="tab-label">Notifications</span>
-        </span>
-      ),
+      label: 'Notifications',
       children: <NotificationSettings />
     },
     {
       key: 'caregivers',
-      label: (
-        <span>
-          <TeamOutlined />
-          <span className="tab-label">Caregivers</span>
-        </span>
-      ),
+      label: 'Caregivers',
       children: <CaregiverManagement />
     }
   ]
 
   return (
     <div className="profile-page">
-      {/* Page Header */}
-      <div className="page-header">
-        <div className="header-content">
-          <Title level={2} className="page-title">
-            Profile & Settings
-          </Title>
-          <Text type="secondary" className="page-subtitle">
-            Manage your account, notifications, and caregiver network
-          </Text>
-        </div>
+      {/* Quick Actions Bar */}
+      <div className="profile-actions-bar">
+        <Button
+          icon={<ArrowLeftOutlined />}
+          onClick={handleBack}
+          className="back-button"
+          size="small"
+        >
+          Back
+        </Button>
       </div>
 
-      {/* Profile Overview Card */}
-      <Card className="profile-overview-card" bodyStyle={{ padding: '24px' }}>
-        <div className="profile-overview">
-          <div className="profile-avatar">
-            <div className="avatar-placeholder">
-              <UserOutlined />
-            </div>
-          </div>
-          
-          <div className="profile-info">
-            <Title level={3} className="profile-name">
-              {user?.name || 'User'}
-            </Title>
-            <Text type="secondary" className="profile-email">
-              {user?.email}
-            </Text>
-            <Text type="secondary" size="small" className="profile-role">
-              {user?.role === 'caregiver' ? 'Caregiver' : 'Patient'} • Member since {
-                user?.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'Unknown'
-              }
-            </Text>
-          </div>
-        </div>
-      </Card>
-
-      {/* Settings Tabs */}
+      {/* Profile Tabs */}
       <div className="profile-tabs-container">
         <Tabs
           defaultActiveKey="profile"
           items={tabItems}
-          size="large"
           className="profile-tabs"
-          tabPosition="top"
         />
       </div>
     </div>

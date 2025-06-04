@@ -1,0 +1,205 @@
+/* Notification Settings Section - Clean Design */
+.notification-settings-section {
+  width: 100%;
+}
+
+/* Settings Groups - Reusing from ProfileSettings */
+.notification-settings-section .settings-group {
+  margin-bottom: 32px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.notification-settings-section .settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.notification-settings-section .settings-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.notification-settings-section .group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #262626;
+  font-size: 16px;
+}
+
+.notification-settings-section .settings-content {
+  padding: 24px;
+}
+
+/* Notification Options */
+.notification-option {
+  margin-bottom: 16px;
+}
+
+.notification-option:last-child {
+  margin-bottom: 0;
+}
+
+.option-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.option-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.option-info .ant-typography {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Reminder Times */
+.reminder-times {
+  margin-bottom: 20px;
+}
+
+.reminder-times .ant-tag {
+  margin: 2px 4px 2px 0;
+  font-size: 12px;
+  padding: 4px 8px;
+}
+
+.add-reminder {
+  margin-bottom: 0;
+}
+
+.add-reminder .ant-btn {
+  margin: 2px 4px 2px 0;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+/* Notification Preview */
+.notification-preview {
+  border: 1px solid #f0f0f0;
+  border-radius: 8px;
+  padding: 16px;
+  background: #fafafa;
+  margin: 12px 0;
+}
+
+.preview-notification {
+  padding: 8px 0;
+  border-bottom: 1px solid #f5f5f5;
+}
+
+.preview-notification:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.preview-notification .ant-typography {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Settings Actions */
+.settings-actions {
+  display: flex;
+  justify-content: center;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: 32px;
+}
+
+/* Form Elements */
+.notification-settings-section .ant-time-picker {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+}
+
+.notification-settings-section .ant-time-picker:focus,
+.notification-settings-section .ant-time-picker-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.notification-settings-section .ant-switch {
+  background-color: #8c8c8c;
+}
+
+.notification-settings-section .ant-switch-checked {
+  background-color: #1890ff;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .notification-settings-section .settings-group-header {
+    padding: 16px 20px;
+  }
+  
+  .notification-settings-section .settings-content {
+    padding: 20px;
+  }
+  
+  .option-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .option-info {
+    min-width: unset;
+  }
+  
+  .add-reminder .ant-row {
+    margin: 0 !important;
+  }
+  
+  .add-reminder .ant-col {
+    padding: 2px !important;
+  }
+  
+  .add-reminder .ant-btn {
+    width: 100%;
+    margin: 2px 0;
+  }
+}
+
+@media (max-width: 576px) {
+  .notification-settings-section .settings-group-header {
+    padding: 12px 16px;
+  }
+  
+  .notification-settings-section .settings-content {
+    padding: 16px;
+  }
+  
+  .notification-settings-section .group-title {
+    font-size: 15px;
+  }
+  
+  .notification-preview {
+    padding: 12px;
+  }
+  
+  .preview-notification {
+    padding: 6px 0;
+  }
+}
+
+/* Hover Effects */
+.notification-settings-section .settings-group {
+  transition: all 0.2s ease;
+}
+
+.notification-settings-section .settings-group:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+} 

@@ -23,9 +23,13 @@ import {
   PhoneOutlined,
   SaveOutlined,
   LockOutlined,
-  CloseOutlined
+  CloseOutlined,
+  InfoCircleOutlined,
+  SecurityScanOutlined,
+  DeleteOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
+import './ProfileSettings.css'
 
 const { Title, Text } = Typography
 
@@ -70,22 +74,6 @@ const ProfileSettings = ({ user }) => {
     }
   }
 
-  const handleAvatarUpload = (info) => {
-    if (info.file.status === 'uploading') {
-      setLoading(true)
-      return
-    }
-    if (info.file.status === 'done') {
-      // TODO: Handle avatar upload
-      message.success('Profile picture updated successfully!')
-      setLoading(false)
-    }
-    if (info.file.status === 'error') {
-      message.error('Failed to upload profile picture.')
-      setLoading(false)
-    }
-  }
-
   const beforeUpload = (file) => {
     const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png'
     if (!isJpgOrPng) {
@@ -98,357 +86,415 @@ const ProfileSettings = ({ user }) => {
     return isJpgOrPng && isLt2M
   }
 
-  const uploadButton = (
-    <div>
-      <CameraOutlined />
-      <div style={{ marginTop: 8 }}>Upload</div>
-    </div>
-  )
+  const handleAvatarUpload = (info) => {
+    if (info.file.status === 'done') {
+      message.success('Avatar uploaded successfully!')
+    } else if (info.file.status === 'error') {
+      message.error('Failed to upload avatar.')
+    }
+  }
 
   return (
-    <div className="profile-settings">
+    <div className="profile-settings-section">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
-        {/* Profile Picture & Basic Info */}
-        <Card title="Profile Information" className="profile-info-card">
-          <Row gutter={[24, 24]}>
-            <Col xs={24} sm={8} className="profile-avatar-section">
-              <div className="avatar-upload">
-                <Upload
-                  name="avatar"
-                  listType="picture-card"
-                  className="avatar-uploader"
-                  showUploadList={false}
-                  beforeUpload={beforeUpload}
-                  onChange={handleAvatarUpload}
+        {/* Profile Information Card */}
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <UserOutlined />
+                <span>Profile Information</span>
+              </Space>
+            </div>
+            {!editMode && (
+              <Button 
+                type="primary" 
+                icon={<EditOutlined />}
+                onClick={() => setEditMode(true)}
+                size="small"
+              >
+                Edit Profile
+              </Button>
+            )}
+          </div>
+
+          <div className="settings-content">
+            <Row gutter={24}>
+              <Col xs={24} sm={8}>
+                <div className="profile-avatar-section">
+                  <div className="avatar-upload">
+                    <Upload
+                      name="avatar"
+                      listType="picture-card"
+                      className="avatar-uploader"
+                      showUploadList={false}
+                      beforeUpload={beforeUpload}
+                      onChange={handleAvatarUpload}
+                      disabled={!editMode}
+                    >
+                      <Avatar 
+                        size={80} 
+                        icon={<UserOutlined />}
+                        src={user?.avatar}
+                      />
+                      {editMode && (
+                        <div className="avatar-overlay">
+                          <CameraOutlined />
+                        </div>
+                      )}
+                    </Upload>
+                  </div>
+                  <div className="profile-role">
+                    <Text type="secondary">
+                      {user?.role === 'caregiver' ? 'Caregiver' : 'Patient'}
+                    </Text>
+                  </div>
+                </div>
+              </Col>
+              
+              <Col xs={24} sm={16}>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  onFinish={handleSaveProfile}
+                  initialValues={{
+                    name: user?.name,
+                    email: user?.email,
+                    phone: user?.phone || '',
+                    bio: user?.bio || ''
+                  }}
                   disabled={!editMode}
+                  className="profile-form"
                 >
-                  <Avatar 
-                    size={80} 
-                    icon={<UserOutlined />}
-                    src={user?.avatar}
-                  />
+                  <Row gutter={16}>
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="name"
+                        label="Full Name"
+                        rules={[
+                          { required: true, message: 'Please enter your name' },
+                          { min: 2, message: 'Name must be at least 2 characters' }
+                        ]}
+                      >
+                        <Input prefix={<UserOutlined />} />
+                      </Form.Item>
+                    </Col>
+                    
+                    <Col xs={24} sm={12}>
+                      <Form.Item
+                        name="email"
+                        label="Email Address"
+                        rules={[
+                          { required: true, message: 'Please enter your email' },
+                          { type: 'email', message: 'Please enter a valid email' }
+                        ]}
+                      >
+                        <Input prefix={<MailOutlined />} />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+
+                  <Form.Item
+                    name="phone"
+                    label="Phone Number"
+                    rules={[
+                      { pattern: /^[\+]?[1-9][\d]{0,15}$/, message: 'Please enter a valid phone number' }
+                    ]}
+                  >
+                    <Input prefix={<PhoneOutlined />} placeholder="+1 (555) 123-4567" />
+                  </Form.Item>
+
+                  <Form.Item
+                    name="bio"
+                    label="Bio"
+                  >
+                    <Input.TextArea 
+                      rows={3}
+                      placeholder="Tell us a bit about yourself..."
+                      maxLength={500}
+                      showCount
+                    />
+                  </Form.Item>
+
                   {editMode && (
-                    <div className="avatar-overlay">
-                      <CameraOutlined />
+                    <div className="profile-actions">
+                      <Space>
+                        <Button 
+                          onClick={() => {
+                            setEditMode(false)
+                            form.resetFields()
+                          }}
+                          disabled={loading}
+                        >
+                          <CloseOutlined /> Cancel
+                        </Button>
+                        <Button 
+                          type="primary" 
+                          htmlType="submit"
+                          loading={loading}
+                          icon={<SaveOutlined />}
+                        >
+                          Save Changes
+                        </Button>
+                      </Space>
                     </div>
                   )}
-                </Upload>
-              </div>
-              <div className="profile-role">
-                <Text type="secondary">
-                  {user?.role === 'caregiver' ? 'Caregiver' : 'Patient'}
-                </Text>
-              </div>
-            </Col>
-            
-            <Col xs={24} sm={16}>
-              <Form
-                form={form}
-                layout="vertical"
-                onFinish={handleSaveProfile}
-                initialValues={{
-                  name: user?.name,
-                  email: user?.email,
-                  phone: user?.phone || '',
-                  bio: user?.bio || ''
-                }}
-                disabled={!editMode}
-              >
-                <Row gutter={16}>
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="name"
-                      label="Full Name"
-                      rules={[
-                        { required: true, message: 'Please enter your name' },
-                        { min: 2, message: 'Name must be at least 2 characters' }
-                      ]}
-                    >
-                      <Input prefix={<UserOutlined />} />
-                    </Form.Item>
-                  </Col>
-                  
-                  <Col xs={24} sm={12}>
-                    <Form.Item
-                      name="email"
-                      label="Email Address"
-                      rules={[
-                        { required: true, message: 'Please enter your email' },
-                        { type: 'email', message: 'Please enter a valid email' }
-                      ]}
-                    >
-                      <Input prefix={<MailOutlined />} />
-                    </Form.Item>
-                  </Col>
-                </Row>
-
-                <Form.Item
-                  name="phone"
-                  label="Phone Number"
-                  rules={[
-                    { pattern: /^[\+]?[1-9][\d]{0,15}$/, message: 'Please enter a valid phone number' }
-                  ]}
-                >
-                  <Input prefix={<PhoneOutlined />} placeholder="+1 (555) 123-4567" />
-                </Form.Item>
-
-                <Form.Item
-                  name="bio"
-                  label="Bio"
-                >
-                  <Input.TextArea 
-                    rows={3}
-                    placeholder="Tell us a bit about yourself..."
-                    maxLength={500}
-                    showCount
-                  />
-                </Form.Item>
-
-                <div className="profile-actions">
-                  {editMode ? (
-                    <Space>
-                      <Button 
-                        onClick={() => {
-                          setEditMode(false)
-                          form.resetFields()
-                        }}
-                        disabled={loading}
-                      >
-                        <CloseOutlined /> Cancel
-                      </Button>
-                      <Button 
-                        type="primary" 
-                        htmlType="submit"
-                        loading={loading}
-                        icon={<SaveOutlined />}
-                      >
-                        Save Changes
-                      </Button>
-                    </Space>
-                  ) : (
-                    <Button 
-                      type="primary" 
-                      onClick={() => setEditMode(true)}
-                      icon={<EditOutlined />}
-                    >
-                      Edit Profile
-                    </Button>
-                  )}
-                </div>
-              </Form>
-            </Col>
-          </Row>
-        </Card>
+                </Form>
+              </Col>
+            </Row>
+          </div>
+        </div>
 
         {/* Account Settings */}
-        <Card title="Account Settings" className="account-settings-card">
-          <Space direction="vertical" size="large" style={{ width: '100%' }}>
-            {/* Password Change */}
-            <div className="setting-item">
-              <div className="setting-header">
-                <div>
-                  <Title level={5}>Password</Title>
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <SecurityScanOutlined />
+                <span>Account Settings</span>
+              </Space>
+            </div>
+          </div>
+
+          <div className="settings-content">
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
+              {/* Password Change */}
+              <div className="setting-item">
+                <div className="setting-header">
+                  <div className="setting-info">
+                    <Title level={5}>Password</Title>
+                    <Text type="secondary">
+                      Keep your account secure with a strong password
+                    </Text>
+                  </div>
+                  <Button 
+                    icon={<LockOutlined />}
+                    onClick={() => setChangePasswordVisible(true)}
+                  >
+                    Change Password
+                  </Button>
+                </div>
+              </div>
+
+              <Divider />
+
+              {/* Account Information */}
+              <div className="setting-item">
+                <div className="setting-header">
+                  <div className="setting-info">
+                    <Title level={5}>Account Information</Title>
+                    <Text type="secondary">
+                      Your account details and membership information
+                    </Text>
+                  </div>
+                </div>
+                <div className="account-info">
+                  <Row gutter={[16, 16]}>
+                    <Col xs={24} sm={12}>
+                      <div className="info-item">
+                        <Text type="secondary">Member Since:</Text>
+                        <br />
+                        <Text strong>
+                          {user?.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'Unknown'}
+                        </Text>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                      <div className="info-item">
+                        <Text type="secondary">Account Type:</Text>
+                        <br />
+                        <Text strong>{user?.role === 'caregiver' ? 'Caregiver' : 'Patient'}</Text>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                      <div className="info-item">
+                        <Text type="secondary">User ID:</Text>
+                        <br />
+                        <Text strong>{user?.id}</Text>
+                      </div>
+                    </Col>
+                    <Col xs={24} sm={12}>
+                      <div className="info-item">
+                        <Text type="secondary">Email Status:</Text>
+                        <br />
+                        <Text strong style={{ color: '#52c41a' }}>Verified</Text>
+                      </div>
+                    </Col>
+                  </Row>
+                </div>
+              </div>
+
+              <Divider />
+
+              {/* Privacy Settings */}
+              <div className="setting-item">
+                <div className="setting-header">
+                  <div className="setting-info">
+                    <Title level={5}>Privacy Settings</Title>
+                    <Text type="secondary">
+                      Control how your information is shared
+                    </Text>
+                  </div>
+                </div>
+                <div className="privacy-settings">
+                  <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+                    <div className="privacy-option">
+                      <div className="privacy-option-content">
+                        <Text strong>Profile Visibility</Text>
+                        <br />
+                        <Text type="secondary" size="small">
+                          Allow other caregivers to see your profile
+                        </Text>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                    
+                    <div className="privacy-option">
+                      <div className="privacy-option-content">
+                        <Text strong>Activity Status</Text>
+                        <br />
+                        <Text type="secondary" size="small">
+                          Show when you were last active
+                        </Text>
+                      </div>
+                      <Switch defaultChecked />
+                    </div>
+                  </Space>
+                </div>
+              </div>
+            </Space>
+          </div>
+        </div>
+
+        {/* Danger Zone */}
+        <div className="settings-group danger-zone">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <DeleteOutlined />
+                <span>Danger Zone</span>
+              </Space>
+            </div>
+          </div>
+
+          <div className="settings-content">
+            <div className="danger-actions">
+              <div className="danger-item">
+                <div className="setting-info">
+                  <Title level={5} style={{ color: '#ff4d4f' }}>
+                    Delete Account
+                  </Title>
                   <Text type="secondary">
-                    Keep your account secure with a strong password
+                    Permanently delete your account and all associated data. This action cannot be undone.
                   </Text>
                 </div>
                 <Button 
-                  icon={<LockOutlined />}
-                  onClick={() => setChangePasswordVisible(true)}
+                  danger 
+                  onClick={() => {
+                    Modal.confirm({
+                      title: 'Delete Account',
+                      content: 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
+                      okText: 'Delete Account',
+                      okType: 'danger',
+                      cancelText: 'Cancel',
+                      onOk: () => {
+                        // TODO: Implement account deletion
+                        message.error('Account deletion not implemented yet')
+                      }
+                    })
+                  }}
                 >
-                  Change Password
+                  Delete Account
                 </Button>
               </div>
             </div>
-
-            <Divider />
-
-            {/* Account Information */}
-            <div className="setting-item">
-              <div className="setting-header">
-                <div>
-                  <Title level={5}>Account Information</Title>
-                  <Text type="secondary">
-                    Your account details and membership information
-                  </Text>
-                </div>
-              </div>
-              <div className="account-info">
-                <Row gutter={[16, 8]}>
-                  <Col xs={24} sm={12}>
-                    <Text type="secondary">Member Since:</Text>
-                    <br />
-                    <Text strong>
-                      {user?.joinedAt ? new Date(user.joinedAt).toLocaleDateString() : 'Unknown'}
-                    </Text>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Text type="secondary">Account Type:</Text>
-                    <br />
-                    <Text strong>{user?.role === 'caregiver' ? 'Caregiver' : 'Patient'}</Text>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Text type="secondary">User ID:</Text>
-                    <br />
-                    <Text strong>{user?.id}</Text>
-                  </Col>
-                  <Col xs={24} sm={12}>
-                    <Text type="secondary">Email Status:</Text>
-                    <br />
-                    <Text strong style={{ color: '#52c41a' }}>Verified</Text>
-                  </Col>
-                </Row>
-              </div>
-            </div>
-
-            <Divider />
-
-            {/* Privacy Settings */}
-            <div className="setting-item">
-              <div className="setting-header">
-                <div>
-                  <Title level={5}>Privacy Settings</Title>
-                  <Text type="secondary">
-                    Control how your information is shared
-                  </Text>
-                </div>
-              </div>
-              <div className="privacy-settings">
-                <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-                  <div className="privacy-option">
-                    <div className="privacy-option-content">
-                      <Text strong>Profile Visibility</Text>
-                      <br />
-                      <Text type="secondary" size="small">
-                        Allow other caregivers to see your profile
-                      </Text>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                  
-                  <div className="privacy-option">
-                    <div className="privacy-option-content">
-                      <Text strong>Activity Status</Text>
-                      <br />
-                      <Text type="secondary" size="small">
-                        Show when you were last active
-                      </Text>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                </Space>
-              </div>
-            </div>
-          </Space>
-        </Card>
-
-        {/* Danger Zone */}
-        <Card title="Danger Zone" className="danger-zone-card">
-          <div className="danger-actions">
-            <div className="danger-item">
-              <div>
-                <Title level={5} style={{ color: '#ff4d4f' }}>
-                  Delete Account
-                </Title>
-                <Text type="secondary">
-                  Permanently delete your account and all associated data. This action cannot be undone.
-                </Text>
-              </div>
-              <Button 
-                danger 
-                onClick={() => {
-                  Modal.confirm({
-                    title: 'Delete Account',
-                    content: 'Are you sure you want to delete your account? This action cannot be undone and all your data will be permanently lost.',
-                    okText: 'Delete Account',
-                    okType: 'danger',
-                    cancelText: 'Cancel',
-                    onOk: () => {
-                      // TODO: Implement account deletion
-                      message.error('Account deletion not implemented yet')
-                    }
-                  })
-                }}
-              >
-                Delete Account
-              </Button>
-            </div>
           </div>
-        </Card>
+        </div>
       </Space>
 
       {/* Change Password Modal */}
       <Modal
-        title="Change Password"
+        title={
+          <Space>
+            <LockOutlined />
+            <span>Change Password</span>
+          </Space>
+        }
         open={changePasswordVisible}
         onCancel={() => {
           setChangePasswordVisible(false)
           passwordForm.resetFields()
         }}
-        footer={null}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setChangePasswordVisible(false)
+              passwordForm.resetFields()
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="submit"
+            type="primary" 
+            htmlType="submit"
+            form="password-change-form"
+          >
+            Change Password
+          </Button>
+        ]}
         destroyOnClose
+        className="password-modal"
       >
-        <Form
-          form={passwordForm}
-          layout="vertical"
-          onFinish={handleChangePassword}
-        >
-          <Form.Item
-            name="currentPassword"
-            label="Current Password"
-            rules={[
-              { required: true, message: 'Please enter your current password' }
-            ]}
+        <div className="modal-form">
+          <Form
+            id="password-change-form"
+            form={passwordForm}
+            layout="vertical"
+            onFinish={handleChangePassword}
           >
-            <Input.Password prefix={<LockOutlined />} />
-          </Form.Item>
+            <Form.Item
+              name="currentPassword"
+              label="Current Password"
+              rules={[
+                { required: true, message: 'Please enter your current password' }
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
 
-          <Form.Item
-            name="newPassword"
-            label="New Password"
-            rules={[
-              { required: true, message: 'Please enter your new password' },
-              { min: 6, message: 'Password must be at least 6 characters' }
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} />
-          </Form.Item>
+            <Form.Item
+              name="newPassword"
+              label="New Password"
+              rules={[
+                { required: true, message: 'Please enter a new password' },
+                { min: 8, message: 'Password must be at least 8 characters' }
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
 
-          <Form.Item
-            name="confirmPassword"
-            label="Confirm New Password"
-            dependencies={['newPassword']}
-            rules={[
-              { required: true, message: 'Please confirm your new password' },
-              ({ getFieldValue }) => ({
-                validator(_, value) {
-                  if (!value || getFieldValue('newPassword') === value) {
-                    return Promise.resolve()
-                  }
-                  return Promise.reject(new Error('Passwords do not match'))
-                }
-              })
-            ]}
-          >
-            <Input.Password prefix={<LockOutlined />} />
-          </Form.Item>
-
-          <div style={{ textAlign: 'right' }}>
-            <Space>
-              <Button 
-                onClick={() => {
-                  setChangePasswordVisible(false)
-                  passwordForm.resetFields()
-                }}
-              >
-                Cancel
-              </Button>
-              <Button type="primary" htmlType="submit">
-                Change Password
-              </Button>
-            </Space>
-          </div>
-        </Form>
+            <Form.Item
+              name="confirmPassword"
+              label="Confirm New Password"
+              dependencies={['newPassword']}
+              rules={[
+                { required: true, message: 'Please confirm your new password' },
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (!value || getFieldValue('newPassword') === value) {
+                      return Promise.resolve()
+                    }
+                    return Promise.reject(new Error('The two passwords do not match!'))
+                  },
+                }),
+              ]}
+            >
+              <Input.Password />
+            </Form.Item>
+          </Form>
+        </div>
       </Modal>
     </div>
   )

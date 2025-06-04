@@ -1,0 +1,340 @@
+/* Profile Settings Section - Clean Design */
+.profile-settings-section {
+  width: 100%;
+}
+
+/* Settings Groups */
+.settings-group {
+  margin-bottom: 32px;
+  border: 1px solid #f0f0f0;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.settings-group:last-child {
+  margin-bottom: 0;
+}
+
+.settings-group-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.group-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  color: #262626;
+  font-size: 16px;
+}
+
+.settings-content {
+  padding: 24px;
+}
+
+/* Setting Items */
+.setting-item {
+  margin-bottom: 20px;
+}
+
+.setting-item:last-child {
+  margin-bottom: 0;
+}
+
+.setting-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.setting-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.setting-info .ant-typography h5 {
+  margin-bottom: 4px !important;
+  font-size: 15px;
+  font-weight: 600;
+  color: #262626;
+}
+
+.setting-info .ant-typography {
+  color: #8c8c8c;
+  line-height: 1.5;
+}
+
+/* Profile Avatar Section */
+.profile-avatar-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.avatar-upload {
+  position: relative;
+  display: inline-block;
+}
+
+.avatar-uploader {
+  border: none !important;
+  background: transparent !important;
+}
+
+.avatar-uploader .ant-upload {
+  border: none !important;
+  background: transparent !important;
+  position: relative;
+}
+
+.avatar-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.avatar-overlay:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.profile-role {
+  color: #8c8c8c;
+  font-size: 14px;
+}
+
+/* Profile Form */
+.profile-form .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+}
+
+.profile-form .ant-input,
+.profile-form .ant-input-affix-wrapper {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 14px;
+}
+
+.profile-form .ant-input:focus,
+.profile-form .ant-input-focused,
+.profile-form .ant-input-affix-wrapper:focus,
+.profile-form .ant-input-affix-wrapper-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.profile-actions {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #f0f0f0;
+}
+
+/* Account Info */
+.account-info {
+  margin-top: 16px;
+}
+
+.info-item {
+  padding: 8px 0;
+}
+
+.info-item .ant-typography {
+  margin: 0;
+}
+
+/* Privacy Settings */
+.privacy-settings {
+  margin-top: 16px;
+}
+
+.privacy-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 12px 0;
+  gap: 16px;
+}
+
+.privacy-option-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.privacy-option-content .ant-typography {
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Danger Zone */
+.settings-group.danger-zone {
+  border-color: #ffccc7;
+}
+
+.settings-group.danger-zone .settings-group-header {
+  background: #fff2f0;
+  border-bottom-color: #ffccc7;
+}
+
+.settings-group.danger-zone .group-title {
+  color: #ff4d4f;
+}
+
+.danger-actions {
+  /* No specific styling needed */
+}
+
+.danger-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.danger-item .setting-info {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Password Modal */
+.password-modal .ant-modal-content {
+  border-radius: 12px !important;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
+}
+
+.password-modal .ant-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.password-modal .ant-modal-body {
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.password-modal .modal-form {
+  padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.password-modal .ant-form-item-label > label {
+  font-weight: 500;
+  color: #262626;
+  font-size: 14px;
+}
+
+.password-modal .ant-input,
+.password-modal .ant-input-affix-wrapper {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  font-size: 14px;
+}
+
+.password-modal .ant-input:focus,
+.password-modal .ant-input-focused,
+.password-modal .ant-input-affix-wrapper:focus,
+.password-modal .ant-input-affix-wrapper-focused {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .settings-group-header {
+    padding: 16px 20px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .settings-content {
+    padding: 20px;
+  }
+  
+  .setting-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .privacy-option {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .danger-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  
+  .profile-avatar-section {
+    margin-bottom: 20px;
+  }
+  
+  .password-modal .modal-form {
+    padding: 16px 20px;
+  }
+}
+
+@media (max-width: 576px) {
+  .settings-group-header {
+    padding: 12px 16px;
+  }
+  
+  .settings-content {
+    padding: 16px;
+  }
+  
+  .group-title {
+    font-size: 15px;
+  }
+  
+  .setting-info .ant-typography h5 {
+    font-size: 14px;
+  }
+  
+  .password-modal .modal-form {
+    padding: 12px 16px;
+  }
+}
+
+/* Hover Effects */
+.settings-group {
+  transition: all 0.2s ease;
+}
+
+.settings-group:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.settings-group.danger-zone:hover {
+  box-shadow: 0 4px 12px rgba(255, 77, 79, 0.15);
+} 
