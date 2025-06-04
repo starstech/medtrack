@@ -13,8 +13,6 @@
 
 .vital-signs-modal .ant-modal-body {
   padding: 24px;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
 .vital-signs-form {
@@ -180,7 +178,7 @@
   }
   
   .vital-signs-modal .ant-modal-body {
-    max-height: 55vh;
+    padding: 16px 20px;
   }
   
   .vital-signs-modal .ant-modal-footer {

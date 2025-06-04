@@ -13,8 +13,6 @@
 
 .physical-measurements-modal .ant-modal-body {
   padding: 24px;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
 .physical-measurements-form {
@@ -237,7 +235,7 @@
   }
   
   .physical-measurements-modal .ant-modal-body {
-    max-height: 55vh;
+    padding: 16px 20px;
   }
   
   .physical-measurements-modal .ant-modal-footer {

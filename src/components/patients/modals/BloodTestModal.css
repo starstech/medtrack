@@ -13,8 +13,6 @@
 
 .blood-test-modal .ant-modal-body {
   padding: 24px;
-  max-height: 60vh;
-  overflow-y: auto;
 }
 
 .blood-test-form {
@@ -180,7 +178,7 @@
   }
   
   .blood-test-modal .ant-modal-body {
-    max-height: 55vh;
+    padding: 16px 20px;
   }
   
   .blood-test-modal .ant-modal-footer {
