@@ -40,7 +40,12 @@ const CaregiverManagement = () => {
   const { patients } = usePatients()
   const [inviteModalVisible, setInviteModalVisible] = useState(false)
   const [editRoleModalVisible, setEditRoleModalVisible] = useState(false)
+  const [removeConfirmVisible, setRemoveConfirmVisible] = useState(false)
+  const [toggleStatusVisible, setToggleStatusVisible] = useState(false)
+  const [resendInviteVisible, setResendInviteVisible] = useState(false)
+  const [cancelInviteVisible, setCancelInviteVisible] = useState(false)
   const [selectedCaregiver, setSelectedCaregiver] = useState(null)
+  const [selectedInvite, setSelectedInvite] = useState(null)
   const [form] = Form.useForm()
   const [editForm] = Form.useForm()
   const [loading, setLoading] = useState(false)
@@ -145,91 +150,61 @@ const CaregiverManagement = () => {
   }
 
   const handleToggleStatus = (caregiver) => {
-    const newStatus = caregiver.status === 'active' ? 'inactive' : 'active'
-    const action = newStatus === 'active' ? 'activate' : 'deactivate'
+    setSelectedCaregiver(caregiver)
+    setToggleStatusVisible(true)
+  }
+
+  const confirmToggleStatus = () => {
+    const newStatus = selectedCaregiver.status === 'active' ? 'inactive' : 'active'
+    const action = newStatus === 'active' ? 'activated' : 'deactivated'
     
-    Modal.confirm({
-      title: `${action.charAt(0).toUpperCase() + action.slice(1)} Caregiver`,
-      content: `Are you sure you want to ${action} ${caregiver.name}? ${newStatus === 'inactive' ? 'They will temporarily lose access to patient information.' : 'They will regain access to patient information.'}`,
-      okText: action.charAt(0).toUpperCase() + action.slice(1),
-      okType: newStatus === 'inactive' ? 'danger' : 'primary',
-      cancelText: 'Cancel',
-      onOk: () => {
-        setCaregiverConnections(prev => 
-          prev.map(cg => 
-            cg.id === caregiver.id 
-              ? { ...cg, status: newStatus }
-              : cg
-          )
-        )
-        message.success(`${caregiver.name} has been ${action}d successfully!`)
-      }
-    })
+    setCaregiverConnections(prev => 
+      prev.map(cg => 
+        cg.id === selectedCaregiver.id 
+          ? { ...cg, status: newStatus }
+          : cg
+      )
+    )
+    
+    message.success(`${selectedCaregiver.name} has been ${action} successfully!`)
+    setToggleStatusVisible(false)
+    setSelectedCaregiver(null)
   }
 
   const handleRemoveCaregiver = (caregiver) => {
-    Modal.confirm({
-      title: (
-        <Space>
-          <DeleteOutlined style={{ color: '#ff4d4f' }} />
-          <span>Remove Caregiver</span>
-        </Space>
-      ),
-      content: (
-        <div style={{ marginTop: 16 }}>
-          <Text>Are you sure you want to remove <Text strong>{caregiver.name}</Text> from your caregiver network?</Text>
-          <br />
-          <br />
-          <Text type="secondary">
-            This action will:
-          </Text>
-          <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
-            <li><Text type="secondary">Remove their access to patient information</Text></li>
-            <li><Text type="secondary">Stop all notifications to them</Text></li>
-            <li><Text type="secondary">Remove them from patient care teams</Text></li>
-          </ul>
-          <Text strong style={{ color: '#ff4d4f' }}>
-            This action cannot be undone.
-          </Text>
-        </div>
-      ),
-      okText: 'Remove Caregiver',
-      okType: 'danger',
-      cancelText: 'Cancel',
-      width: 500,
-      icon: null,
-      onOk: () => {
-        setCaregiverConnections(prev => prev.filter(cg => cg.id !== caregiver.id))
-        message.success(`${caregiver.name} has been removed from your caregiver network.`)
-      }
-    })
+    setSelectedCaregiver(caregiver)
+    setRemoveConfirmVisible(true)
+  }
+
+  const confirmRemoveCaregiver = () => {
+    setCaregiverConnections(prev => prev.filter(cg => cg.id !== selectedCaregiver.id))
+    message.success(`${selectedCaregiver.name} has been removed from your caregiver network.`)
+    setRemoveConfirmVisible(false)
+    setSelectedCaregiver(null)
   }
 
   const handleResendInvite = (invite) => {
-    Modal.confirm({
-      title: 'Resend Invitation',
-      content: `Are you sure you want to resend the invitation to ${invite.email}?`,
-      okText: 'Resend',
-      cancelText: 'Cancel',
-      onOk: () => {
-        // TODO: Implement resend invite API
-        message.success(`Invitation resent to ${invite.email}!`)
-      }
-    })
+    setSelectedInvite(invite)
+    setResendInviteVisible(true)
+  }
+
+  const confirmResendInvite = () => {
+    // TODO: Implement resend invite API
+    message.success(`Invitation resent to ${selectedInvite.email}!`)
+    setResendInviteVisible(false)
+    setSelectedInvite(null)
   }
 
   const handleCancelInvite = (invite) => {
-    Modal.confirm({
-      title: 'Cancel Invitation',
-      content: `Are you sure you want to cancel the invitation to ${invite.email}? They will not be able to join your caregiver network using this invitation.`,
-      okText: 'Cancel Invitation',
-      okType: 'danger',
-      cancelText: 'Keep Invitation',
-      onOk: () => {
-        setInvitations(prev => prev.filter(inv => inv.id !== invite.id))
-        message.success('Invitation cancelled successfully!')
-      }
-    })
+    setSelectedInvite(invite)
+    setCancelInviteVisible(true)
+  }
+
+  const confirmCancelInvite = () => {
+    setInvitations(prev => prev.filter(inv => inv.id !== selectedInvite.id))
+    message.success('Invitation cancelled successfully!')
+    setCancelInviteVisible(false)
+    setSelectedInvite(null)
   }
 
   const getRoleColor = (role) => {
@@ -665,6 +640,194 @@ const CaregiverManagement = () => {
               </Select>
             </Form.Item>
           </Form>
+        </div>
+      </Modal>
+
+      {/* Remove Caregiver Confirmation Modal */}
+      <Modal
+        title={
+          <Space>
+            <DeleteOutlined style={{ color: '#ff4d4f' }} />
+            <span>Remove Caregiver</span>
+          </Space>
+        }
+        open={removeConfirmVisible}
+        onCancel={() => {
+          setRemoveConfirmVisible(false)
+          setSelectedCaregiver(null)
+        }}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setRemoveConfirmVisible(false)
+              setSelectedCaregiver(null)
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="remove"
+            type="primary"
+            danger
+            onClick={confirmRemoveCaregiver}
+          >
+            Remove Caregiver
+          </Button>
+        ]}
+        destroyOnClose
+        className="remove-caregiver-modal"
+        width={500}
+      >
+        <div className="modal-form">
+          {selectedCaregiver && (
+            <div style={{ marginTop: 16 }}>
+              <Text>Are you sure you want to remove <Text strong>{selectedCaregiver.name}</Text> from your caregiver network?</Text>
+              <br />
+              <br />
+              <Text type="secondary">
+                This action will:
+              </Text>
+              <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
+                <li><Text type="secondary">Remove their access to patient information</Text></li>
+                <li><Text type="secondary">Stop all notifications to them</Text></li>
+                <li><Text type="secondary">Remove them from patient care teams</Text></li>
+              </ul>
+              <Text strong style={{ color: '#ff4d4f' }}>
+                This action cannot be undone.
+              </Text>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Toggle Status Confirmation Modal */}
+      <Modal
+        title={
+          selectedCaregiver && selectedCaregiver.status === 'active' ? 'Deactivate Caregiver' : 'Activate Caregiver'
+        }
+        open={toggleStatusVisible}
+        onCancel={() => {
+          setToggleStatusVisible(false)
+          setSelectedCaregiver(null)
+        }}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setToggleStatusVisible(false)
+              setSelectedCaregiver(null)
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="confirm"
+            type="primary"
+            danger={selectedCaregiver && selectedCaregiver.status === 'active'}
+            onClick={confirmToggleStatus}
+          >
+            {selectedCaregiver && selectedCaregiver.status === 'active' ? 'Deactivate' : 'Activate'}
+          </Button>
+        ]}
+        destroyOnClose
+        className="toggle-status-modal"
+      >
+        <div className="modal-form">
+          {selectedCaregiver && (
+            <div style={{ marginTop: 16 }}>
+              <Text>
+                Are you sure you want to {selectedCaregiver.status === 'active' ? 'deactivate' : 'activate'} <Text strong>{selectedCaregiver.name}</Text>?
+              </Text>
+              <br />
+              <br />
+              <Text type="secondary">
+                {selectedCaregiver.status === 'active' 
+                  ? 'They will temporarily lose access to patient information.' 
+                  : 'They will regain access to patient information.'}
+              </Text>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Resend Invitation Confirmation Modal */}
+      <Modal
+        title="Resend Invitation"
+        open={resendInviteVisible}
+        onCancel={() => {
+          setResendInviteVisible(false)
+          setSelectedInvite(null)
+        }}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => {
+              setResendInviteVisible(false)
+              setSelectedInvite(null)
+            }}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="resend"
+            type="primary"
+            onClick={confirmResendInvite}
+          >
+            Resend
+          </Button>
+        ]}
+        destroyOnClose
+        className="resend-invite-modal"
+      >
+        <div className="modal-form">
+          {selectedInvite && (
+            <div style={{ marginTop: 16 }}>
+              <Text>Are you sure you want to resend the invitation to <Text strong>{selectedInvite.email}</Text>?</Text>
+            </div>
+          )}
+        </div>
+      </Modal>
+
+      {/* Cancel Invitation Confirmation Modal */}
+      <Modal
+        title="Cancel Invitation"
+        open={cancelInviteVisible}
+        onCancel={() => {
+          setCancelInviteVisible(false)
+          setSelectedInvite(null)
+        }}
+        footer={[
+          <Button 
+            key="keep"
+            onClick={() => {
+              setCancelInviteVisible(false)
+              setSelectedInvite(null)
+            }}
+          >
+            Keep Invitation
+          </Button>,
+          <Button 
+            key="cancel"
+            type="primary"
+            danger
+            onClick={confirmCancelInvite}
+          >
+            Cancel Invitation
+          </Button>
+        ]}
+        destroyOnClose
+        className="cancel-invite-modal"
+      >
+        <div className="modal-form">
+          {selectedInvite && (
+            <div style={{ marginTop: 16 }}>
+              <Text>
+                Are you sure you want to cancel the invitation to <Text strong>{selectedInvite.email}</Text>? 
+                They will not be able to join your caregiver network using this invitation.
+              </Text>
+            </div>
+          )}
         </div>
       </Modal>
     </div>

@@ -120,20 +120,32 @@
 
 /* Invite Caregiver Modal */
 .invite-caregiver-modal .ant-modal-content,
-.edit-role-modal .ant-modal-content {
+.edit-role-modal .ant-modal-content,
+.remove-caregiver-modal .ant-modal-content,
+.toggle-status-modal .ant-modal-content,
+.resend-invite-modal .ant-modal-content,
+.cancel-invite-modal .ant-modal-content {
   border-radius: 12px !important;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
 .invite-caregiver-modal .ant-modal-header,
-.edit-role-modal .ant-modal-header {
+.edit-role-modal .ant-modal-header,
+.remove-caregiver-modal .ant-modal-header,
+.toggle-status-modal .ant-modal-header,
+.resend-invite-modal .ant-modal-header,
+.cancel-invite-modal .ant-modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid #f0f0f0;
 }
 
 .invite-caregiver-modal .ant-modal-body,
-.edit-role-modal .ant-modal-body {
+.edit-role-modal .ant-modal-body,
+.remove-caregiver-modal .ant-modal-body,
+.toggle-status-modal .ant-modal-body,
+.resend-invite-modal .ant-modal-body,
+.cancel-invite-modal .ant-modal-body {
   padding: 0;
   max-height: 60vh;
   overflow-y: auto;
@@ -141,7 +153,11 @@
 }
 
 .invite-caregiver-modal .modal-form,
-.edit-role-modal .modal-form {
+.edit-role-modal .modal-form,
+.remove-caregiver-modal .modal-form,
+.toggle-status-modal .modal-form,
+.resend-invite-modal .modal-form,
+.cancel-invite-modal .modal-form {
   padding: 20px 24px;
   width: 100%;
   box-sizing: border-box;
@@ -198,7 +214,11 @@
   }
   
   .invite-caregiver-modal .modal-form,
-  .edit-role-modal .modal-form {
+  .edit-role-modal .modal-form,
+  .remove-caregiver-modal .modal-form,
+  .toggle-status-modal .modal-form,
+  .resend-invite-modal .modal-form,
+  .cancel-invite-modal .modal-form {
     padding: 16px 20px;
   }
 }
@@ -217,7 +237,11 @@
   }
   
   .invite-caregiver-modal .modal-form,
-  .edit-role-modal .modal-form {
+  .edit-role-modal .modal-form,
+  .remove-caregiver-modal .modal-form,
+  .toggle-status-modal .modal-form,
+  .resend-invite-modal .modal-form,
+  .cancel-invite-modal .modal-form {
     padding: 12px 16px;
   }
 }

@@ -219,25 +219,29 @@
 }
 
 /* Password Modal */
-.password-modal .ant-modal-content {
+.password-modal .ant-modal-content,
+.delete-account-modal .ant-modal-content {
   border-radius: 12px !important;
   overflow: hidden;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1) !important;
 }
 
-.password-modal .ant-modal-header {
+.password-modal .ant-modal-header,
+.delete-account-modal .ant-modal-header {
   padding: 20px 24px;
   border-bottom: 1px solid #f0f0f0;
 }
 
-.password-modal .ant-modal-body {
+.password-modal .ant-modal-body,
+.delete-account-modal .ant-modal-body {
   padding: 0;
   max-height: 60vh;
   overflow-y: auto;
   overflow-x: hidden;
 }
 
-.password-modal .modal-form {
+.password-modal .modal-form,
+.delete-account-modal .modal-form {
   padding: 20px 24px;
   width: 100%;
   box-sizing: border-box;
@@ -299,7 +303,8 @@
     margin-bottom: 16px;
   }
   
-  .password-modal .modal-form {
+  .password-modal .modal-form,
+  .delete-account-modal .modal-form {
     padding: 16px 20px;
   }
 }
@@ -321,7 +326,8 @@
     font-size: 14px;
   }
   
-  .password-modal .modal-form {
+  .password-modal .modal-form,
+  .delete-account-modal .modal-form {
     padding: 12px 16px;
   }
 }

@@ -40,6 +40,7 @@ const ProfileSettings = ({ user }) => {
   const [loading, setLoading] = useState(false)
   const [editMode, setEditMode] = useState(false)
   const [changePasswordVisible, setChangePasswordVisible] = useState(false)
+  const [deleteAccountVisible, setDeleteAccountVisible] = useState(false)
 
   const handleSaveProfile = async (values) => {
     setLoading(true)
@@ -383,44 +384,7 @@ const ProfileSettings = ({ user }) => {
                 </div>
                 <Button 
                   danger 
-                  onClick={() => {
-                    Modal.confirm({
-                      title: (
-                        <Space>
-                          <DeleteOutlined style={{ color: '#ff4d4f' }} />
-                          <span>Delete Account</span>
-                        </Space>
-                      ),
-                      content: (
-                        <div style={{ marginTop: 16 }}>
-                          <Text>Are you sure you want to delete your account?</Text>
-                          <br />
-                          <br />
-                          <Text type="secondary">
-                            This action will permanently delete:
-                          </Text>
-                          <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
-                            <li><Text type="secondary">Your profile and account data</Text></li>
-                            <li><Text type="secondary">All patient information</Text></li>
-                            <li><Text type="secondary">Medication records and history</Text></li>
-                            <li><Text type="secondary">Daily logs and measurements</Text></li>
-                          </ul>
-                          <Text strong style={{ color: '#ff4d4f' }}>
-                            This action cannot be undone.
-                          </Text>
-                        </div>
-                      ),
-                      okText: 'Delete Account',
-                      okType: 'danger',
-                      cancelText: 'Cancel',
-                      width: 500,
-                      icon: null,
-                      onOk: () => {
-                        // TODO: Implement account deletion
-                        message.error('Account deletion not implemented yet')
-                      }
-                    })
-                  }}
+                  onClick={() => setDeleteAccountVisible(true)}
                 >
                   Delete Account
                 </Button>
@@ -512,6 +476,61 @@ const ProfileSettings = ({ user }) => {
               <Input.Password />
             </Form.Item>
           </Form>
+        </div>
+      </Modal>
+
+      {/* Delete Account Confirmation Modal */}
+      <Modal
+        title={
+          <Space>
+            <DeleteOutlined style={{ color: '#ff4d4f' }} />
+            <span>Delete Account</span>
+          </Space>
+        }
+        open={deleteAccountVisible}
+        onCancel={() => setDeleteAccountVisible(false)}
+        footer={[
+          <Button 
+            key="cancel"
+            onClick={() => setDeleteAccountVisible(false)}
+          >
+            Cancel
+          </Button>,
+          <Button 
+            key="delete"
+            type="primary"
+            danger
+            onClick={() => {
+              // TODO: Implement account deletion
+              message.error('Account deletion not implemented yet')
+              setDeleteAccountVisible(false)
+            }}
+          >
+            Delete Account
+          </Button>
+        ]}
+        destroyOnClose
+        className="delete-account-modal"
+        width={500}
+      >
+        <div className="modal-form">
+          <div style={{ marginTop: 16 }}>
+            <Text>Are you sure you want to delete your account?</Text>
+            <br />
+            <br />
+            <Text type="secondary">
+              This action will permanently delete:
+            </Text>
+            <ul style={{ marginTop: 8, marginBottom: 16, paddingLeft: 20 }}>
+              <li><Text type="secondary">Your profile and account data</Text></li>
+              {/* <li><Text type="secondary">All patient information</Text></li>
+              <li><Text type="secondary">Medication records and history</Text></li>
+              <li><Text type="secondary">Daily logs and measurements</Text></li> */}
+            </ul>
+            <Text strong style={{ color: '#ff4d4f' }}>
+              This action cannot be undone.
+            </Text>
+          </div>
         </div>
       </Modal>
     </div>
