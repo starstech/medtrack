@@ -25,9 +25,11 @@ import {
   HeartOutlined,
   InfoCircleOutlined,
   DashboardOutlined,
-  ThunderboltOutlined
+  ThunderboltOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
+import { MeasurementImageUpload } from '../../common/FileUpload'
 import dayjs from 'dayjs'
 import './BloodTestModal.css'
 
@@ -595,6 +597,21 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
             </Row>
           </div>
 
+          {/* Lab Results Photo */}
+          <Form.Item
+            label={
+              <Space>
+                <CameraOutlined />
+                <span>Lab Results Photo</span>
+              </Space>
+            }
+            name="labResultsPhoto"
+            help="Take a photo of lab reports or blood glucose meter display"
+            style={{ marginTop: 24 }}
+          >
+            <MeasurementImageUpload />
+          </Form.Item>
+
           {/* General Notes */}
           <Form.Item
             label={
@@ -604,7 +621,6 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
               </Space>
             }
             name="labNotes"
-            style={{ marginTop: 24 }}
           >
             <TextArea 
               rows={3} 

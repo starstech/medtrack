@@ -22,9 +22,11 @@ import {
   ExperimentOutlined,
   DropboxOutlined,
   InfoCircleOutlined,
-  MedicineBoxOutlined
+  MedicineBoxOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
+import { MeasurementImageUpload } from '../../common/FileUpload'
 import dayjs from 'dayjs'
 import './UrineTestModal.css'
 
@@ -472,6 +474,21 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
             </Col>
           </Row>
 
+          {/* Dipstick Photo */}
+          <Form.Item
+            label={
+              <Space>
+                <CameraOutlined />
+                <span>Dipstick Photo</span>
+              </Space>
+            }
+            name="dipstickPhoto"
+            help="Take a photo of the urine dipstick for reference"
+            style={{ marginTop: 24 }}
+          >
+            <MeasurementImageUpload />
+          </Form.Item>
+
           {/* General Notes */}
           <Form.Item
             label={
@@ -481,7 +498,6 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
               </Space>
             }
             name="generalNotes"
-            style={{ marginTop: 24 }}
           >
             <TextArea 
               rows={3} 

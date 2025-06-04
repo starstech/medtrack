@@ -38,6 +38,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { LOG_TYPES, SEVERITY_LEVELS } from '../../utils/mockData'
+import { LogAttachmentUpload } from '../common/FileUpload'
 import dayjs from 'dayjs'
 import './DailyLogs.css'
 
@@ -575,6 +576,14 @@ const DailyLogs = ({ patient }) => {
               </Form.Item>
             </Col>
           </Row>
+
+          <Form.Item
+            name="attachments"
+            label="Photos (Optional)"
+            help="Add photos to document incidents, symptoms, or activities"
+          >
+            <LogAttachmentUpload />
+          </Form.Item>
         </Form>
       </div>
     </Modal>
