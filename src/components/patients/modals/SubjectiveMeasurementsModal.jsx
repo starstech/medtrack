@@ -21,9 +21,11 @@ import {
   AlertOutlined,
   SmileOutlined,
   FrownOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
+import { MeasurementImageUpload } from '../../common/FileUpload'
 import dayjs from 'dayjs'
 import './SubjectiveMeasurementsModal.css'
 
@@ -326,6 +328,21 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
             </Row>
           </Card>
 
+          {/* Assessment Photo */}
+          <Form.Item
+            label={
+              <Space>
+                <CameraOutlined />
+                <span>Assessment Photo</span>
+              </Space>
+            }
+            name="assessmentPhoto"
+            help="Take a photo of pain assessment tools, visual analog scales, or patient drawings"
+            style={{ marginTop: 24 }}
+          >
+            <MeasurementImageUpload />
+          </Form.Item>
+
           {/* General Notes */}
           <Form.Item
             label={
@@ -335,11 +352,11 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
               </Space>
             }
             name="generalNotes"
-            style={{ marginTop: 24 }}
+            style={{ marginTop: 16 }}
           >
             <TextArea 
               rows={3} 
-              placeholder="Additional context, triggers, activities that affect pain/mood..."
+              placeholder="Assessment conditions, patient cooperation, additional observations..."
             />
           </Form.Item>
         </Form>

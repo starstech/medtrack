@@ -1,0 +1,94 @@
+.file-upload-component {
+  width: 100%;
+}
+
+.file-upload-component .ant-upload-list-picture-card .ant-upload-list-item {
+  border-radius: 6px;
+  border: 1px solid #d9d9d9;
+  transition: all 0.3s ease;
+}
+
+.file-upload-component .ant-upload-list-picture-card .ant-upload-list-item:hover {
+  border-color: #1890ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
+}
+
+.file-upload-component .ant-upload.ant-upload-select-picture-card {
+  border-radius: 6px;
+  border: 1px dashed #d9d9d9;
+  background-color: #fafafa;
+  transition: all 0.3s ease;
+}
+
+.file-upload-component .ant-upload.ant-upload-select-picture-card:hover {
+  border-color: #1890ff;
+  background-color: #f0f8ff;
+}
+
+.file-upload-component .ant-upload.ant-upload-select-picture-card .anticon {
+  color: #8c8c8c;
+  font-size: 24px;
+}
+
+.file-upload-component .ant-upload.ant-upload-select-picture-card:hover .anticon {
+  color: #1890ff;
+}
+
+.file-upload-component .ant-upload.ant-upload-select-picture-card div {
+  margin-top: 8px;
+  color: #595959;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Compact file upload styling */
+.compact-file-upload {
+  width: 100%;
+}
+
+.compact-file-upload .ant-btn {
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.compact-file-upload .ant-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.compact-file-upload .ant-card {
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+.compact-file-upload .ant-card:hover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Image preview styling */
+.file-upload-component .ant-image-preview-mask {
+  border-radius: 6px;
+}
+
+/* File list info styling */
+.file-upload-component .ant-typography {
+  margin-top: 8px !important;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .file-upload-component .ant-upload-list-picture-card .ant-upload-list-item,
+  .file-upload-component .ant-upload.ant-upload-select-picture-card {
+    width: 80px;
+    height: 80px;
+  }
+  
+  .compact-file-upload .ant-card {
+    width: 50px;
+  }
+  
+  .compact-file-upload .ant-card .ant-image {
+    height: 30px;
+  }
+} 

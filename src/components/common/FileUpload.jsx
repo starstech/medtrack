@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Upload, Button, message, Image, Card, Space, Typography, Popconfirm } from 'antd'
 import { 
   CameraOutlined, 
@@ -8,6 +8,7 @@ import {
   PlusOutlined 
 } from '@ant-design/icons'
 import { fileValidation } from '../../services/fileService'
+import './FileUpload.css'
 
 const { Text } = Typography
 

@@ -14,6 +14,7 @@ import {
   Alert,
   Tooltip,
   Card,
+  Tag,
   Switch,
   Select
 } from 'antd'
@@ -22,9 +23,11 @@ import {
   ThunderboltOutlined,
   DashboardOutlined,
   FireOutlined,
-  InfoCircleOutlined
+  InfoCircleOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
+import { MeasurementImageUpload } from '../../common/FileUpload'
 import dayjs from 'dayjs'
 import './VitalSignsModal.css'
 
@@ -471,6 +474,21 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
             </Col>
           </Row>
 
+          {/* Device Reading Photo */}
+          <Form.Item
+            label={
+              <Space>
+                <CameraOutlined />
+                <span>Device Reading Photo</span>
+              </Space>
+            }
+            name="devicePhoto"
+            help="Take a photo of thermometer, blood pressure monitor, pulse oximeter, or other device displays"
+            style={{ marginTop: 24 }}
+          >
+            <MeasurementImageUpload />
+          </Form.Item>
+
           {/* General Notes */}
           <Form.Item
             label={
@@ -480,11 +498,11 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
               </Space>
             }
             name="generalNotes"
-            style={{ marginTop: 24 }}
+            style={{ marginTop: 16 }}
           >
             <TextArea 
               rows={3} 
-              placeholder="Enter any additional notes about the vital signs measurements..."
+              placeholder="Patient position, measurement conditions, symptoms..."
             />
           </Form.Item>
         </Form>

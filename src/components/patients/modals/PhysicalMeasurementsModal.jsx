@@ -25,9 +25,11 @@ import {
   InfoCircleOutlined,
   ScissorOutlined,
   HeartOutlined,
-  UserOutlined
+  UserOutlined,
+  CameraOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
+import { MeasurementImageUpload } from '../../common/FileUpload'
 import dayjs from 'dayjs'
 import './PhysicalMeasurementsModal.css'
 
@@ -529,6 +531,21 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
               </Row>
             </div>
           )}
+
+          {/* Device Reading Photo */}
+          <Form.Item
+            label={
+              <Space>
+                <CameraOutlined />
+                <span>Device Reading Photo</span>
+              </Space>
+            }
+            name="devicePhoto"
+            help="Take a photo of scale display, height measurement tool, or body composition analyzer"
+            style={{ marginTop: 24 }}
+          >
+            <MeasurementImageUpload />
+          </Form.Item>
 
           {/* General Notes */}
           <Form.Item
