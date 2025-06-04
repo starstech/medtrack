@@ -19,6 +19,13 @@ const notificationReducer = (state, action) => {
           notif.id === action.payload ? { ...notif, read: true } : notif
         )
       }
+    case 'TOGGLE_READ':
+      return {
+        ...state,
+        notifications: state.notifications.map(notif =>
+          notif.id === action.payload ? { ...notif, read: !notif.read } : notif
+        )
+      }
     case 'MARK_ALL_READ':
       return {
         ...state,
@@ -231,8 +238,7 @@ export const NotificationProvider = ({ children }) => {
   const toggleReadStatus = (notificationId) => {
     const notification = state.notifications.find(n => n.id === notificationId)
     if (notification) {
-      // For now, we'll just mark as read. In a real app, you'd have a TOGGLE_READ action
-      dispatch({ type: 'MARK_READ', payload: notificationId })
+      dispatch({ type: 'TOGGLE_READ', payload: notificationId })
     }
   }
 

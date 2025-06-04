@@ -41,7 +41,8 @@ const NotificationPanel = () => {
     markAsRead, 
     markAllAsRead, 
     deleteNotification,
-    addNotification
+    addNotification,
+    toggleReadStatus
   } = useNotificationContext()
 
   const [visibleCount, setVisibleCount] = useState(5)
@@ -159,8 +160,53 @@ const NotificationPanel = () => {
             renderItem={(notification) => (
               <List.Item 
                 className={`notification-item ${!notification.read ? 'unread' : ''}`}
-                actions={[
-                  <div key="actions" className="notification-action-btns">
+              >
+                <div 
+                  className="notification-content"
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <div className="notification-main">
+                    <div className="notification-avatar">
+                      {getNotificationIcon(notification.type)}
+                      {!notification.read && (
+                        <div className="unread-indicator" />
+                      )}
+                    </div>
+                    
+                    <div className="notification-body">
+                      <div className="notification-title">
+                        <div className="title-content">
+                          <Text strong className={!notification.read ? 'unread-title' : ''}>
+                            {notification.title}
+                          </Text>
+                          <Tag 
+                            color={getPriorityColor(notification.type)}
+                            size="small"
+                            className="notification-type-tag"
+                          >
+                            {formatNotificationType(notification.type)}
+                          </Tag>
+                        </div>
+                      </div>
+                      
+                      <div className="notification-description">
+                        <Text 
+                          type="secondary" 
+                          className={!notification.read ? 'unread-description' : ''}
+                        >
+                          {notification.message}
+                        </Text>
+                      </div>
+                      
+                      <div className="notification-time">
+                        <Text type="secondary" size="small">
+                          {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="notification-actions">
                     <Button 
                       type="text" 
                       icon={notification.read ? <EyeOutlined /> : <CheckOutlined />} 
@@ -168,7 +214,7 @@ const NotificationPanel = () => {
                       className="notification-action-btn read-btn"
                       onClick={(e) => {
                         e.stopPropagation()
-                        markAsRead(notification.id)
+                        toggleReadStatus(notification.id)
                       }}
                       title={notification.read ? 'Mark as unread' : 'Mark as read'}
                     />
@@ -184,53 +230,6 @@ const NotificationPanel = () => {
                       title="Delete notification"
                     />
                   </div>
-                ]}
-              >
-                <div 
-                  className="notification-content"
-                  onClick={() => handleNotificationClick(notification)}
-                >
-                  <List.Item.Meta
-                    avatar={
-                      <div className="notification-avatar">
-                        {getNotificationIcon(notification.type)}
-                        {!notification.read && (
-                          <div className="unread-indicator" />
-                        )}
-                      </div>
-                    }
-                    title={
-                      <div className="notification-title">
-                        <Space>
-                          <Text strong className={!notification.read ? 'unread-title' : ''}>
-                            {notification.title}
-                          </Text>
-                          <Tag 
-                            color={getPriorityColor(notification.type)}
-                            size="small"
-                            style={{ fontSize: '10px', padding: '0 4px' }}
-                          >
-                            {formatNotificationType(notification.type)}
-                          </Tag>
-                        </Space>
-                      </div>
-                    }
-                    description={
-                      <div className="notification-description">
-                        <Text 
-                          type="secondary" 
-                          className={!notification.read ? 'unread-description' : ''}
-                        >
-                          {notification.message}
-                        </Text>
-                        <div className="notification-time">
-                          <Text type="secondary" size="small">
-                            {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                          </Text>
-                        </div>
-                      </div>
-                    }
-                  />
                 </div>
               </List.Item>
             )}

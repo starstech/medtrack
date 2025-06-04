@@ -47,7 +47,8 @@ const NotificationsPage = () => {
     notifications, 
     markAsRead, 
     markAllAsRead, 
-    deleteNotification 
+    deleteNotification,
+    toggleReadStatus
   } = useNotificationContext()
 
   const [selectedNotifications, setSelectedNotifications] = useState([])
@@ -229,74 +230,74 @@ const NotificationsPage = () => {
             )}
           </div>
         </div>
-
-        {/* Filters and Search */}
-        <Card className="filters-card" size="small">
-          <Row gutter={16} align="middle">
-            <Col xs={24} sm={8} md={6}>
-              <Search
-                placeholder="Search notifications..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                prefix={<SearchOutlined />}
-                allowClear
-              />
-            </Col>
-            
-            <Col xs={12} sm={4} md={3}>
-              <Select
-                value={filterType}
-                onChange={setFilterType}
-                style={{ width: '100%' }}
-                placeholder="Type"
-              >
-                <Option value="all">All Types</Option>
-                <Option value="medication_reminder">Medication</Option>
-                <Option value="appointment_reminder">Appointment</Option>
-                <Option value="caregiver_update">Caregiver</Option>
-                <Option value="measurement_reminder">Measurement</Option>
-                <Option value="system_alert">System</Option>
-              </Select>
-            </Col>
-            
-            <Col xs={12} sm={4} md={3}>
-              <Select
-                value={filterStatus}
-                onChange={setFilterStatus}
-                style={{ width: '100%' }}
-                placeholder="Status"
-              >
-                <Option value="all">All Status</Option>
-                <Option value="unread">Unread</Option>
-                <Option value="read">Read</Option>
-              </Select>
-            </Col>
-            
-            <Col xs={12} sm={4} md={3}>
-              <Select
-                value={sortBy}
-                onChange={setSortBy}
-                style={{ width: '100%' }}
-                placeholder="Sort"
-              >
-                <Option value="newest">Newest First</Option>
-                <Option value="oldest">Oldest First</Option>
-                <Option value="type">By Type</Option>
-              </Select>
-            </Col>
-
-            {selectedNotifications.length > 0 && (
-              <Col xs={12} sm={4} md={3}>
-                <Dropdown menu={{ items: getBulkActionItems() }} placement="bottomRight">
-                  <Button icon={<MoreOutlined />}>
-                    Actions ({selectedNotifications.length})
-                  </Button>
-                </Dropdown>
-              </Col>
-            )}
-          </Row>
-        </Card>
       </div>
+
+      {/* Filters and Search */}
+      <Card className="filters-card" size="small">
+        <Row gutter={16} align="middle">
+          <Col xs={24} sm={8} md={6}>
+            <Search
+              placeholder="Search notifications..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              prefix={<SearchOutlined />}
+              allowClear
+            />
+          </Col>
+          
+          <Col xs={12} sm={4} md={3}>
+            <Select
+              value={filterType}
+              onChange={setFilterType}
+              style={{ width: '100%' }}
+              placeholder="Type"
+            >
+              <Option value="all">All Types</Option>
+              <Option value="medication_reminder">Medication</Option>
+              <Option value="appointment_reminder">Appointment</Option>
+              <Option value="caregiver_update">Caregiver</Option>
+              <Option value="measurement_reminder">Measurement</Option>
+              <Option value="system_alert">System</Option>
+            </Select>
+          </Col>
+          
+          <Col xs={12} sm={4} md={3}>
+            <Select
+              value={filterStatus}
+              onChange={setFilterStatus}
+              style={{ width: '100%' }}
+              placeholder="Status"
+            >
+              <Option value="all">All Status</Option>
+              <Option value="unread">Unread</Option>
+              <Option value="read">Read</Option>
+            </Select>
+          </Col>
+          
+          <Col xs={12} sm={4} md={3}>
+            <Select
+              value={sortBy}
+              onChange={setSortBy}
+              style={{ width: '100%' }}
+              placeholder="Sort"
+            >
+              <Option value="newest">Newest First</Option>
+              <Option value="oldest">Oldest First</Option>
+              <Option value="type">By Type</Option>
+            </Select>
+          </Col>
+
+          {selectedNotifications.length > 0 && (
+            <Col xs={12} sm={4} md={3}>
+              <Dropdown menu={{ items: getBulkActionItems() }} placement="bottomRight">
+                <Button icon={<MoreOutlined />}>
+                  Actions ({selectedNotifications.length})
+                </Button>
+              </Dropdown>
+            </Col>
+          )}
+        </Row>
+      </Card>
 
       {/* Notifications List */}
       <Card className="notifications-content">
@@ -335,13 +336,14 @@ const NotificationsPage = () => {
                 <List.Item 
                   className={`notification-item ${!notification.read ? 'unread' : ''}`}
                   actions={[
-                    <Space key="actions">
+                    <div key="actions" className="notification-actions">
                       <Button 
                         type="text" 
                         icon={notification.read ? <EyeOutlined /> : <CheckOutlined />} 
                         size="small"
-                        onClick={() => markAsRead(notification.id)}
+                        onClick={() => toggleReadStatus(notification.id)}
                         title={notification.read ? 'Mark as unread' : 'Mark as read'}
+                        className="notification-action-btn"
                       />
                       <Button 
                         type="text" 
@@ -350,8 +352,9 @@ const NotificationsPage = () => {
                         onClick={() => deleteNotification(notification.id)}
                         title="Delete notification"
                         danger
+                        className="notification-action-btn"
                       />
-                    </Space>
+                    </div>
                   ]}
                 >
                   <div className="notification-content-full">
@@ -361,31 +364,30 @@ const NotificationsPage = () => {
                       className="notification-checkbox"
                     />
                     
-                    <List.Item.Meta
-                      avatar={
-                        <div className="notification-avatar">
-                          {getNotificationIcon(notification.type)}
-                          {!notification.read && (
-                            <div className="unread-indicator" />
-                          )}
-                        </div>
-                      }
-                      title={
+                    <div className="notification-main">
+                      <div className="notification-avatar">
+                        {getNotificationIcon(notification.type)}
+                        {!notification.read && (
+                          <div className="unread-indicator" />
+                        )}
+                      </div>
+                      
+                      <div className="notification-body">
                         <div className="notification-title">
-                          <Space>
+                          <div className="title-content">
                             <Text strong className={!notification.read ? 'unread-title' : ''}>
                               {notification.title}
                             </Text>
                             <Tag 
                               color={getPriorityColor(notification.type)}
                               size="small"
+                              className="notification-type-tag"
                             >
                               {formatNotificationType(notification.type)}
                             </Tag>
-                          </Space>
+                          </div>
                         </div>
-                      }
-                      description={
+                        
                         <div className="notification-description">
                           <Text 
                             type="secondary" 
@@ -393,14 +395,15 @@ const NotificationsPage = () => {
                           >
                             {notification.message}
                           </Text>
-                          <div className="notification-time">
-                            <Text type="secondary" size="small">
-                              {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
-                            </Text>
-                          </div>
                         </div>
-                      }
-                    />
+                        
+                        <div className="notification-time">
+                          <Text type="secondary" size="small">
+                            {formatDistanceToNow(new Date(notification.timestamp), { addSuffix: true })}
+                          </Text>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </List.Item>
               )}

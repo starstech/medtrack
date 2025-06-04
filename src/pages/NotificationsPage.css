@@ -36,8 +36,22 @@
   flex: 1;
 }
 
-.title-section .ant-typography {
-  margin-bottom: 4px;
+.title-section .ant-typography h2 {
+  margin-bottom: 8px !important;
+  color: #262626 !important;
+  font-weight: 600 !important;
+  font-size: 24px !important;
+}
+
+.title-section .ant-typography h2 .anticon {
+  color: #1890ff;
+  margin-right: 8px;
+}
+
+.title-section > .ant-typography:not(h2) {
+  color: #8c8c8c !important;
+  font-size: 14px !important;
+  font-weight: 400 !important;
 }
 
 .title-section .ant-badge {
@@ -82,7 +96,7 @@
 }
 
 .notifications-content .ant-card-body {
-  padding: 0;
+  padding: 12px;
 }
 
 /* Select All Header */
@@ -90,6 +104,7 @@
   padding: 16px 24px;
   border-bottom: 1px solid #f0f0f0;
   background: #fafafa;
+  margin: -12px -12px 12px -12px;
 }
 
 .select-all-header .ant-checkbox-wrapper {
@@ -103,50 +118,78 @@
 }
 
 .notifications-content .ant-list-item {
-  padding: 16px 24px;
+  padding: 16px 20px;
   border-bottom: 1px solid #f5f5f5;
-  margin: 0;
+  margin: 0 0 12px 0;
   transition: all 0.2s ease;
+  position: relative;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  background: #fff;
 }
 
 .notifications-content .ant-list-item:last-child {
   border-bottom: none;
+  margin-bottom: 0;
 }
 
 .notifications-content .ant-list-item:hover {
   background-color: #fafafa;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  border-color: #d9d9d9;
 }
 
 .notifications-content .notification-item.unread {
   background-color: rgba(24, 144, 255, 0.02);
   border-left: 4px solid #1890ff;
-  padding-left: 20px;
+  border-radius: 0 12px 12px 0;
+  padding-left: 16px;
 }
 
+/* Notification Content Structure */
 .notification-content-full {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 16px;
   width: 100%;
 }
 
 .notification-checkbox {
   margin-top: 2px;
+  flex-shrink: 0;
 }
 
-.notifications-content .ant-list-item-meta {
+.notification-main {
+  display: flex;
   align-items: flex-start;
-  margin-bottom: 0;
+  gap: 16px;
+  flex: 1;
+  min-width: 0; /* Allow text to wrap */
 }
 
-.notifications-content .ant-list-item-meta-avatar {
-  margin-right: 16px;
-  margin-top: 2px;
+.notification-body {
+  flex: 1;
+  min-width: 0; /* Allow text to wrap */
 }
 
+/* List Item Actions */
 .notifications-content .ant-list-item-action {
   margin-left: 16px;
   margin-top: 2px;
+}
+
+.notification-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.notification-action-btn {
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.notification-action-btn:hover {
+  transform: scale(1.05);
 }
 
 /* Notification Avatar */
@@ -160,6 +203,7 @@
   background: #f0f0f0;
   border-radius: 10px;
   transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
 .notifications-content .notification-item.unread .notification-avatar {
@@ -177,15 +221,24 @@
   border-radius: 50%;
 }
 
-/* Notification Content */
+/* Notification Content Text */
 .notifications-content .notification-title {
   margin-bottom: 6px;
+}
+
+.title-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .notifications-content .notification-title .ant-typography {
   margin: 0;
   font-size: 15px;
   line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .notifications-content .unread-title {
@@ -193,8 +246,20 @@
   font-weight: 600 !important;
 }
 
+.notification-type-tag {
+  font-size: 10px !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  border: none !important;
+  font-weight: 500 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.5px !important;
+  margin: 0 !important;
+  flex-shrink: 0;
+}
+
 .notifications-content .notification-description {
-  margin-top: 4px;
+  margin-bottom: 6px;
 }
 
 .notifications-content .notification-description .ant-typography {
@@ -202,6 +267,12 @@
   font-size: 14px;
   line-height: 1.4;
   color: #8c8c8c;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .notifications-content .unread-description {
@@ -209,34 +280,13 @@
 }
 
 .notifications-content .notification-time {
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .notifications-content .notification-time .ant-typography {
   font-size: 12px;
   color: #bfbfbf;
-}
-
-/* Tags */
-.notifications-content .notification-title .ant-tag {
   margin: 0;
-  border-radius: 4px;
-  border: none;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-size: 10px;
-  padding: 2px 6px;
-}
-
-/* Action Buttons */
-.notifications-content .ant-list-item-action .ant-btn {
-  border-radius: 6px;
-  transition: all 0.2s ease;
-}
-
-.notifications-content .ant-list-item-action .ant-btn:hover {
-  transform: scale(1.05);
 }
 
 /* Empty State */
@@ -296,24 +346,32 @@
     margin: 0 20px;
   }
 
+  .notifications-content .ant-card-body {
+    padding: 8px;
+  }
+
   .select-all-header {
     padding: 12px 16px;
+    margin: -8px -8px 8px -8px;
   }
 
   .notifications-content .ant-list-item {
     padding: 12px 16px;
+    margin: 0 0 8px 0;
+    border-radius: 10px;
   }
 
   .notifications-content .notification-item.unread {
     padding-left: 12px;
+    border-radius: 0 10px 10px 0;
   }
 
   .notification-content-full {
-    gap: 8px;
+    gap: 12px;
   }
 
-  .notifications-content .ant-list-item-meta-avatar {
-    margin-right: 12px;
+  .notification-main {
+    gap: 12px;
   }
 
   .notifications-content .notification-avatar {
@@ -327,6 +385,10 @@
 
   .notifications-content .notification-description .ant-typography {
     font-size: 13px;
+  }
+
+  .notification-actions {
+    gap: 6px;
   }
 }
 
@@ -343,16 +405,27 @@
     margin: 0 16px;
   }
 
+  .notifications-content .ant-card-body {
+    padding: 6px;
+  }
+
   .select-all-header {
     padding: 10px 12px;
+    margin: -6px -6px 6px -6px;
   }
 
   .notifications-content .ant-list-item {
     padding: 10px 12px;
+    margin: 0 0 6px 0;
+    border-radius: 8px;
+  }
+
+  .notifications-content .notification-item.unread {
+    border-radius: 0 8px 8px 0;
   }
 
   .title-section .ant-typography h2 {
-    font-size: 20px;
+    font-size: 20px !important;
   }
 
   .notifications-content .notification-avatar {
@@ -370,6 +443,23 @@
 
   .notifications-content .notification-time .ant-typography {
     font-size: 11px;
+  }
+
+  .notification-content-full {
+    gap: 10px;
+  }
+
+  .notification-main {
+    gap: 10px;
+  }
+
+  .title-content {
+    gap: 6px;
+  }
+
+  .notification-actions {
+    gap: 4px;
+    flex-direction: column;
   }
 }
 
