@@ -21,7 +21,7 @@ import {
   HeartOutlined,
   ThunderboltOutlined,
   DashboardOutlined,
-  EyeOutlined,
+  FireOutlined,
   InfoCircleOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
@@ -367,118 +367,128 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
       open={visible}
       onCancel={handleClose}
       width={800}
-      footer={null}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="vital-signs-form"
+        >
+          {loading ? 'Recording...' : 'Record Vital Signs'}
+        </Button>
+      ]}
       className="vital-signs-modal"
     >
-      <Alert
-        message="Vital Signs Recording"
-        description="Enter the vital signs measurements. All fields are optional - record only what's available."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      <div className="vital-signs-form">
+        <Alert
+          message="Vital Signs Recording"
+          description="Enter the vital signs measurements. All fields are optional - record only what's available."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          recordedAt: dayjs(),
-          recordedBy: 'Current User'
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          {/* Date and Recorded By */}
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Date & Time"
-              name="recordedAt"
-              rules={[{ required: true, message: 'Please select date and time' }]}
-            >
-              <DatePicker 
-                showTime 
-                format="YYYY-MM-DD HH:mm"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Recorded By"
-              name="recordedBy"
-              rules={[{ required: true, message: 'Please enter who recorded this' }]}
-            >
-              <Input placeholder="Enter name" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
-          <HeartOutlined /> Vital Signs Measurements
-        </Title>
-
-        <Row gutter={[16, 16]}>
-          {/* Temperature */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('temperature', 'Temperature', '°C', <ThunderboltOutlined style={{ color: '#fa8c16' }} />, '36.5')}
-          </Col>
-
-          {/* Heart Rate */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('heartRate', 'Heart Rate', 'bpm', <HeartOutlined style={{ color: '#52c41a' }} />, '72')}
-          </Col>
-
-          {/* Systolic Blood Pressure */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('systolic', 'Systolic BP', 'mmHg', <HeartOutlined style={{ color: '#ff4d4f' }} />, '120')}
-          </Col>
-
-          {/* Diastolic Blood Pressure */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('diastolic', 'Diastolic BP', 'mmHg', <HeartOutlined style={{ color: '#f5222d' }} />, '80')}
-          </Col>
-
-          {/* Respiratory Rate */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('respiratoryRate', 'Respiratory Rate', '/min', <EyeOutlined style={{ color: '#1890ff' }} />, '16')}
-          </Col>
-
-          {/* Oxygen Saturation */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('oxygenSaturation', 'Oxygen Saturation', '%', <DashboardOutlined style={{ color: '#722ed1' }} />, '98')}
-          </Col>
-        </Row>
-
-        {/* General Notes */}
-        <Form.Item
-          label={
-            <Space>
-              <InfoCircleOutlined />
-              <span>General Notes</span>
-            </Space>
-          }
-          name="generalNotes"
-          style={{ marginTop: 24 }}
+        <Form
+          id="vital-signs-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            recordedAt: dayjs(),
+            recordedBy: 'Current User'
+          }}
         >
-          <TextArea 
-            rows={3} 
-            placeholder="Enter any additional notes about the vital signs measurements..."
-          />
-        </Form.Item>
+          <Row gutter={[16, 16]}>
+            {/* Date and Recorded By */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Date & Time"
+                name="recordedAt"
+                rules={[{ required: true, message: 'Please select date and time' }]}
+              >
+                <DatePicker 
+                  showTime 
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
 
-        {/* Submit Button */}
-        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
-          <Space>
-            <Button onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Record Vital Signs
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Recorded By"
+                name="recordedBy"
+                rules={[{ required: true, message: 'Please enter who recorded this' }]}
+              >
+                <Input placeholder="Enter name" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+            <HeartOutlined /> Vital Signs Measurements
+          </Title>
+
+          <Row gutter={[16, 16]}>
+            {/* Temperature */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('temperature', 'Temperature', '°C', <ThunderboltOutlined style={{ color: '#fa8c16' }} />, '36.5')}
+            </Col>
+
+            {/* Heart Rate */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('heartRate', 'Heart Rate', 'bpm', <HeartOutlined style={{ color: '#52c41a' }} />, '72')}
+            </Col>
+
+            {/* Systolic Blood Pressure */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('systolic', 'Systolic BP', 'mmHg', <HeartOutlined style={{ color: '#ff4d4f' }} />, '120')}
+            </Col>
+
+            {/* Diastolic Blood Pressure */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('diastolic', 'Diastolic BP', 'mmHg', <HeartOutlined style={{ color: '#f5222d' }} />, '80')}
+            </Col>
+
+            {/* Respiratory Rate */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('respiratoryRate', 'Respiratory Rate', '/min', <FireOutlined style={{ color: '#1890ff' }} />, '16')}
+            </Col>
+
+            {/* Oxygen Saturation */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('oxygenSaturation', 'Oxygen Saturation', '%', <DashboardOutlined style={{ color: '#722ed1' }} />, '98')}
+            </Col>
+          </Row>
+
+          {/* General Notes */}
+          <Form.Item
+            label={
+              <Space>
+                <InfoCircleOutlined />
+                <span>General Notes</span>
+              </Space>
+            }
+            name="generalNotes"
+            style={{ marginTop: 24 }}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Enter any additional notes about the vital signs measurements..."
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   )
 }

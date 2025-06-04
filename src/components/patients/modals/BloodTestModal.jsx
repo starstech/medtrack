@@ -457,143 +457,162 @@ const BloodTestModal = ({ visible, onClose, patient }) => {
       open={visible}
       onCancel={handleClose}
       width={800}
-      footer={null}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="blood-test-form"
+        >
+          {loading ? 'Recording...' : 'Record Blood Tests'}
+        </Button>
+      ]}
       className="blood-test-modal"
     >
-      <Alert
-        message="Blood Test Results"
-        description="Record blood test results from laboratory analysis. All fields are optional - record only available results."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      <div className="blood-test-form">
+        <Alert
+          message="Blood Test Results"
+          description="Record blood test results from laboratory analysis. All fields are optional - record only available results."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          recordedAt: dayjs(),
-          recordedBy: 'Current User'
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          {/* Date and Recorded By */}
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Date & Time"
-              name="recordedAt"
-              rules={[{ required: true, message: 'Please select date and time' }]}
-            >
-              <DatePicker 
-                showTime 
-                format="YYYY-MM-DD HH:mm"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Recorded By"
-              name="recordedBy"
-              rules={[{ required: true, message: 'Please enter who recorded this' }]}
-            >
-              <Input placeholder="Enter name" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
-          <ExperimentOutlined /> Blood Test Results
-        </Title>
-
-        {/* Glucose & Diabetes Section */}
-        <div style={{ marginBottom: 24 }}>
-          <Title level={5} style={{ marginBottom: 16 }}>
-            <DashboardOutlined style={{ color: '#fa8c16' }} /> Glucose & Diabetes
-          </Title>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('bloodGlucose', 'Blood Glucose', 'mg/dL', <DashboardOutlined style={{ color: '#fa8c16' }} />, '95')}
-            </Col>
-          </Row>
-        </div>
-
-        {/* Lipid Panel Section */}
-        <div style={{ marginBottom: 24 }}>
-          <Title level={5} style={{ marginBottom: 16 }}>
-            <HeartOutlined style={{ color: '#ff4d4f' }} /> Cholesterol & Lipids
-          </Title>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('totalCholesterol', 'Total Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#ff4d4f' }} />, '190')}
-            </Col>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('ldlCholesterol', 'LDL Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#f5222d' }} />, '110')}
-            </Col>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('hdlCholesterol', 'HDL Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#52c41a' }} />, '45')}
-            </Col>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('triglycerides', 'Triglycerides', 'mg/dL', <HeartOutlined style={{ color: '#fa8c16' }} />, '130')}
-            </Col>
-          </Row>
-        </div>
-
-        {/* Complete Blood Count Section */}
-        <div style={{ marginBottom: 24 }}>
-          <Title level={5} style={{ marginBottom: 16 }}>
-            <DropboxOutlined style={{ color: '#722ed1' }} /> Complete Blood Count (CBC)
-          </Title>
-          <Row gutter={[16, 16]}>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('hemoglobin', 'Hemoglobin', 'g/dL', <DropboxOutlined style={{ color: '#722ed1' }} />, '14.0')}
-            </Col>
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('hematocrit', 'Hematocrit', '%', <DropboxOutlined style={{ color: '#eb2f96' }} />, '42')}
-            </Col>
-            <Col xs={24} lg={8}>
-              {renderFieldWithToggle('wbcCount', 'WBC Count', '/μL', <ThunderboltOutlined style={{ color: '#1890ff' }} />, '7500')}
-            </Col>
-            <Col xs={24} lg={8}>
-              {renderFieldWithToggle('rbcCount', 'RBC Count', 'M/μL', <ThunderboltOutlined style={{ color: '#f5222d' }} />, '4.5')}
-            </Col>
-            <Col xs={24} lg={8}>
-              {renderFieldWithToggle('plateletCount', 'Platelet Count', '/μL', <ThunderboltOutlined style={{ color: '#52c41a' }} />, '300000')}
-            </Col>
-          </Row>
-        </div>
-
-        {/* General Notes */}
-        <Form.Item
-          label={
-            <Space>
-              <InfoCircleOutlined />
-              <span>General Notes</span>
-            </Space>
-          }
-          name="generalNotes"
-          style={{ marginTop: 24 }}
+        <Form
+          id="blood-test-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            recordedAt: dayjs(),
+            recordedBy: 'Current User'
+          }}
         >
-          <TextArea 
-            rows={3} 
-            placeholder="Laboratory details, fasting status, medications affecting results..."
-          />
-        </Form.Item>
+          <Row gutter={[16, 16]}>
+            {/* Date and Recorded By */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Date & Time"
+                name="recordedAt"
+                rules={[{ required: true, message: 'Please select date and time' }]}
+              >
+                <DatePicker 
+                  showTime 
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
 
-        {/* Submit Button */}
-        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
-          <Space>
-            <Button onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Record Blood Tests
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Recorded By"
+                name="recordedBy"
+                rules={[{ required: true, message: 'Please enter who recorded this' }]}
+              >
+                <Input placeholder="Enter name" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          {/* Glucose Section */}
+          <div className="form-section">
+            <Title level={5}>
+              <DropboxOutlined style={{ color: '#fa8c16', marginRight: 8 }} />
+              Glucose Levels
+            </Title>
+            
+            <Row gutter={[16, 16]}>
+              <Col xs={24}>
+                {renderFieldWithToggle('bloodGlucose', 'Blood Glucose', 'mg/dL', <DropboxOutlined style={{ color: '#fa8c16' }} />, '90')}
+              </Col>
+            </Row>
+          </div>
+
+          {/* Cholesterol Section */}
+          <div className="form-section">
+            <Title level={5}>
+              <HeartOutlined style={{ color: '#ff4d4f', marginRight: 8 }} />
+              Cholesterol Panel
+            </Title>
+            
+            <Row gutter={[16, 16]}>
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('totalCholesterol', 'Total Cholesterol', 'mg/dL', <HeartOutlined style={{ color: '#ff4d4f' }} />, '200')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('ldlCholesterol', 'LDL Cholesterol', 'mg/dL', <InfoCircleOutlined style={{ color: '#f5222d' }} />, '100')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('hdlCholesterol', 'HDL Cholesterol', 'mg/dL', <InfoCircleOutlined style={{ color: '#52c41a' }} />, '50')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('triglycerides', 'Triglycerides', 'mg/dL', <DashboardOutlined style={{ color: '#722ed1' }} />, '150')}
+              </Col>
+            </Row>
+          </div>
+
+          {/* Complete Blood Count Section */}
+          <div className="form-section">
+            <Title level={5}>
+              <ThunderboltOutlined style={{ color: '#13c2c2', marginRight: 8 }} />
+              Complete Blood Count (CBC)
+            </Title>
+            
+            <Row gutter={[16, 16]}>
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('hemoglobin', 'Hemoglobin', 'g/dL', <ThunderboltOutlined style={{ color: '#13c2c2' }} />, '14')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('hematocrit', 'Hematocrit', '%', <ThunderboltOutlined style={{ color: '#1890ff' }} />, '42')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('wbcCount', 'White Blood Cell Count', 'K/µL', <ExperimentOutlined style={{ color: '#fa8c16' }} />, '7')}
+              </Col>
+              
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('rbcCount', 'Red Blood Cell Count', 'M/µL', <ExperimentOutlined style={{ color: '#ff4d4f' }} />, '4.5')}
+              </Col>
+              
+              <Col xs={24}>
+                {renderFieldWithToggle('plateletCount', 'Platelet Count', 'K/µL', <ExperimentOutlined style={{ color: '#722ed1' }} />, '250')}
+              </Col>
+            </Row>
+          </div>
+
+          {/* General Notes */}
+          <Form.Item
+            label={
+              <Space>
+                <InfoCircleOutlined />
+                <span>Lab Notes</span>
+              </Space>
+            }
+            name="labNotes"
+            style={{ marginTop: 24 }}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Enter any additional notes about the blood test results..."
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   )
 }

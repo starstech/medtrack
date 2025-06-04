@@ -12,11 +12,27 @@
 }
 
 .physical-measurements-modal .ant-modal-body {
-  padding: 24px;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .physical-measurements-form {
   padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow from Row components */
+.physical-measurements-form .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.physical-measurements-form .ant-col {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .physical-measurements-modal .ant-modal-footer {
@@ -235,7 +251,7 @@
   }
   
   .physical-measurements-modal .ant-modal-body {
-    padding: 16px 20px;
+    max-height: 55vh;
   }
   
   .physical-measurements-modal .ant-modal-footer {

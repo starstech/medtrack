@@ -12,11 +12,27 @@
 }
 
 .blood-test-modal .ant-modal-body {
-  padding: 24px;
+  padding: 0;
+  max-height: 60vh;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .blood-test-form {
   padding: 24px 32px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Prevent horizontal overflow from Row components */
+.blood-test-form .ant-row {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+.blood-test-form .ant-col {
+  padding-left: 8px !important;
+  padding-right: 8px !important;
 }
 
 .blood-test-modal .ant-modal-footer {
@@ -178,7 +194,7 @@
   }
   
   .blood-test-modal .ant-modal-body {
-    padding: 16px 20px;
+    max-height: 55vh;
   }
   
   .blood-test-modal .ant-modal-footer {

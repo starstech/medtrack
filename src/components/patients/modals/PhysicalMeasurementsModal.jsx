@@ -24,7 +24,8 @@ import {
   FireOutlined,
   InfoCircleOutlined,
   ScissorOutlined,
-  HeartOutlined
+  HeartOutlined,
+  UserOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
 import dayjs from 'dayjs'
@@ -376,167 +377,177 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
     <Modal
       title={
         <Space>
-          <DashboardOutlined style={{ color: '#722ed1' }} />
+          <UserOutlined style={{ color: '#52c41a' }} />
           <span>Record Physical Measurements</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
       width={800}
-      footer={null}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="physical-measurements-form"
+        >
+          {loading ? 'Recording...' : 'Record Measurements'}
+        </Button>
+      ]}
       className="physical-measurements-modal"
     >
-      <Alert
-        message="Physical Measurements Recording"
-        description="Enter physical measurements. Height and weight will automatically calculate BMI."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      <div className="physical-measurements-form">
+        <Alert
+          message="Physical Measurements"
+          description="Record patient's height and weight measurements. BMI will be calculated automatically."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        onFieldsChange={handleFormChange}
-        initialValues={{
-          recordedAt: dayjs(),
-          recordedBy: 'Current User'
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          {/* Date and Recorded By */}
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Date & Time"
-              name="recordedAt"
-              rules={[{ required: true, message: 'Please select date and time' }]}
-            >
-              <DatePicker 
-                showTime 
-                format="YYYY-MM-DD HH:mm"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
+        <Form
+          id="physical-measurements-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          onFieldsChange={handleFormChange}
+          initialValues={{
+            recordedAt: dayjs(),
+            recordedBy: 'Current User'
+          }}
+        >
+          <Row gutter={[16, 16]}>
+            {/* Date and Recorded By */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Date & Time"
+                name="recordedAt"
+                rules={[{ required: true, message: 'Please select date and time' }]}
+              >
+                <DatePicker 
+                  showTime 
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
 
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Recorded By"
-              name="recordedBy"
-              rules={[{ required: true, message: 'Please enter who recorded this' }]}
-            >
-              <Input placeholder="Enter name" />
-            </Form.Item>
-          </Col>
-        </Row>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Recorded By"
+                name="recordedBy"
+                rules={[{ required: true, message: 'Please enter who recorded this' }]}
+              >
+                <Input placeholder="Enter name" />
+              </Form.Item>
+            </Col>
+          </Row>
 
-        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
-          <DashboardOutlined /> Physical Measurements
-        </Title>
+          <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+            <DashboardOutlined /> Physical Measurements
+          </Title>
 
-        <Row gutter={[16, 16]}>
-          {/* Height */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('height', 'Height', 'cm', <ScissorOutlined style={{ color: '#722ed1' }} />, '175')}
-          </Col>
+          <Row gutter={[16, 16]}>
+            {/* Height */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('height', 'Height', 'cm', <ScissorOutlined style={{ color: '#722ed1' }} />, '175')}
+            </Col>
 
-          {/* Weight */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('weight', 'Weight', 'kg', <FireOutlined style={{ color: '#1890ff' }} />, '70')}
-          </Col>
-        </Row>
+            {/* Weight */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('weight', 'Weight', 'kg', <FireOutlined style={{ color: '#1890ff' }} />, '70')}
+            </Col>
+          </Row>
 
-        {/* BMI Calculation Section */}
-        {calculatedBMI && (
-          <div style={{ marginTop: 24 }}>
-            <Title level={4} style={{ marginBottom: 16 }}>
-              <HeartOutlined style={{ color: '#fa8c16' }} /> Body Mass Index (BMI)
-            </Title>
-            
-            <Row gutter={16} align="middle">
-              <Col xs={24} sm={8}>
-                <Card>
-                  <Statistic
-                    title="Calculated BMI"
-                    value={calculatedBMI}
-                    precision={1}
-                    valueStyle={{ 
-                      color: bmiStatus?.color || '#1890ff',
-                      fontSize: '32px',
-                      fontWeight: 'bold'
-                    }}
-                    suffix="kg/m²"
-                  />
-                  {bmiStatus && (
-                    <Tag 
-                      color={bmiStatus.color} 
-                      style={{ 
-                        marginTop: 8,
-                        fontSize: '12px',
+          {/* BMI Calculation Section */}
+          {calculatedBMI && (
+            <div style={{ marginTop: 24 }}>
+              <Title level={4} style={{ marginBottom: 16 }}>
+                <HeartOutlined style={{ color: '#fa8c16' }} /> Body Mass Index (BMI)
+              </Title>
+              
+              <Row gutter={16} align="middle">
+                <Col xs={24} sm={8}>
+                  <Card>
+                    <Statistic
+                      title="Calculated BMI"
+                      value={calculatedBMI}
+                      precision={1}
+                      valueStyle={{ 
+                        color: bmiStatus?.color || '#1890ff',
+                        fontSize: '32px',
                         fontWeight: 'bold'
                       }}
-                    >
-                      {bmiStatus.category}
-                    </Tag>
-                  )}
-                </Card>
-              </Col>
-              
-              <Col xs={24} sm={16}>
-                {bmiStatus && (
-                  <Alert
-                    message={`BMI: ${bmiStatus.category}`}
-                    description={bmiStatus.message}
-                    type={bmiStatus.type}
-                    showIcon
-                    style={{ marginBottom: 16 }}
-                  />
-                )}
+                      suffix="kg/m²"
+                    />
+                    {bmiStatus && (
+                      <Tag 
+                        color={bmiStatus.color} 
+                        style={{ 
+                          marginTop: 8,
+                          fontSize: '12px',
+                          fontWeight: 'bold'
+                        }}
+                      >
+                        {bmiStatus.category}
+                      </Tag>
+                    )}
+                  </Card>
+                </Col>
                 
-                <div>
-                  <Text type="secondary" size="small">
-                    <strong>BMI Categories:</strong><br />
-                    • Underweight: &lt; 18.5<br />
-                    • Normal: 18.5 - 24.9<br />
-                    • Overweight: 25.0 - 29.9<br />
-                    • Obese: ≥ 30.0
-                  </Text>
-                </div>
-              </Col>
-            </Row>
-          </div>
-        )}
+                <Col xs={24} sm={16}>
+                  {bmiStatus && (
+                    <Alert
+                      message={`BMI: ${bmiStatus.category}`}
+                      description={bmiStatus.message}
+                      type={bmiStatus.type}
+                      showIcon
+                      style={{ marginBottom: 16 }}
+                    />
+                  )}
+                  
+                  <div>
+                    <Text type="secondary" size="small">
+                      <strong>BMI Categories:</strong><br />
+                      • Underweight: &lt; 18.5<br />
+                      • Normal: 18.5 - 24.9<br />
+                      • Overweight: 25.0 - 29.9<br />
+                      • Obese: ≥ 30.0
+                    </Text>
+                  </div>
+                </Col>
+              </Row>
+            </div>
+          )}
 
-        {/* General Notes */}
-        <Form.Item
-          label={
-            <Space>
-              <InfoCircleOutlined />
-              <span>General Notes</span>
-            </Space>
-          }
-          name="generalNotes"
-          style={{ marginTop: 24 }}
-        >
-          <TextArea 
-            rows={3} 
-            placeholder="Measurement conditions, patient position, clothing status..."
-          />
-        </Form.Item>
-
-        {/* Submit Button */}
-        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
-          <Space>
-            <Button onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Record Measurements
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+          {/* General Notes */}
+          <Form.Item
+            label={
+              <Space>
+                <InfoCircleOutlined />
+                <span>General Notes</span>
+              </Space>
+            }
+            name="generalNotes"
+            style={{ marginTop: 24 }}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Measurement conditions, patient position, clothing status..."
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   )
 }

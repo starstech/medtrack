@@ -298,188 +298,198 @@ const UrineTestModal = ({ visible, onClose, patient }) => {
     <Modal
       title={
         <Space>
-          <DropboxOutlined style={{ color: '#1890ff' }} />
-          <span>Urine Dipstick Analysis</span>
+          <ExperimentOutlined style={{ color: '#1890ff' }} />
+          <span>Record Urine Test</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
       width={800}
-      footer={null}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="urine-test-form"
+        >
+          {loading ? 'Recording...' : 'Record Urine Test'}
+        </Button>
+      ]}
       className="urine-test-modal"
     >
-      <Alert
-        message="Comprehensive Urine Analysis"
-        description="Record multiple urine test parameters with clinical interpretation and status monitoring."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      <div className="urine-test-form">
+        <Alert
+          message="Urine Dipstick Analysis"
+          description="Record urine test results from dipstick analysis. All fields are optional - record only available results."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          recordedAt: dayjs(),
-          recordedBy: 'Current User'
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          {/* Date and Recorded By */}
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Date & Time"
-              name="recordedAt"
-              rules={[{ required: true, message: 'Please select date and time' }]}
-            >
-              <DatePicker 
-                showTime 
-                format="YYYY-MM-DD HH:mm"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Recorded By"
-              name="recordedBy"
-              rules={[{ required: true, message: 'Please enter who recorded this' }]}
-            >
-              <Input placeholder="Enter name" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
-          <ExperimentOutlined /> Urine Test Parameters
-        </Title>
-
-        <Row gutter={[16, 16]}>
-          {/* Protein */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('protein', 'Protein', 'mg/dL', <MedicineBoxOutlined style={{ color: '#52c41a' }} />)}
-          </Col>
-
-          {/* Glucose */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('glucose', 'Glucose', 'mg/dL', <MedicineBoxOutlined style={{ color: '#fa8c16' }} />)}
-          </Col>
-
-          {/* Ketones */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('ketones', 'Ketones', 'mg/dL', <MedicineBoxOutlined style={{ color: '#722ed1' }} />)}
-          </Col>
-
-          {/* Blood */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('blood', 'Blood', 'RBC/hpf', <MedicineBoxOutlined style={{ color: '#f5222d' }} />)}
-          </Col>
-
-          {/* Leukocytes */}
-          <Col xs={24} lg={12}>
-            {renderFieldWithToggle('leukocytes', 'Leukocytes', 'WBC/hpf', <MedicineBoxOutlined style={{ color: '#1890ff' }} />)}
-          </Col>
-
-          {/* Specific Gravity - Always numeric */}
-          <Col xs={24} lg={12}>
-            <Card size="small" className="urine-test-card">
-              <Row align="middle" gutter={[16, 8]}>
-                <Col span={24}>
-                  <Space>
-                    <MedicineBoxOutlined style={{ color: '#13c2c2' }} />
-                    <Text strong>Specific Gravity</Text>
-                  </Space>
-                </Col>
-                <Col span={24}>
-                  <Form.Item 
-                    name="urineSpecificGravity"
-                    rules={[{ 
-                      type: 'number', 
-                      min: 1.000, 
-                      max: 1.040, 
-                      message: 'Value should be between 1.000 and 1.040' 
-                    }]}
-                    style={{ marginBottom: 0 }}
-                  >
-                    <InputNumber
-                      placeholder="e.g., 1.020"
-                      step={0.001}
-                      min={1.000}
-                      max={1.040}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-
-          {/* pH - Always numeric */}
-          <Col xs={24} lg={12}>
-            <Card size="small" className="urine-test-card">
-              <Row align="middle" gutter={[16, 8]}>
-                <Col span={24}>
-                  <Space>
-                    <MedicineBoxOutlined style={{ color: '#eb2f96' }} />
-                    <Text strong>pH Level</Text>
-                  </Space>
-                </Col>
-                <Col span={24}>
-                  <Form.Item 
-                    name="urinePH"
-                    rules={[{ 
-                      type: 'number', 
-                      min: 4.5, 
-                      max: 8.5, 
-                      message: 'pH should be between 4.5 and 8.5' 
-                    }]}
-                    style={{ marginBottom: 0 }}
-                  >
-                    <InputNumber
-                      placeholder="e.g., 6.0"
-                      step={0.1}
-                      min={4.5}
-                      max={8.5}
-                      style={{ width: '100%' }}
-                    />
-                  </Form.Item>
-                </Col>
-              </Row>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* General Notes */}
-        <Form.Item
-          label={
-            <Space>
-              <InfoCircleOutlined />
-              <span>General Notes</span>
-            </Space>
-          }
-          name="generalNotes"
-          style={{ marginTop: 24 }}
+        <Form
+          id="urine-test-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            recordedAt: dayjs(),
+            recordedBy: 'Current User'
+          }}
         >
-          <TextArea 
-            rows={3} 
-            placeholder="Enter any additional notes about the urine analysis..."
-          />
-        </Form.Item>
+          <Row gutter={[16, 16]}>
+            {/* Date and Recorded By */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Date & Time"
+                name="recordedAt"
+                rules={[{ required: true, message: 'Please select date and time' }]}
+              >
+                <DatePicker 
+                  showTime 
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
 
-        {/* Submit Button */}
-        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
-          <Space>
-            <Button onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Record Urine Tests
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Recorded By"
+                name="recordedBy"
+                rules={[{ required: true, message: 'Please enter who recorded this' }]}
+              >
+                <Input placeholder="Enter name" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+            <ExperimentOutlined /> Urine Test Parameters
+          </Title>
+
+          <Row gutter={[16, 16]}>
+            {/* Protein */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('protein', 'Protein', 'mg/dL', <MedicineBoxOutlined style={{ color: '#52c41a' }} />)}
+            </Col>
+
+            {/* Glucose */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('glucose', 'Glucose', 'mg/dL', <MedicineBoxOutlined style={{ color: '#fa8c16' }} />)}
+            </Col>
+
+            {/* Ketones */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('ketones', 'Ketones', 'mg/dL', <MedicineBoxOutlined style={{ color: '#722ed1' }} />)}
+            </Col>
+
+            {/* Blood */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('blood', 'Blood', 'RBC/hpf', <MedicineBoxOutlined style={{ color: '#f5222d' }} />)}
+            </Col>
+
+            {/* Leukocytes */}
+            <Col xs={24} lg={12}>
+              {renderFieldWithToggle('leukocytes', 'Leukocytes', 'WBC/hpf', <MedicineBoxOutlined style={{ color: '#1890ff' }} />)}
+            </Col>
+
+            {/* Specific Gravity - Always numeric */}
+            <Col xs={24} lg={12}>
+              <Card size="small" className="urine-test-card">
+                <Row align="middle" gutter={[16, 8]}>
+                  <Col span={24}>
+                    <Space>
+                      <MedicineBoxOutlined style={{ color: '#13c2c2' }} />
+                      <Text strong>Specific Gravity</Text>
+                    </Space>
+                  </Col>
+                  <Col span={24}>
+                    <Form.Item 
+                      name="urineSpecificGravity"
+                      rules={[{ 
+                        type: 'number', 
+                        min: 1.000, 
+                        max: 1.040, 
+                        message: 'Value should be between 1.000 and 1.040' 
+                      }]}
+                      style={{ marginBottom: 0 }}
+                    >
+                      <InputNumber
+                        placeholder="e.g., 1.020"
+                        step={0.001}
+                        min={1.000}
+                        max={1.040}
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+
+            {/* pH - Always numeric */}
+            <Col xs={24} lg={12}>
+              <Card size="small" className="urine-test-card">
+                <Row align="middle" gutter={[16, 8]}>
+                  <Col span={24}>
+                    <Space>
+                      <MedicineBoxOutlined style={{ color: '#eb2f96' }} />
+                      <Text strong>pH Level</Text>
+                    </Space>
+                  </Col>
+                  <Col span={24}>
+                    <Form.Item 
+                      name="urinePH"
+                      rules={[{ 
+                        type: 'number', 
+                        min: 4.5, 
+                        max: 8.5, 
+                        message: 'pH should be between 4.5 and 8.5' 
+                      }]}
+                      style={{ marginBottom: 0 }}
+                    >
+                      <InputNumber
+                        placeholder="e.g., 6.0"
+                        step={0.1}
+                        min={4.5}
+                        max={8.5}
+                        style={{ width: '100%' }}
+                      />
+                    </Form.Item>
+                  </Col>
+                </Row>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* General Notes */}
+          <Form.Item
+            label={
+              <Space>
+                <InfoCircleOutlined />
+                <span>General Notes</span>
+              </Space>
+            }
+            name="generalNotes"
+            style={{ marginTop: 24 }}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Enter any additional notes about the urine analysis..."
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   )
 }

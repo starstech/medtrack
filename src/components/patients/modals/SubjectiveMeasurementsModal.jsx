@@ -193,147 +193,157 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
       open={visible}
       onCancel={handleClose}
       width={800}
-      footer={null}
+      footer={[
+        <Button
+          key="cancel"
+          onClick={handleClose}
+          size="large"
+          disabled={loading}
+        >
+          Cancel
+        </Button>,
+        <Button
+          key="submit"
+          type="primary"
+          htmlType="submit"
+          loading={loading}
+          size="large"
+          form="subjective-measurements-form"
+        >
+          {loading ? 'Recording...' : 'Record Assessments'}
+        </Button>
+      ]}
       className="subjective-measurements-modal"
     >
-      <Alert
-        message="Subjective Assessments"
-        description="Record patient-reported measurements such as pain levels and mood ratings."
-        type="info"
-        showIcon
-        style={{ marginBottom: 24 }}
-      />
+      <div className="subjective-measurements-form">
+        <Alert
+          message="Subjective Assessments"
+          description="Record patient-reported measurements such as pain levels and mood ratings."
+          type="info"
+          showIcon
+          style={{ marginBottom: 24 }}
+        />
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleSubmit}
-        initialValues={{
-          recordedAt: dayjs(),
-          recordedBy: 'Current User'
-        }}
-      >
-        <Row gutter={[16, 16]}>
-          {/* Date and Recorded By */}
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Date & Time"
-              name="recordedAt"
-              rules={[{ required: true, message: 'Please select date and time' }]}
-            >
-              <DatePicker 
-                showTime 
-                format="YYYY-MM-DD HH:mm"
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Col>
-
-          <Col xs={24} sm={12}>
-            <Form.Item
-              label="Recorded By"
-              name="recordedBy"
-              rules={[{ required: true, message: 'Please enter who recorded this' }]}
-            >
-              <Input placeholder="Enter name" />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
-          <BulbOutlined /> Subjective Assessments
-        </Title>
-
-        {/* Pain Level */}
-        <Card style={{ marginBottom: 16 }}>
-          <Row align="top" gutter={[16, 16]}>
-            <Col span={24}>
-              <Space>
-                <AlertOutlined style={{ color: '#ff4d4f' }} />
-                <Text strong>Pain Level Assessment</Text>
-              </Space>
-            </Col>
-            
-            <Col span={24}>
-              <Form.Item
-                name="painLevel"
-                label="Pain Level (0-10 scale)"
-                rules={[{ type: 'number', min: 0, max: 10, message: 'Pain level must be between 0 and 10' }]}
-              >
-                <Slider
-                  min={0}
-                  max={10}
-                  marks={{
-                    0: '0 - No Pain',
-                    2: '2',
-                    4: '4',
-                    6: '6 - Moderate',
-                    8: '8',
-                    10: '10 - Severe'
-                  }}
-                  step={1}
-                  tipFormatter={(value) => `${value} - ${getPainLevelDescription(value)}`}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* Mood Rating */}
-        <Card style={{ marginBottom: 16 }}>
-          <Row align="top" gutter={[16, 16]}>
-            <Col span={24}>
-              <Space>
-                <SmileOutlined style={{ color: '#52c41a' }} />
-                <Text strong>Mood Rating</Text>
-              </Space>
-            </Col>
-            
-            <Col span={24}>
-              <Form.Item
-                name="moodRating"
-                label="Overall Mood (1-5 stars)"
-                rules={[{ type: 'number', min: 1, max: 5, message: 'Mood rating must be between 1 and 5' }]}
-              >
-                <Rate 
-                  character={<SmileOutlined />}
-                  style={{ fontSize: 32 }}
-                  tooltips={['Very Poor', 'Poor', 'Average', 'Good', 'Excellent']}
-                />
-              </Form.Item>
-            </Col>
-          </Row>
-        </Card>
-
-        {/* General Notes */}
-        <Form.Item
-          label={
-            <Space>
-              <InfoCircleOutlined />
-              <span>General Notes</span>
-            </Space>
-          }
-          name="generalNotes"
-          style={{ marginTop: 24 }}
+        <Form
+          id="subjective-measurements-form"
+          form={form}
+          layout="vertical"
+          onFinish={handleSubmit}
+          initialValues={{
+            recordedAt: dayjs(),
+            recordedBy: 'Current User'
+          }}
         >
-          <TextArea 
-            rows={3} 
-            placeholder="Additional context, triggers, activities that affect pain/mood..."
-          />
-        </Form.Item>
+          <Row gutter={[16, 16]}>
+            {/* Date and Recorded By */}
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Date & Time"
+                name="recordedAt"
+                rules={[{ required: true, message: 'Please select date and time' }]}
+              >
+                <DatePicker 
+                  showTime 
+                  format="YYYY-MM-DD HH:mm"
+                  style={{ width: '100%' }}
+                />
+              </Form.Item>
+            </Col>
 
-        {/* Submit Button */}
-        <Form.Item style={{ marginTop: 24, marginBottom: 0, textAlign: 'center' }}>
-          <Space>
-            <Button onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button type="primary" htmlType="submit" loading={loading}>
-              Record Assessments
-            </Button>
-          </Space>
-        </Form.Item>
-      </Form>
+            <Col xs={24} sm={12}>
+              <Form.Item
+                label="Recorded By"
+                name="recordedBy"
+                rules={[{ required: true, message: 'Please enter who recorded this' }]}
+              >
+                <Input placeholder="Enter name" />
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Title level={4} style={{ marginTop: 24, marginBottom: 16 }}>
+            <BulbOutlined /> Subjective Assessments
+          </Title>
+
+          {/* Pain Level */}
+          <Card style={{ marginBottom: 16 }}>
+            <Row align="top" gutter={[16, 16]}>
+              <Col span={24}>
+                <Space>
+                  <AlertOutlined style={{ color: '#ff4d4f' }} />
+                  <Text strong>Pain Level Assessment</Text>
+                </Space>
+              </Col>
+              
+              <Col span={24}>
+                <Form.Item
+                  name="painLevel"
+                  label="Pain Level (0-10 scale)"
+                  rules={[{ type: 'number', min: 0, max: 10, message: 'Pain level must be between 0 and 10' }]}
+                >
+                  <Slider
+                    min={0}
+                    max={10}
+                    marks={{
+                      0: '0 - No Pain',
+                      2: '2',
+                      4: '4',
+                      6: '6 - Moderate',
+                      8: '8',
+                      10: '10 - Severe'
+                    }}
+                    step={1}
+                    tipFormatter={(value) => `${value} - ${getPainLevelDescription(value)}`}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          {/* Mood Rating */}
+          <Card style={{ marginBottom: 16 }}>
+            <Row align="top" gutter={[16, 16]}>
+              <Col span={24}>
+                <Space>
+                  <SmileOutlined style={{ color: '#52c41a' }} />
+                  <Text strong>Mood Rating</Text>
+                </Space>
+              </Col>
+              
+              <Col span={24}>
+                <Form.Item
+                  name="moodRating"
+                  label="Overall Mood (1-5 stars)"
+                  rules={[{ type: 'number', min: 1, max: 5, message: 'Mood rating must be between 1 and 5' }]}
+                >
+                  <Rate 
+                    character={<SmileOutlined />}
+                    style={{ fontSize: 32 }}
+                    tooltips={['Very Poor', 'Poor', 'Average', 'Good', 'Excellent']}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Card>
+
+          {/* General Notes */}
+          <Form.Item
+            label={
+              <Space>
+                <InfoCircleOutlined />
+                <span>General Notes</span>
+              </Space>
+            }
+            name="generalNotes"
+            style={{ marginTop: 24 }}
+          >
+            <TextArea 
+              rows={3} 
+              placeholder="Additional context, triggers, activities that affect pain/mood..."
+            />
+          </Form.Item>
+        </Form>
+      </div>
     </Modal>
   )
 }
