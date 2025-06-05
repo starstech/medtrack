@@ -199,11 +199,12 @@
 
 /* Settings group styling to match ProfileSettings */
 .measurement-preferences .settings-group {
-  background: #fff;
-  border-radius: 8px;
+  margin-bottom: 24px;
   border: 1px solid #f0f0f0;
-  margin-bottom: 16px;
-  transition: all 0.3s ease;
+  border-radius: 12px;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
 }
 
 .measurement-preferences .settings-group:last-child {
@@ -211,25 +212,21 @@
 }
 
 .measurement-preferences .settings-group-header {
-  padding: 16px 20px;
-  border-bottom: 1px solid #f0f0f0;
-  background: linear-gradient(135deg, #fafafa 0%, #f5f5f5 100%);
-  border-radius: 8px 8px 0 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
 }
 
 .measurement-preferences .group-title {
   display: flex;
   align-items: center;
+  gap: 8px;
   font-weight: 600;
   color: #262626;
   font-size: 16px;
-}
-
-.measurement-preferences .group-title span {
-  margin-left: 8px;
 }
 
 .measurement-preferences .settings-content {
@@ -237,23 +234,24 @@
 }
 
 .measurement-preferences .settings-group:hover {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  border-color: #d9d9d9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 /* Preset card special styling */
-.preset-card .ant-select {
+.measurement-preferences .ant-select {
   border-radius: 6px;
 }
 
-.preset-card .ant-select-selector {
+.measurement-preferences .ant-select-selector {
   border-color: #d9d9d9;
 }
 
-.preset-card .ant-select-focused .ant-select-selector {
+.measurement-preferences .ant-select-focused .ant-select-selector {
   border-color: #1890ff;
-  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.1);
 }
+
+
 
 /* Improved button styling */
 .preferences-actions .ant-btn-primary {

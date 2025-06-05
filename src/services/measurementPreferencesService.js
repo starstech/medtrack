@@ -76,12 +76,21 @@ class MeasurementPreferencesService {
    */
   async getPresets() {
     try {
-      const data = await apiClient.get('/measurement-presets');
-      
+      // Temporarily bypass API and use default presets
+      console.log('Using default presets (API bypassed for testing)');
+      const defaultPresets = this._getDefaultPresets();
       return {
         success: true,
-        data: data || []
+        data: defaultPresets,
+        isMockData: true
       };
+      
+      // Original API call code commented out for testing
+      // const data = await apiClient.get('/measurement-presets');
+      // return {
+      //   success: true,
+      //   data: data || []
+      // };
     } catch (error) {
       console.error('Error getting measurement presets:', error);
       
@@ -338,6 +347,8 @@ class MeasurementPreferencesService {
       vital_signs_enabled: true,
       physical_measurements_enabled: true,
       subjective_measurements_enabled: true,
+      blood_tests_enabled: true,
+      urine_tests_enabled: true,
       enabled_measurements: {
         vital_signs: {
           blood_pressure: true,
@@ -358,6 +369,39 @@ class MeasurementPreferencesService {
           energy_level: true,
           sleep_quality: true,
           appetite: true
+        },
+        blood_tests: {
+          blood_glucose: true,
+          cholesterol_total: true,
+          cholesterol_ldl: true,
+          cholesterol_hdl: true,
+          triglycerides: true,
+          hemoglobin: true,
+          hematocrit: true,
+          white_blood_cell_count: true,
+          red_blood_cell_count: true,
+          platelet_count: true,
+          creatinine: true,
+          blood_urea_nitrogen: true,
+          thyroid_stimulating_hormone: true,
+          t3: true,
+          t4: true,
+          vitamin_d: true,
+          vitamin_b12: true,
+          iron: true,
+          calcium: true,
+          potassium: true,
+          sodium: true,
+          chloride: true
+        },
+        urine_tests: {
+          protein: true,
+          glucose: true,
+          ketones: true,
+          specific_gravity: true,
+          ph: true,
+          blood: true,
+          leukocytes: true
         }
       },
       preset_name: 'comprehensive',
@@ -381,7 +425,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: true,
-          subjective_measurements_enabled: true
+          subjective_measurements_enabled: true,
+          blood_tests_enabled: true,
+          urine_tests_enabled: true
         },
         measurement_settings: {
           vital_signs: {
@@ -403,6 +449,39 @@ class MeasurementPreferencesService {
             energy_level: true,
             sleep_quality: true,
             appetite: true
+          },
+          blood_tests: {
+            blood_glucose: true,
+            cholesterol_total: true,
+            cholesterol_ldl: true,
+            cholesterol_hdl: true,
+            triglycerides: true,
+            hemoglobin: true,
+            hematocrit: true,
+            white_blood_cell_count: true,
+            red_blood_cell_count: true,
+            platelet_count: true,
+            creatinine: true,
+            blood_urea_nitrogen: true,
+            thyroid_stimulating_hormone: true,
+            t3: true,
+            t4: true,
+            vitamin_d: true,
+            vitamin_b12: true,
+            iron: true,
+            calcium: true,
+            potassium: true,
+            sodium: true,
+            chloride: true
+          },
+          urine_tests: {
+            protein: true,
+            glucose: true,
+            ketones: true,
+            specific_gravity: true,
+            ph: true,
+            blood: true,
+            leukocytes: true
           }
         },
         target_condition: 'general',
@@ -417,7 +496,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: true,
-          subjective_measurements_enabled: false
+          subjective_measurements_enabled: false,
+          blood_tests_enabled: false,
+          urine_tests_enabled: false
         },
         measurement_settings: {
           vital_signs: {
@@ -439,6 +520,39 @@ class MeasurementPreferencesService {
             energy_level: false,
             sleep_quality: false,
             appetite: false
+          },
+          blood_tests: {
+            blood_glucose: false,
+            cholesterol_total: false,
+            cholesterol_ldl: false,
+            cholesterol_hdl: false,
+            triglycerides: false,
+            hemoglobin: false,
+            hematocrit: false,
+            white_blood_cell_count: false,
+            red_blood_cell_count: false,
+            platelet_count: false,
+            creatinine: false,
+            blood_urea_nitrogen: false,
+            thyroid_stimulating_hormone: false,
+            t3: false,
+            t4: false,
+            vitamin_d: false,
+            vitamin_b12: false,
+            iron: false,
+            calcium: false,
+            potassium: false,
+            sodium: false,
+            chloride: false
+          },
+          urine_tests: {
+            protein: false,
+            glucose: false,
+            ketones: false,
+            specific_gravity: false,
+            ph: false,
+            blood: false,
+            leukocytes: false
           }
         },
         target_condition: 'routine',
@@ -453,7 +567,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: true,
-          subjective_measurements_enabled: true
+          subjective_measurements_enabled: true,
+          blood_tests_enabled: true,
+          urine_tests_enabled: true
         },
         measurement_settings: {
           vital_signs: {
@@ -475,6 +591,39 @@ class MeasurementPreferencesService {
             energy_level: true,
             sleep_quality: true,
             appetite: true
+          },
+          blood_tests: {
+            blood_glucose: true,
+            cholesterol_total: true,
+            cholesterol_ldl: false,
+            cholesterol_hdl: true,
+            triglycerides: true,
+            hemoglobin: true,
+            hematocrit: false,
+            white_blood_cell_count: false,
+            red_blood_cell_count: false,
+            platelet_count: false,
+            creatinine: true,
+            blood_urea_nitrogen: false,
+            thyroid_stimulating_hormone: false,
+            t3: false,
+            t4: false,
+            vitamin_d: false,
+            vitamin_b12: false,
+            iron: false,
+            calcium: false,
+            potassium: false,
+            sodium: false,
+            chloride: false
+          },
+          urine_tests: {
+            protein: true,
+            glucose: true,
+            ketones: true,
+            specific_gravity: false,
+            ph: false,
+            blood: false,
+            leukocytes: false
           }
         },
         target_condition: 'diabetes',
@@ -489,7 +638,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: true,
-          subjective_measurements_enabled: false
+          subjective_measurements_enabled: false,
+          blood_tests_enabled: true,
+          urine_tests_enabled: false
         },
         measurement_settings: {
           vital_signs: {
@@ -511,6 +662,39 @@ class MeasurementPreferencesService {
             energy_level: false,
             sleep_quality: false,
             appetite: false
+          },
+          blood_tests: {
+            blood_glucose: false,
+            cholesterol_total: true,
+            cholesterol_ldl: true,
+            cholesterol_hdl: true,
+            triglycerides: true,
+            hemoglobin: false,
+            hematocrit: false,
+            white_blood_cell_count: false,
+            red_blood_cell_count: false,
+            platelet_count: false,
+            creatinine: false,
+            blood_urea_nitrogen: false,
+            thyroid_stimulating_hormone: false,
+            t3: false,
+            t4: false,
+            vitamin_d: false,
+            vitamin_b12: false,
+            iron: false,
+            calcium: false,
+            potassium: true,
+            sodium: true,
+            chloride: false
+          },
+          urine_tests: {
+            protein: false,
+            glucose: false,
+            ketones: false,
+            specific_gravity: false,
+            ph: false,
+            blood: false,
+            leukocytes: false
           }
         },
         target_condition: 'cardiovascular',
@@ -525,7 +709,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: true,
-          subjective_measurements_enabled: true
+          subjective_measurements_enabled: true,
+          blood_tests_enabled: false,
+          urine_tests_enabled: false
         },
         measurement_settings: {
           vital_signs: {
@@ -547,6 +733,39 @@ class MeasurementPreferencesService {
             energy_level: false,
             sleep_quality: true,
             appetite: true
+          },
+          blood_tests: {
+            blood_glucose: false,
+            cholesterol_total: false,
+            cholesterol_ldl: false,
+            cholesterol_hdl: false,
+            triglycerides: false,
+            hemoglobin: false,
+            hematocrit: false,
+            white_blood_cell_count: false,
+            red_blood_cell_count: false,
+            platelet_count: false,
+            creatinine: false,
+            blood_urea_nitrogen: false,
+            thyroid_stimulating_hormone: false,
+            t3: false,
+            t4: false,
+            vitamin_d: false,
+            vitamin_b12: false,
+            iron: false,
+            calcium: false,
+            potassium: false,
+            sodium: false,
+            chloride: false
+          },
+          urine_tests: {
+            protein: false,
+            glucose: false,
+            ketones: false,
+            specific_gravity: false,
+            ph: false,
+            blood: false,
+            leukocytes: false
           }
         },
         target_condition: 'pediatric',
@@ -561,7 +780,9 @@ class MeasurementPreferencesService {
         category_settings: {
           vital_signs_enabled: true,
           physical_measurements_enabled: false,
-          subjective_measurements_enabled: true
+          subjective_measurements_enabled: true,
+          blood_tests_enabled: true,
+          urine_tests_enabled: false
         },
         measurement_settings: {
           vital_signs: {
@@ -583,6 +804,39 @@ class MeasurementPreferencesService {
             energy_level: true,
             sleep_quality: true,
             appetite: true
+          },
+          blood_tests: {
+            blood_glucose: false,
+            cholesterol_total: false,
+            cholesterol_ldl: false,
+            cholesterol_hdl: false,
+            triglycerides: false,
+            hemoglobin: true,
+            hematocrit: true,
+            white_blood_cell_count: true,
+            red_blood_cell_count: false,
+            platelet_count: false,
+            creatinine: false,
+            blood_urea_nitrogen: false,
+            thyroid_stimulating_hormone: false,
+            t3: false,
+            t4: false,
+            vitamin_d: false,
+            vitamin_b12: false,
+            iron: false,
+            calcium: false,
+            potassium: false,
+            sodium: false,
+            chloride: false
+          },
+          urine_tests: {
+            protein: false,
+            glucose: false,
+            ketones: false,
+            specific_gravity: false,
+            ph: false,
+            blood: false,
+            leukocytes: false
           }
         },
         target_condition: 'post_surgical',

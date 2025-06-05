@@ -23,7 +23,8 @@ import {
   ReloadOutlined,
   InfoCircleOutlined,
   CheckOutlined,
-  ExclamationCircleOutlined
+  ExclamationCircleOutlined,
+  ExperimentOutlined
 } from '@ant-design/icons';
 import { measurementPreferencesService } from '../../services/measurementPreferencesService';
 import { useAuthContext } from '../../contexts/AuthContext';
@@ -60,16 +61,36 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
       ]);
       
       if (preferencesResult.success) {
-        setPreferences(preferencesResult.data);
-        setSelectedPreset(preferencesResult.data.preset_name);
-        setIsCustomMode(preferencesResult.data.is_custom);
+        // Ensure preferences has proper structure with defaults
+        const preferences = {
+          vital_signs_enabled: false,
+          physical_measurements_enabled: false,
+          subjective_measurements_enabled: false,
+          blood_tests_enabled: false,
+          urine_tests_enabled: false,
+          enabled_measurements: {
+            vital_signs: {},
+            physical: {},
+            subjective: {},
+            blood_tests: {},
+            urine_tests: {}
+          },
+          preset_name: 'comprehensive',
+          is_custom: false,
+          ...preferencesResult.data
+        };
+        setPreferences(preferences);
+        setSelectedPreset(preferences.preset_name);
+        setIsCustomMode(preferences.is_custom);
       } else {
         message.error('Failed to load measurement preferences');
       }
       
       if (presetsResult.success) {
+        console.log('Presets loaded:', presetsResult.data);
         setPresets(Array.isArray(presetsResult.data) ? presetsResult.data : []);
       } else {
+        console.error('Failed to load presets:', presetsResult);
         setPresets([]);
         message.error('Failed to load measurement presets');
       }
@@ -88,11 +109,51 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
         title: 'Discard unsaved changes?',
         content: 'You have unsaved changes. Applying a preset will discard them.',
         icon: <ExclamationCircleOutlined />,
-        onOk: () => applyPreset(presetName),
+        onOk: () => applyPresetLocally(presetName),
       });
     } else {
-      await applyPreset(presetName);
+      applyPresetLocally(presetName);
     }
+  };
+
+  const applyPresetLocally = (presetName) => {
+    if (presetName === 'custom') {
+      setSelectedPreset('custom');
+      setIsCustomMode(true);
+      setHasUnsavedChanges(true);
+      return;
+    }
+
+    // Find the preset configuration
+    const preset = presets.find(p => p.name === presetName);
+    if (!preset) {
+      console.error('Preset not found:', presetName);
+      return;
+    }
+
+    // Update preferences to match the preset
+    const updatedPreferences = {
+      ...preferences,
+      vital_signs_enabled: preset.category_settings.vital_signs_enabled,
+      physical_measurements_enabled: preset.category_settings.physical_measurements_enabled,
+      subjective_measurements_enabled: preset.category_settings.subjective_measurements_enabled,
+      blood_tests_enabled: preset.category_settings.blood_tests_enabled,
+      urine_tests_enabled: preset.category_settings.urine_tests_enabled,
+      enabled_measurements: {
+        vital_signs: preset.measurement_settings.vital_signs || {},
+        physical: preset.measurement_settings.physical || {},
+        subjective: preset.measurement_settings.subjective || {},
+        blood_tests: preset.measurement_settings.blood_tests || {},
+        urine_tests: preset.measurement_settings.urine_tests || {}
+      },
+      preset_name: presetName,
+      is_custom: false
+    };
+
+    setPreferences(updatedPreferences);
+    setSelectedPreset(presetName);
+    setIsCustomMode(false);
+    setHasUnsavedChanges(true); // Mark as having changes since it's not saved yet
   };
 
   const applyPreset = async (presetName) => {
@@ -131,6 +192,12 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
       case 'subjective':
         updatedPreferences.subjective_measurements_enabled = enabled;
         break;
+      case 'blood_tests':
+        updatedPreferences.blood_tests_enabled = enabled;
+        break;
+      case 'urine_tests':
+        updatedPreferences.urine_tests_enabled = enabled;
+        break;
     }
     
     setPreferences(updatedPreferences);
@@ -141,6 +208,18 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
 
   const handleMeasurementToggle = (category, measurementType, enabled) => {
     const updatedPreferences = { ...preferences };
+    
+    // Ensure enabled_measurements structure exists
+    if (!updatedPreferences.enabled_measurements) {
+      updatedPreferences.enabled_measurements = {
+        vital_signs: {},
+        physical: {},
+        subjective: {},
+        blood_tests: {},
+        urine_tests: {}
+      };
+    }
+    
     updatedPreferences.enabled_measurements = {
       ...updatedPreferences.enabled_measurements,
       [category]: {
@@ -163,6 +242,8 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
         vitalSignsEnabled: preferences.vital_signs_enabled,
         physicalMeasurementsEnabled: preferences.physical_measurements_enabled,
         subjectiveMeasurementsEnabled: preferences.subjective_measurements_enabled,
+        bloodTestsEnabled: preferences.blood_tests_enabled,
+        urineTestsEnabled: preferences.urine_tests_enabled,
         enabledMeasurements: preferences.enabled_measurements,
         presetName: isCustomMode ? 'custom' : selectedPreset,
         isCustom: isCustomMode
@@ -217,12 +298,17 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
   };
 
   const renderMeasurementSection = (category, title, icon, measurements) => {
-    const categoryKey = category === 'vital_signs' ? 'vital_signs_enabled' : 
-                      category === 'physical' ? 'physical_measurements_enabled' : 
-                      'subjective_measurements_enabled';
+    const categoryKeyMap = {
+      'vital_signs': 'vital_signs_enabled',
+      'physical': 'physical_measurements_enabled',
+      'subjective': 'subjective_measurements_enabled',
+      'blood_tests': 'blood_tests_enabled',
+      'urine_tests': 'urine_tests_enabled'
+    };
     
-    const isCategoryEnabled = preferences[categoryKey];
-    const measurementConfig = preferences.enabled_measurements[category] || {};
+    const categoryKey = categoryKeyMap[category] || `${category}_enabled`;
+    const isCategoryEnabled = preferences?.[categoryKey] || false;
+    const measurementConfig = preferences?.enabled_measurements?.[category] || {};
 
     return (
       <Card 
@@ -313,6 +399,39 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
       energy_level: 'Energy Level',
       sleep_quality: 'Sleep Quality',
       appetite: 'Appetite'
+    },
+    blood_tests: {
+      blood_glucose: 'Blood Glucose',
+      cholesterol_total: 'Total Cholesterol',
+      cholesterol_ldl: 'LDL Cholesterol',
+      cholesterol_hdl: 'HDL Cholesterol',
+      triglycerides: 'Triglycerides',
+      hemoglobin: 'Hemoglobin',
+      hematocrit: 'Hematocrit',
+      white_blood_cell_count: 'White Blood Cell Count',
+      red_blood_cell_count: 'Red Blood Cell Count',
+      platelet_count: 'Platelet Count',
+      creatinine: 'Creatinine',
+      blood_urea_nitrogen: 'Blood Urea Nitrogen',
+      thyroid_stimulating_hormone: 'TSH',
+      t3: 'T3',
+      t4: 'T4',
+      vitamin_d: 'Vitamin D',
+      vitamin_b12: 'Vitamin B12',
+      iron: 'Iron',
+      calcium: 'Calcium',
+      potassium: 'Potassium',
+      sodium: 'Sodium',
+      chloride: 'Chloride'
+    },
+    urine_tests: {
+      protein: 'Protein',
+      glucose: 'Glucose',
+      ketones: 'Ketones',
+      specific_gravity: 'Specific Gravity',
+      ph: 'pH',
+      blood: 'Blood',
+      leukocytes: 'Leukocytes'
     }
   };
 
@@ -348,47 +467,33 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             </div>
           </div>
           <div className="settings-content">
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          <div>
-            <Text strong>Choose a preset based on your medical needs:</Text>
-            <Tooltip title={getPresetDescription(selectedPreset)}>
-              <InfoCircleOutlined style={{ marginLeft: 8, color: '#1890ff' }} />
-            </Tooltip>
-          </div>
-          
-          <Select
-            value={selectedPreset}
-            onChange={handlePresetChange}
-            style={{ width: '100%' }}
-            placeholder="Select a medical scenario preset"
-            loading={saving}
-          >
-            {Array.isArray(presets) ? presets.map(preset => (
-              <Option key={preset.name} value={preset.name}>
-                <Space>
-                  <Text strong>{preset.display_name}</Text>
-                  {preset.is_default && <Text type="secondary">(Default)</Text>}
-                </Space>
-                <div style={{ fontSize: '12px', color: '#666' }}>
-                  {preset.description}
-                </div>
-              </Option>
-            )) : null}
-            <Option value="custom">
-              <Space>
-                <Text strong>Custom Configuration</Text>
-                <Text type="secondary">(Manual Setup)</Text>
-              </Space>
-              <div style={{ fontSize: '12px', color: '#666' }}>
-                Fully customizable measurement selection
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              <div>
+                <Text strong>Choose a preset based on your medical needs:</Text>
+                <Tooltip title={getPresetDescription(selectedPreset)}>
+                  <InfoCircleOutlined style={{ marginLeft: 8, color: '#1890ff' }} />
+                </Tooltip>
               </div>
-            </Option>
-          </Select>
-        </Space>
+              
+              <Select
+                value={selectedPreset}
+                onChange={handlePresetChange}
+                style={{ width: '100%' }}
+                placeholder="Select a medical scenario preset"
+                loading={saving}
+              >
+                {Array.isArray(presets) ? presets.map(preset => (
+                  <Option key={preset.name} value={preset.name}>
+                    {preset.display_name} {preset.is_default && '(Default)'}
+                  </Option>
+                )) : null}
+                <Option value="custom">
+                  Custom Configuration
+                </Option>
+              </Select>
+            </Space>
           </div>
         </div>
-
-        <Divider />
 
         {/* Custom Configuration */}
         <div className="settings-group">
@@ -401,69 +506,83 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             </div>
           </div>
           <div className="settings-content">
-        {!isCustomMode && selectedPreset !== 'custom' && (
-          <Alert
-            message="Using Preset Configuration"
-            description={`Currently using "${Array.isArray(presets) ? presets.find(p => p.name === selectedPreset)?.display_name || selectedPreset : selectedPreset}" preset. Make any changes below to switch to custom mode.`}
-            type="info"
-            showIcon
-            style={{ marginBottom: 16 }}
-          />
-        )}
+            {!isCustomMode && selectedPreset !== 'custom' && (
+              <Alert
+                message="Using Preset Configuration"
+                description={`Currently using "${Array.isArray(presets) ? presets.find(p => p.name === selectedPreset)?.display_name || selectedPreset : selectedPreset}" preset. Make any changes below to switch to custom mode.`}
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+              />
+            )}
 
-        <Space direction="vertical" size="middle" style={{ width: '100%' }}>
-          {renderMeasurementSection(
-            'vital_signs',
-            'Vital Signs',
-            <HeartOutlined style={{ color: '#ff4d4f' }} />,
-            measurementTypes.vital_signs
-          )}
-          
-          {renderMeasurementSection(
-            'physical',
-            'Physical Measurements',
-            <MedicineBoxOutlined style={{ color: '#1890ff' }} />,
-            measurementTypes.physical
-          )}
-          
-          {renderMeasurementSection(
-            'subjective',
-            'Subjective Assessments',
-            <SmileOutlined style={{ color: '#52c41a' }} />,
-            measurementTypes.subjective
-          )}
-        </Space>
+            <Space direction="vertical" size="middle" style={{ width: '100%' }}>
+              {renderMeasurementSection(
+                'vital_signs',
+                'Vital Signs',
+                <HeartOutlined style={{ color: '#ff4d4f' }} />,
+                measurementTypes.vital_signs
+              )}
+              
+              {renderMeasurementSection(
+                'physical',
+                'Physical Measurements',
+                <MedicineBoxOutlined style={{ color: '#1890ff' }} />,
+                measurementTypes.physical
+              )}
+              
+              {renderMeasurementSection(
+                'subjective',
+                'Subjective Assessments',
+                <SmileOutlined style={{ color: '#52c41a' }} />,
+                measurementTypes.subjective
+              )}
+              
+              {renderMeasurementSection(
+                'blood_tests',
+                'Blood Tests',
+                <ExperimentOutlined style={{ color: '#eb2f96' }} />,
+                measurementTypes.blood_tests
+              )}
+              
+              {renderMeasurementSection(
+                'urine_tests',
+                'Urine Tests',
+                <ExperimentOutlined style={{ color: '#fa8c16' }} />,
+                measurementTypes.urine_tests
+              )}
+            </Space>
           </div>
         </div>
 
         {/* Action Buttons */}
         <div className="settings-group">
           <div className="settings-content">
-        <Space>
-          <Button
-            type="primary"
-            icon={<CheckOutlined />}
-            onClick={savePreferences}
-            loading={saving}
-            disabled={!hasUnsavedChanges}
-          >
-            Save Changes
-          </Button>
-          
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={resetToDefault}
-            loading={saving}
-          >
-            Reset to Default
-          </Button>
-          
-          {hasUnsavedChanges && (
-            <Text type="warning" style={{ marginLeft: 16 }}>
-              <ExclamationCircleOutlined /> You have unsaved changes
-            </Text>
-          )}
-        </Space>
+            <Space>
+              <Button
+                type="primary"
+                icon={<CheckOutlined />}
+                onClick={savePreferences}
+                loading={saving}
+                disabled={!hasUnsavedChanges}
+              >
+                Save Changes
+              </Button>
+              
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={resetToDefault}
+                loading={saving}
+              >
+                Reset to Default
+              </Button>
+              
+              {hasUnsavedChanges && (
+                <Text type="warning" style={{ marginLeft: 16 }}>
+                  <ExclamationCircleOutlined /> You have unsaved changes
+                </Text>
+              )}
+            </Space>
           </div>
         </div>
 
