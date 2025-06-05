@@ -104,12 +104,38 @@ export const AuthProvider = ({ children }) => {
       // Mock registration - in real app this would be an API call
       await new Promise(resolve => setTimeout(resolve, 1000))
       
+      // In real implementation, this would create user account and send verification email
+      // For now, we'll simulate the email verification flow
+      
+      dispatch({ type: 'SET_LOADING', payload: false })
+      
+      return { 
+        success: true, 
+        requiresVerification: true,
+        email: email,
+        message: 'Registration successful. Please check your email to verify your account.'
+      }
+    } catch (error) {
+      dispatch({ type: 'LOGIN_ERROR', payload: 'Registration failed' })
+      return { success: false, error: 'Registration failed' }
+    }
+  }
+
+  const verifyEmail = async (token) => {
+    dispatch({ type: 'SET_LOADING', payload: true })
+    
+    try {
+      // Mock email verification - in real app this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      // Simulate successful verification
       const mockUser = {
         id: Date.now().toString(),
-        email,
-        name,
+        email: 'user@example.com', // In real app, get from token
+        name: 'User Name', // In real app, get from token 
         role: 'caregiver',
-        joinedAt: new Date().toISOString()
+        joinedAt: new Date().toISOString(),
+        emailVerified: true
       }
       
       localStorage.setItem('user', JSON.stringify(mockUser))
@@ -117,8 +143,19 @@ export const AuthProvider = ({ children }) => {
       
       return { success: true }
     } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR', payload: 'Registration failed' })
-      return { success: false, error: 'Registration failed' }
+      dispatch({ type: 'LOGIN_ERROR', payload: 'Email verification failed' })
+      return { success: false, error: 'Email verification failed' }
+    }
+  }
+
+  const resendVerificationEmail = async (email) => {
+    try {
+      // Mock resend verification - in real app this would be an API call
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
+      return { success: true, message: 'Verification email sent successfully' }
+    } catch (error) {
+      return { success: false, error: 'Failed to send verification email' }
     }
   }
 
@@ -137,6 +174,8 @@ export const AuthProvider = ({ children }) => {
     error: state.error,
     login,
     register,
+    verifyEmail,
+    resendVerificationEmail,
     logout,
     clearError
   }

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Form, Input, Button, Alert, Typography, Space, Checkbox } from 'antd'
 import { MailOutlined, LockOutlined, UserOutlined, LoadingOutlined } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
+import { useNavigate } from 'react-router-dom'
 
 const { Text, Link } = Typography
 
@@ -9,6 +10,7 @@ const RegisterForm = () => {
   const [form] = Form.useForm()
   const { register, loading, error, clearError } = useAuth()
   const [localLoading, setLocalLoading] = useState(false)
+  const navigate = useNavigate()
 
   const handleSubmit = async (values) => {
     setLocalLoading(true)
@@ -16,7 +18,12 @@ const RegisterForm = () => {
     
     const result = await register(values.email, values.password, values.name)
     
-    if (!result.success) {
+    if (result.success && result.requiresVerification) {
+      // Redirect to verification pending page
+      navigate(`/verify-email?mode=pending&email=${encodeURIComponent(values.email)}`, { 
+        replace: true 
+      })
+    } else if (!result.success) {
       // Error is handled by the context
     }
     

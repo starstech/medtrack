@@ -7,7 +7,8 @@ export const APP_DESCRIPTION = 'Your family\'s medication management hub'
 
 // Routes
 export const ROUTES = {
-  AUTH: '/',
+  AUTH: '/auth',
+  EMAIL_VERIFICATION: '/verify-email',
   DASHBOARD: '/',
   PATIENTS: '/patients',
   PATIENT_DETAILS: '/patients/:id',
@@ -155,7 +156,9 @@ export const API_ENDPOINTS = {
     LOGIN: '/auth/login',
     REGISTER: '/auth/register',
     LOGOUT: '/auth/logout',
-    REFRESH: '/auth/refresh'
+    REFRESH: '/auth/refresh',
+    VERIFY_EMAIL: '/auth/verify-email',
+    RESEND_VERIFICATION: '/auth/resend-verification'
   },
   PATIENTS: {
     LIST: '/patients',
