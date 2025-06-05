@@ -29,6 +29,18 @@ node --version
 **✅ Good:** You see something like `v18.17.0` or `v20.11.0`
 **❌ Need to install:** Download from [nodejs.org](https://nodejs.org) (choose the LTS version)
 
+### Check pnpm (Preferred Package Manager)
+Copy and paste this command, then press Enter:
+```bash
+pnpm --version
+```
+
+**✅ Good:** You see something like `8.15.0`
+**❌ Need to install:** Run this command:
+```bash
+npm install -g pnpm
+```
+
 ### Check Docker
 Copy and paste this command, then press Enter:
 ```bash
@@ -62,77 +74,38 @@ cd "/Users/yasser/Cursor Projects/medtrack"
 
 ## 🗂️ Step 3: Set Up Your Database Files
 
-Since you already ran `supabase init`, you now have a `supabase` folder. We need to put our database setup files in the right places.
+Since you already ran `supabase init`, you now have a `supabase` folder. We need to populate the migration files with your database schema.
 
-### Create the Migration Files
+### **⚠️ IMPORTANT: Your migration files are currently empty!**
 
-Copy and paste each command one by one:
+The migration files exist but are empty. We need to copy the SQL content into them.
 
+**Option 1: Use the automated setup script (Recommended)**
 ```bash
-supabase migration new 01_initial_schema
-```
-```bash
-supabase migration new 02_rls_policies
-```
-```bash
-supabase migration new 03_storage_setup
-```
-```bash
-supabase migration new 04_database_functions
-```
-```bash
-supabase migration new 05_notification_triggers
-```
-```bash
-supabase migration new 06_realtime_setup
-```
-```bash
-supabase migration new 07_edge_functions
-```
-```bash
-supabase migration new 08_data_validation
-```
-```bash
-supabase migration new 09_compliance_logging
-```
-```bash
-supabase migration new 10_performance_optimizations
+./setup-migrations.sh
 ```
 
-**What this does:** Creates empty files where we'll put our database setup code.
+**Option 2: Copy files manually**
+```bash
+# Copy the schema files to migrations (run these commands one by one)
+cp database/schemas/01_initial_schema.sql supabase/migrations/20250605123912_01_initial_schema.sql
+cp database/schemas/12_measurement_preferences.sql supabase/migrations/20250605123956_12_measurement_preferences.sql
+cp database/policies/02_rls_policies.sql supabase/migrations/20250605123956_02_rls_policies.sql
+cp database/storage/04_storage_setup.sql supabase/migrations/20250605124009_03_storage_setup.sql
+cp database/functions/05_database_functions.sql supabase/migrations/20250605124018_04_database_functions.sql
+cp database/triggers/06_notification_triggers.sql supabase/migrations/20250605124028_05_notification_triggers.sql
+cp database/realtime/07_realtime_setup.sql supabase/migrations/20250605124036_06_realtime_setup.sql
+cp database/edge-functions/08_edge_functions.sql supabase/migrations/20250605124044_07_edge_functions.sql
+cp database/validation/09_data_validation.sql supabase/migrations/20250605124052_08_data_validation.sql
+cp database/compliance/10_compliance_logging.sql supabase/migrations/20250605124101_09_compliance_logging.sql
+cp database/performance/11_performance_optimizations.sql supabase/migrations/20250605124111_10_performance_optimizations.sql
+```
 
-### Copy the Database Code
+### Add Sample Data (Recommended for Testing)
 
-Now we need to copy the content from our `database` folder into these new files. 
-
-**The Easy Way:**
-1. Open your code editor (VS Code/Cursor)
-2. Look in the `database` folder
-3. Open `schemas/01_initial_schema.sql`
-4. Copy ALL the text (Ctrl+A, then Ctrl+C)
-5. Go to `supabase/migrations/` and find the file that starts with your timestamp and ends with `01_initial_schema.sql`
-6. Paste the content (Ctrl+V)
-7. Save the file (Ctrl+S)
-
-**Repeat this for all files:**
-- Copy `database/policies/02_rls_policies.sql` → Paste into `supabase/migrations/[timestamp]_02_rls_policies.sql`
-- Copy `database/storage/04_storage_setup.sql` → Paste into `supabase/migrations/[timestamp]_03_storage_setup.sql`
-- Copy `database/functions/05_database_functions.sql` → Paste into `supabase/migrations/[timestamp]_04_database_functions.sql`
-- Copy `database/triggers/06_notification_triggers.sql` → Paste into `supabase/migrations/[timestamp]_05_notification_triggers.sql`
-- Copy `database/realtime/07_realtime_setup.sql` → Paste into `supabase/migrations/[timestamp]_06_realtime_setup.sql`
-- Copy `database/edge-functions/08_edge_functions.sql` → Paste into `supabase/migrations/[timestamp]_07_edge_functions.sql`
-- Copy `database/validation/09_data_validation.sql` → Paste into `supabase/migrations/[timestamp]_08_data_validation.sql`
-- Copy `database/compliance/10_compliance_logging.sql` → Paste into `supabase/migrations/[timestamp]_09_compliance_logging.sql`
-- Copy `database/performance/11_performance_optimizations.sql` → Paste into `supabase/migrations/[timestamp]_10_performance_optimizations.sql`
-
-### Add Sample Data (Optional)
-
-If you want some fake data to test with:
-1. Open `database/seeds/03_sample_data.sql`
-2. Copy all the content
-3. Open `supabase/seed.sql`
-4. Paste the content
-5. Save the file
+```bash
+cp database/seeds/03_sample_data.sql supabase/seed.sql
+```
 
 ## 🚀 Step 4: Start Your Local Database
 
@@ -167,7 +140,7 @@ service_role key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## 🔧 Step 5: Connect Your App
 
-Now we need to tell your React app to use the local database instead of the online one.
+**⚠️ CRITICAL FIX NEEDED:** Your app uses different environment variable names than standard Vite apps.
 
 ### Create Environment File
 
@@ -175,12 +148,18 @@ Now we need to tell your React app to use the local database instead of the onli
 2. Copy this content into the file:
 
 ```env
-# Local Supabase Configuration
+# Local Supabase Configuration (NOTE: Using REACT_APP_ prefix to match your app)
+REACT_APP_SUPABASE_URL=http://localhost:54321
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key-from-step-4
+
+# Alternative Vite format (for future migrations)
 VITE_SUPABASE_URL=http://localhost:54321
 VITE_SUPABASE_ANON_KEY=your-anon-key-from-step-4
+
+# Service role key for admin operations
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-from-step-4
 
-# Local development flag
+# Local development flags
 NODE_ENV=development
 VITE_ENVIRONMENT=local
 
@@ -210,7 +189,33 @@ Open your web browser and go to: `http://localhost:54323`
 - Click "SQL Editor" to run database commands
 - Click "Storage" to see file uploads
 
-## 💻 Step 7: Run Your App
+## 📦 Step 6.5: Add Helpful Scripts (Optional but Recommended)
+
+Add these scripts to your `package.json` for easier database management:
+
+```json
+{
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "db:start": "supabase start",
+    "db:stop": "supabase stop",
+    "db:reset": "supabase db reset",
+    "db:status": "supabase status",
+    "db:studio": "supabase studio"
+  }
+}
+```
+
+## 💻 Step 7: Install Dependencies and Run Your App
+
+First, install all the required packages:
+
+```bash
+pnpm install
+```
 
 In a NEW terminal window (keep the database running), navigate to your project and start your app:
 
@@ -248,8 +253,11 @@ pnpm dev
 
 ### Starting Work
 ```bash
-# Start the database (if not already running)
+# Option 1: Using Supabase CLI directly
 supabase start
+
+# Option 2: Using the npm scripts (if you added them)
+pnpm run db:start
 
 # Start your app (in a new terminal)
 pnpm dev
@@ -258,8 +266,12 @@ pnpm dev
 ### Stopping Work
 ```bash
 # Stop your app (Ctrl+C in the terminal running pnpm dev)
-# Stop the database
+
+# Option 1: Stop the database directly
 supabase stop
+
+# Option 2: Using npm scripts
+pnpm run db:stop
 ```
 
 ### Making Database Changes
@@ -269,9 +281,14 @@ supabase migration new my_new_feature
 
 # Edit the file, then apply changes
 supabase db reset
+# OR
+pnpm run db:reset
 
-# For measurement preferences changes
-supabase migration new update_measurement_preferences
+# Check database status
+pnpm run db:status
+
+# Open database studio
+pnpm run db:studio
 ```
 
 ## 🆘 When Things Go Wrong
@@ -298,11 +315,26 @@ sudo supabase start
 3. Wait a full 2-3 minutes for everything to start
 
 ### App shows errors
-1. Check your `.env.local` file has the right keys (use `VITE_` prefix)
+1. **Environment Variable Issues:**
+   - Check your `.env.local` file has the right keys
+   - **CRITICAL:** Use `REACT_APP_` prefix (not `VITE_`) for this app
+   - Restart your app after changing environment variables
 2. Make sure both the database AND app are running
 3. Try refreshing your browser
 4. Check browser console for specific error messages
 5. Verify measurement preferences service is working
+
+### "Supabase client not configured" error
+1. Check that your `.env.local` file exists in the project root
+2. Verify you're using `REACT_APP_SUPABASE_URL` and `REACT_APP_SUPABASE_ANON_KEY`
+3. Restart your development server (`pnpm dev`)
+4. Check the browser console for the actual environment variable values
+
+### Migration files are empty
+If you see "relation does not exist" errors:
+1. Check that migration files in `supabase/migrations/` have content
+2. Run the copy commands from Step 3 again
+3. Reset the database: `supabase db reset`
 
 ## 🎓 What You've Learned
 
