@@ -60,14 +60,16 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
         measurementPreferencesService.getPresets()
       ]);
       
-      if (preferencesResult.success) {
-        // Ensure preferences has proper structure with defaults
+      if (preferencesResult.success && preferencesResult.data) {
+        // Use the actual data from the service, with fallbacks only for missing fields
         const preferences = {
-          vital_signs_enabled: false,
-          physical_measurements_enabled: false,
-          subjective_measurements_enabled: false,
-          blood_tests_enabled: false,
-          urine_tests_enabled: false,
+          preset_name: 'comprehensive',
+          is_custom: false,
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: true,
+          blood_tests_enabled: true,
+          urine_tests_enabled: true,
           enabled_measurements: {
             vital_signs: {},
             physical: {},
@@ -75,20 +77,47 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             blood_tests: {},
             urine_tests: {}
           },
-          preset_name: 'comprehensive',
-          is_custom: false,
           ...preferencesResult.data
         };
         setPreferences(preferences);
         setSelectedPreset(preferences.preset_name);
         setIsCustomMode(preferences.is_custom);
       } else {
+        // If no preferences exist, apply the comprehensive preset as default
+        console.log('No existing preferences, will apply comprehensive preset after presets load');
         message.error('Failed to load measurement preferences');
       }
       
       if (presetsResult.success) {
         console.log('Presets loaded:', presetsResult.data);
-        setPresets(Array.isArray(presetsResult.data) ? presetsResult.data : []);
+        const loadedPresets = Array.isArray(presetsResult.data) ? presetsResult.data : [];
+        setPresets(loadedPresets);
+        
+        // If no preferences were loaded, apply the comprehensive preset as default
+        if (!preferencesResult.success || !preferencesResult.data) {
+          const comprehensivePreset = loadedPresets.find(p => p.name === 'comprehensive');
+          if (comprehensivePreset) {
+            const defaultPreferences = {
+              vital_signs_enabled: comprehensivePreset.category_settings.vital_signs_enabled,
+              physical_measurements_enabled: comprehensivePreset.category_settings.physical_measurements_enabled,
+              subjective_measurements_enabled: comprehensivePreset.category_settings.subjective_measurements_enabled,
+              blood_tests_enabled: comprehensivePreset.category_settings.blood_tests_enabled,
+              urine_tests_enabled: comprehensivePreset.category_settings.urine_tests_enabled,
+              enabled_measurements: {
+                vital_signs: comprehensivePreset.measurement_settings.vital_signs || {},
+                physical: comprehensivePreset.measurement_settings.physical || {},
+                subjective: comprehensivePreset.measurement_settings.subjective || {},
+                blood_tests: comprehensivePreset.measurement_settings.blood_tests || {},
+                urine_tests: comprehensivePreset.measurement_settings.urine_tests || {}
+              },
+              preset_name: 'comprehensive',
+              is_custom: false
+            };
+            setPreferences(defaultPreferences);
+            setSelectedPreset('comprehensive');
+            setIsCustomMode(false);
+          }
+        }
       } else {
         console.error('Failed to load presets:', presetsResult);
         setPresets([]);
@@ -117,6 +146,8 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
   };
 
   const applyPresetLocally = (presetName) => {
+    console.log('Applying preset locally:', presetName);
+    
     if (presetName === 'custom') {
       setSelectedPreset('custom');
       setIsCustomMode(true);
@@ -127,9 +158,11 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
     // Find the preset configuration
     const preset = presets.find(p => p.name === presetName);
     if (!preset) {
-      console.error('Preset not found:', presetName);
+      console.error('Preset not found:', presetName, 'Available presets:', presets.map(p => p.name));
       return;
     }
+
+    console.log('Found preset:', preset);
 
     // Update preferences to match the preset
     const updatedPreferences = {
@@ -150,6 +183,9 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
       is_custom: false
     };
 
+    console.log('Updated preferences:', updatedPreferences);
+
+    // Use React's functional state updates to ensure proper state management
     setPreferences(updatedPreferences);
     setSelectedPreset(presetName);
     setIsCustomMode(false);
@@ -476,6 +512,7 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
               </div>
               
               <Select
+                key={`preset-select-${selectedPreset}`}
                 value={selectedPreset}
                 onChange={handlePresetChange}
                 style={{ width: '100%' }}
