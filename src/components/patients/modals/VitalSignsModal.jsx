@@ -16,7 +16,8 @@ import {
   Card,
   Tag,
   Switch,
-  Select
+  Select,
+  Spin
 } from 'antd'
 import { 
   HeartOutlined,
@@ -24,10 +25,13 @@ import {
   DashboardOutlined,
   FireOutlined,
   InfoCircleOutlined,
-  CameraOutlined
+  CameraOutlined,
+  UserOutlined,
+  EyeOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
 import { MeasurementImageUpload } from '../../common/FileUpload'
+import { measurementPreferencesService } from '../../../services/measurementPreferencesService'
 import dayjs from 'dayjs'
 import './VitalSignsModal.css'
 
@@ -98,7 +102,8 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
-  const [bloodPressureMode, setBloodPressureMode] = useState('separate') // 'separate' or 'combined'
+  const [preferencesLoading, setPreferencesLoading] = useState(true)
+  const [availableMeasurements, setAvailableMeasurements] = useState({})
   
   // State for input types (standard vs custom)
   const [inputTypes, setInputTypes] = useState({
@@ -110,8 +115,10 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
     oxygenSaturation: 'standard'
   })
 
+  // Load measurement preferences when modal opens
   useEffect(() => {
-    if (visible) {
+    if (visible && patient?.id) {
+      loadPreferences()
       form.setFieldsValue({
         recordedAt: dayjs(),
         recordedBy: 'Current User'
@@ -126,7 +133,50 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
         oxygenSaturation: 'standard'
       })
     }
-  }, [visible, form])
+  }, [visible, patient, form])
+
+  const loadPreferences = async () => {
+    try {
+      setPreferencesLoading(true)
+      const result = await measurementPreferencesService.getMeasurementAvailability(patient.id)
+      
+      if (result.success) {
+        // Check if vital signs category is enabled
+        if (!result.data.categories.vitalSigns) {
+          // Category is disabled, close the modal
+          onClose()
+          message.warning('Vital signs measurements are disabled in your preferences.')
+          return
+        }
+        
+        // Extract available vital sign measurements
+        const vitalSignMeasurements = result.data.measurements.vital_signs || {}
+        setAvailableMeasurements(vitalSignMeasurements)
+      } else {
+        console.error('Failed to load preferences:', result.error)
+        // Default to all measurements enabled on error
+        setAvailableMeasurements({
+          blood_pressure: true,
+          heart_rate: true,
+          temperature: true,
+          respiratory_rate: true,
+          oxygen_saturation: true
+        })
+      }
+    } catch (error) {
+      console.error('Error loading measurement preferences:', error)
+      // Default to all measurements enabled on error
+      setAvailableMeasurements({
+        blood_pressure: true,
+        heart_rate: true,
+        temperature: true,
+        respiratory_rate: true,
+        oxygen_saturation: true
+      })
+    } finally {
+      setPreferencesLoading(false)
+    }
+  }
 
   const handleInputTypeChange = (field, type) => {
     setInputTypes(prev => ({ ...prev, [field]: type }))
@@ -156,7 +206,7 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
       }
 
       // Blood Pressure
-      if (bloodPressureMode === 'separate') {
+      if (inputTypes.systolic === 'separate') {
         if (values.systolic) {
           measurements.push({
             type: 'blood_pressure_systolic',
@@ -452,35 +502,48 @@ const VitalSignsModal = ({ visible, onClose, patient }) => {
           </Title>
 
           <Row gutter={[16, 16]}>
-            {/* Temperature */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('temperature', 'Temperature', '°C', <ThunderboltOutlined style={{ color: '#fa8c16' }} />, '36.5')}
-            </Col>
+            {/* Temperature - only show if enabled */}
+            {(availableMeasurements.temperature !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('temperature', 'Temperature', '°C', <ThunderboltOutlined style={{ color: '#fa8c16' }} />, '36.5')}
+              </Col>
+            )}
 
-            {/* Heart Rate */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('heartRate', 'Heart Rate', 'bpm', <HeartOutlined style={{ color: '#52c41a' }} />, '72')}
-            </Col>
+            {/* Heart Rate - only show if enabled */}
+            {(availableMeasurements.heart_rate !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('heartRate', 'Heart Rate', 'bpm', <HeartOutlined style={{ color: '#52c41a' }} />, '72')}
+              </Col>
+            )}
 
-            {/* Systolic Blood Pressure */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('systolic', 'Systolic BP', 'mmHg', <HeartOutlined style={{ color: '#ff4d4f' }} />, '120')}
-            </Col>
+            {/* Blood Pressure - only show if enabled */}
+            {(availableMeasurements.blood_pressure !== false) && (
+              <>
+                {/* Systolic Blood Pressure */}
+                <Col xs={24} lg={12}>
+                  {renderFieldWithToggle('systolic', 'Systolic BP', 'mmHg', <HeartOutlined style={{ color: '#ff4d4f' }} />, '120')}
+                </Col>
 
-            {/* Diastolic Blood Pressure */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('diastolic', 'Diastolic BP', 'mmHg', <HeartOutlined style={{ color: '#f5222d' }} />, '80')}
-            </Col>
+                {/* Diastolic Blood Pressure */}
+                <Col xs={24} lg={12}>
+                  {renderFieldWithToggle('diastolic', 'Diastolic BP', 'mmHg', <HeartOutlined style={{ color: '#f5222d' }} />, '80')}
+                </Col>
+              </>
+            )}
 
-            {/* Respiratory Rate */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('respiratoryRate', 'Respiratory Rate', '/min', <FireOutlined style={{ color: '#1890ff' }} />, '16')}
-            </Col>
+            {/* Respiratory Rate - only show if enabled */}
+            {(availableMeasurements.respiratory_rate !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('respiratoryRate', 'Respiratory Rate', '/min', <FireOutlined style={{ color: '#1890ff' }} />, '16')}
+              </Col>
+            )}
 
-            {/* Oxygen Saturation */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('oxygenSaturation', 'Oxygen Saturation', '%', <DashboardOutlined style={{ color: '#722ed1' }} />, '98')}
-            </Col>
+            {/* Oxygen Saturation - only show if enabled */}
+            {(availableMeasurements.oxygen_saturation !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('oxygenSaturation', 'Oxygen Saturation', '%', <DashboardOutlined style={{ color: '#722ed1' }} />, '98')}
+              </Col>
+            )}
           </Row>
 
           {/* Device Reading Photo */}

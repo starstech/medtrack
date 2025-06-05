@@ -17,7 +17,8 @@ import {
   Statistic,
   Tag,
   Switch,
-  Select
+  Select,
+  Spin
 } from 'antd'
 import { 
   DashboardOutlined,
@@ -30,6 +31,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
 import { MeasurementImageUpload } from '../../common/FileUpload'
+import { measurementPreferencesService } from '../../../services/measurementPreferencesService'
 import dayjs from 'dayjs'
 import './PhysicalMeasurementsModal.css'
 
@@ -69,6 +71,8 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
+  const [preferencesLoading, setPreferencesLoading] = useState(true)
+  const [availableMeasurements, setAvailableMeasurements] = useState({})
   const [calculatedBMI, setCalculatedBMI] = useState(null)
   
   // State for input types (standard vs custom)
@@ -78,7 +82,8 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
   })
 
   useEffect(() => {
-    if (visible) {
+    if (visible && patient?.id) {
+      loadPreferences()
       form.setFieldsValue({
         recordedAt: dayjs(),
         recordedBy: 'Current User'
@@ -89,7 +94,48 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
         weight: 'standard'
       })
     }
-  }, [visible, form])
+  }, [visible, patient, form])
+
+  const loadPreferences = async () => {
+    try {
+      setPreferencesLoading(true)
+      const result = await measurementPreferencesService.getMeasurementAvailability(patient.id)
+      
+      if (result.success) {
+        // Check if physical measurements category is enabled
+        if (!result.data.categories.physicalMeasurements) {
+          // Category is disabled, close the modal
+          onClose()
+          message.warning('Physical measurements are disabled in your preferences.')
+          return
+        }
+        
+        // Extract available physical measurements
+        const physicalMeasurements = result.data.measurements.physical || {}
+        setAvailableMeasurements(physicalMeasurements)
+      } else {
+        console.error('Failed to load preferences:', result.error)
+        // Default to all measurements enabled on error
+        setAvailableMeasurements({
+          height: true,
+          weight: true,
+          bmi: true,
+          head_circumference: true
+        })
+      }
+    } catch (error) {
+      console.error('Error loading measurement preferences:', error)
+      // Default to all measurements enabled on error
+      setAvailableMeasurements({
+        height: true,
+        weight: true,
+        bmi: true,
+        head_circumference: true
+      })
+    } finally {
+      setPreferencesLoading(false)
+    }
+  }
 
   // Calculate BMI when height and weight change
   const calculateBMI = (height, weight) => {
@@ -465,15 +511,19 @@ const PhysicalMeasurementsModal = ({ visible, onClose, patient }) => {
           </Title>
 
           <Row gutter={[16, 16]}>
-            {/* Height */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('height', 'Height', 'cm', <ScissorOutlined style={{ color: '#722ed1' }} />, '175')}
-            </Col>
+            {/* Height - only show if enabled */}
+            {(availableMeasurements.height !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('height', 'Height', 'cm', <ScissorOutlined style={{ color: '#722ed1' }} />, '175')}
+              </Col>
+            )}
 
-            {/* Weight */}
-            <Col xs={24} lg={12}>
-              {renderFieldWithToggle('weight', 'Weight', 'kg', <FireOutlined style={{ color: '#1890ff' }} />, '70')}
-            </Col>
+            {/* Weight - only show if enabled */}
+            {(availableMeasurements.weight !== false) && (
+              <Col xs={24} lg={12}>
+                {renderFieldWithToggle('weight', 'Weight', 'kg', <FireOutlined style={{ color: '#1890ff' }} />, '70')}
+              </Col>
+            )}
           </Row>
 
           {/* BMI Calculation Section */}

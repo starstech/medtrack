@@ -69,7 +69,8 @@ Execute the SQL files in this exact order:
 8. **09_data_validation.sql** - Data validation and constraints
 9. **10_compliance_logging.sql** - HIPAA & GDPR compliance features
 10. **11_performance_optimizations.sql** - Performance indexes and materialized views
-11. **03_sample_data.sql** - (Optional) Adds sample data for testing
+11. **12_measurement_preferences.sql** - Measurement preferences and presets system
+12. **03_sample_data.sql** - (Optional) Adds sample data for testing
 
 ### 3. Execution Methods
 
@@ -120,6 +121,8 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 - **notifications** - System notifications
 - **user_devices** - Device tokens for push notifications
 - **notification_preferences** - User notification settings
+- **measurement_preferences** - Patient-specific measurement visibility settings
+- **measurement_presets** - Predefined measurement configurations for medical scenarios
 
 ### Key Features
 
@@ -165,6 +168,11 @@ SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
 ### Analytics
 - `get_measurement_trends(patient_id, type, days)` - Measurement data over time
+
+### Measurement Preferences
+- `get_or_create_measurement_preferences(patient_id, user_id)` - Get or create default preferences
+- `is_measurement_enabled(patient_id, user_id, category, type)` - Check if measurement is enabled
+- `apply_measurement_preset(patient_id, user_id, preset_name)` - Apply a predefined preset
 
 ### Maintenance
 - `cleanup_old_notifications(days)` - Remove old read notifications

@@ -57,6 +57,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
 import { MEASUREMENT_TYPES } from '../../utils/mockData'
+import { measurementPreferencesService } from '../../services/measurementPreferencesService'
 import VitalSignsModal from './modals/VitalSignsModal'
 import BloodTestModal from './modals/BloodTestModal'
 import PhysicalMeasurementsModal from './modals/PhysicalMeasurementsModal'
@@ -217,20 +218,99 @@ const MeasurementSection = ({ patient }) => {
   const [selectedType, setSelectedType] = useState('all')
   const [loading, setLoading] = useState(false)
   const [isScrollable, setIsScrollable] = useState(false)
+  const [measurementAvailability, setMeasurementAvailability] = useState(null)
+  const [preferencesLoading, setPreferencesLoading] = useState(true)
   const containerRef = useRef(null)
 
   const measurements = getPatientMeasurements(patient.id)
+  
+  // Load measurement preferences on component mount
+  useEffect(() => {
+    const loadPreferences = async () => {
+      try {
+        setPreferencesLoading(true)
+        const result = await measurementPreferencesService.getMeasurementAvailability(patient.id)
+        
+        if (result.success) {
+          setMeasurementAvailability(result.data)
+        } else {
+          console.error('Failed to load measurement preferences:', result.error)
+          // Default to all measurements enabled
+          setMeasurementAvailability({
+            categories: { vitalSigns: true, physicalMeasurements: true, subjectiveMeasurements: true },
+            measurements: {
+              vital_signs: { blood_pressure: true, heart_rate: true, temperature: true, respiratory_rate: true, oxygen_saturation: true },
+              physical: { height: true, weight: true, bmi: true, head_circumference: true },
+              subjective: { pain_level: true, mood: true, energy_level: true, sleep_quality: true, appetite: true }
+            }
+          })
+        }
+      } catch (error) {
+        console.error('Error loading measurement preferences:', error)
+        // Default to all measurements enabled
+        setMeasurementAvailability({
+          categories: { vitalSigns: true, physicalMeasurements: true, subjectiveMeasurements: true },
+          measurements: {
+            vital_signs: { blood_pressure: true, heart_rate: true, temperature: true, respiratory_rate: true, oxygen_saturation: true },
+            physical: { height: true, weight: true, bmi: true, head_circumference: true },
+            subjective: { pain_level: true, mood: true, energy_level: true, sleep_quality: true, appetite: true }
+          }
+        })
+      } finally {
+        setPreferencesLoading(false)
+      }
+    }
+
+    loadPreferences()
+  }, [patient.id])
+
+  // Filter measurements based on preferences
+  const getFilteredMeasurements = () => {
+    if (!measurementAvailability) return measurements
+    
+    return measurements.filter(measurement => {
+      // Map measurement types to categories and check if enabled
+      const typeToCategory = {
+        'blood_pressure_systolic': { category: 'vital_signs', type: 'blood_pressure' },
+        'blood_pressure_diastolic': { category: 'vital_signs', type: 'blood_pressure' },
+        'blood_pressure': { category: 'vital_signs', type: 'blood_pressure' },
+        'heart_rate': { category: 'vital_signs', type: 'heart_rate' },
+        'temperature': { category: 'vital_signs', type: 'temperature' },
+        'respiratory_rate': { category: 'vital_signs', type: 'respiratory_rate' },
+        'oxygen_saturation': { category: 'vital_signs', type: 'oxygen_saturation' },
+        'weight': { category: 'physical', type: 'weight' },
+        'height': { category: 'physical', type: 'height' },
+        'pain_level': { category: 'subjective', type: 'pain_level' },
+        'mood_rating': { category: 'subjective', type: 'mood' }
+      }
+      
+      const mapping = typeToCategory[measurement.type]
+      if (!mapping) return true // Show unmapped measurements by default
+      
+      const categoryEnabled = measurementAvailability.categories?.[
+        mapping.category === 'vital_signs' ? 'vitalSigns' : 
+        mapping.category === 'physical' ? 'physicalMeasurements' : 
+        'subjectiveMeasurements'
+      ]
+      
+      if (!categoryEnabled) return false
+      
+      const measurementEnabled = measurementAvailability.measurements?.[mapping.category]?.[mapping.type]
+      return measurementEnabled !== false
+    })
+  }
+
   const filteredMeasurements = selectedType === 'all' 
-    ? measurements 
-    : measurements.filter(m => m.type === selectedType)
+    ? getFilteredMeasurements()
+    : getFilteredMeasurements().filter(m => m.type === selectedType)
 
   // Sort measurements by date (newest first)
   const sortedMeasurements = filteredMeasurements.sort((a, b) => 
     new Date(b.recordedAt) - new Date(a.recordedAt)
   )
 
-  // Get unique measurement types from data
-  const availableTypes = [...new Set(measurements.map(m => m.type))]
+  // Get unique measurement types from filtered data
+  const availableTypes = [...new Set(getFilteredMeasurements().map(m => m.type))]
 
   // Check if container is scrollable
   useEffect(() => {
@@ -271,6 +351,7 @@ const MeasurementSection = ({ patient }) => {
   const openModal = (modalComponent) => {
     const modalMap = {
       'VitalSignsModal': 'vital_signs',
+      'EnhancedVitalSignsModal': 'vital_signs',
       'BloodTestModal': 'blood_tests',
       'PhysicalMeasurementsModal': 'physical', 
       'SubjectiveMeasurementsModal': 'subjective',
@@ -645,52 +726,90 @@ const MeasurementSection = ({ patient }) => {
     )
   }
 
-  const renderTypeSelectionModal = () => (
-    <Modal
-      title={
-        <Space>
-          <PlusOutlined />
-          <Title level={4} style={{ margin: 0 }}>
-            Record New Measurement
-          </Title>
-        </Space>
-      }
-      open={typeSelectionVisible}
-      onCancel={() => setTypeSelectionVisible(false)}
-      footer={null}
-      width={720}
-      centered
-      destroyOnClose
-      className="type-selection-modal"
-    >
-      <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
-        Choose the type of measurement you'd like to record:
-      </Text>
+  // Filter categories based on preferences
+  const getFilteredCategories = () => {
+    if (!measurementAvailability) return MEASUREMENT_CATEGORIES;
+    
+    return MEASUREMENT_CATEGORIES.filter(category => {
+      // Map category keys to preference categories
+      const categoryMapping = {
+        'vital_signs': 'vitalSigns',
+        'temperature': 'vitalSigns', // Temperature is part of vital signs
+        'physical': 'physicalMeasurements',
+        'subjective': 'subjectiveMeasurements',
+        'blood': true, // Always show blood tests for now
+        'urine': true  // Always show urine tests for now
+      };
       
-      <div className="measurement-categories-grid">
-        {MEASUREMENT_CATEGORIES.map(category => (
-          <div 
-            key={category.key}
-            className="measurement-category-card"
-            onClick={() => handleCategoryClick(category)}
-            style={{ borderColor: category.color }}
-          >
-            <div className="category-icon">
-              {category.icon}
-            </div>
-            <div className="category-content">
-              <Title level={5} style={{ margin: '8px 0 4px', color: category.color }}>
-                {category.title}
-              </Title>
-              <Text type="secondary" size="small">
-                {category.description}
-              </Text>
-            </div>
+      const preferenceKey = categoryMapping[category.key];
+      if (preferenceKey === true) return true; // Always show
+      if (typeof preferenceKey === 'string') {
+        return measurementAvailability.categories[preferenceKey] === true;
+      }
+      return true; // Default to show if unmapped
+    });
+  };
+
+  const renderTypeSelectionModal = () => {
+    const filteredCategories = getFilteredCategories();
+    
+    return (
+      <Modal
+        title={
+          <Space>
+            <PlusOutlined />
+            <Title level={4} style={{ margin: 0 }}>
+              Record New Measurement
+            </Title>
+          </Space>
+        }
+        open={typeSelectionVisible}
+        onCancel={() => setTypeSelectionVisible(false)}
+        footer={null}
+        width={720}
+        centered
+        destroyOnClose
+        className="type-selection-modal"
+      >
+        <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
+          Choose the type of measurement you'd like to record:
+        </Text>
+        
+        {filteredCategories.length === 0 ? (
+          <Alert
+            message="No Measurement Categories Available"
+            description="All measurement categories are disabled in your preferences. Please update your measurement settings to record new measurements."
+            type="warning"
+            showIcon
+            style={{ margin: '20px 0' }}
+          />
+        ) : (
+          <div className="measurement-categories-grid">
+            {filteredCategories.map(category => (
+              <div 
+                key={category.key}
+                className="measurement-category-card"
+                onClick={() => handleCategoryClick(category)}
+                style={{ borderColor: category.color }}
+              >
+                <div className="category-icon">
+                  {category.icon}
+                </div>
+                <div className="category-content">
+                  <Title level={5} style={{ margin: '8px 0 4px', color: category.color }}>
+                    {category.title}
+                  </Title>
+                  <Text type="secondary" size="small">
+                    {category.description}
+                  </Text>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
-    </Modal>
-  )
+        )}
+      </Modal>
+    )
+  }
 
   const renderSubcategorySelectionModal = () => (
     <Modal
@@ -910,7 +1029,7 @@ const MeasurementSection = ({ patient }) => {
         visible={modalVisibility.trends}
         onClose={() => closeModal('trends')}
         patient={patient}
-        measurements={measurements}
+        measurements={getFilteredMeasurements()}
       />
 
       {renderSubcategorySelectionModal()}

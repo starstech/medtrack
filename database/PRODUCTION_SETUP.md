@@ -102,6 +102,7 @@ Execute the SQL files in this **exact order** using the SQL Editor:
    Additional Redirect URLs:
    - https://your-production-domain.com
    - https://your-production-domain.com/auth/callback
+   - https://your-production-domain.com/preferences
    ```
 
 4. **Email Templates** (Update to match your branding)
@@ -146,6 +147,8 @@ Execute the SQL files in this **exact order** using the SQL Editor:
    - `api.doses`
    - `api.daily_logs`
    - `api.notifications`
+   - `api.measurement_preferences`
+   - `api.measurement_presets`
 
 ### Step 6: Environment Variables
 
@@ -153,19 +156,27 @@ Configure your production environment with:
 
 ```env
 # Production Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=https://your-project-ref.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-production-anon-key
+VITE_SUPABASE_URL=https://your-project-ref.supabase.co
+VITE_SUPABASE_ANON_KEY=your-production-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-production-service-role-key
 
 # Production Environment
 NODE_ENV=production
-NEXT_PUBLIC_ENVIRONMENT=production
+VITE_ENVIRONMENT=production
+
+# API Configuration
+VITE_API_BASE_URL=https://your-project-ref.supabase.co/rest/v1
+VITE_ENABLE_MOCK_DATA=false
 
 # Domain Configuration
-NEXT_PUBLIC_SITE_URL=https://your-production-domain.com
+VITE_SITE_URL=https://your-production-domain.com
 
 # Optional: Direct Database URL (for edge functions)
 DATABASE_URL=postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/postgres
+
+# Measurement Preferences Configuration
+VITE_DEFAULT_PRESET=comprehensive
+VITE_ENABLE_CUSTOM_PRESETS=true
 ```
 
 ### Step 7: Security Hardening
@@ -265,6 +276,8 @@ DATABASE_URL=postgresql://postgres:[password]@db.[project-ref].supabase.co:5432/
 - Rotate API keys regularly
 - Use different keys for different environments
 - Never expose service role key in client-side code
+- Use environment variables with `VITE_` prefix for client-side keys
+- Validate API keys in measurement preferences service
 
 ### 2. Database Access
 - Use least privilege principle
@@ -308,6 +321,13 @@ ORDER BY created_at DESC;
    - Verify site URL configuration
    - Check SMTP settings
    - Validate redirect URLs
+   - Test measurement preferences access after authentication
+
+4. **Measurement Preferences Issues**
+   - Verify API endpoints are accessible
+   - Check user permissions for preference tables
+   - Validate preset data is loaded correctly
+   - Test modal self-contained preference loading
 
 ### Emergency Procedures
 
@@ -335,16 +355,24 @@ ORDER BY created_at DESC;
    - Query response times
    - Connection pool usage
    - Table sizes and growth
+   - Measurement preferences query performance
 
 2. **API Usage**
    - Request volumes
    - Error rates
    - Response times
+   - Measurement preferences API endpoint usage
 
 3. **Storage Usage**
    - File upload volumes
    - Storage costs
    - CDN hit rates
+
+4. **Feature Usage**
+   - Most used measurement presets
+   - Custom preference configurations
+   - Modal opening frequency
+   - Preference update patterns
 
 ### Alerting Setup
 
@@ -354,6 +382,9 @@ Configure alerts for:
 - Storage usage (>80%)
 - API error rates (>5%)
 - Failed authentication attempts
+- Measurement preferences API failures
+- Modal loading timeout errors
+- Preset application failures
 
 ## 🔄 Deployment Pipeline
 
@@ -364,6 +395,10 @@ Configure alerts for:
 3. **Performance testing with production data volumes**
 4. **Security testing and penetration testing**
 5. **Compliance verification**
+6. **Measurement preferences system testing**
+7. **Modal integration testing**
+8. **API endpoint validation**
+8. **API endpoint validation**
 
 ### Migration Strategy
 
@@ -377,5 +412,58 @@ supabase db reset --linked
 # Apply to production (coordinate with team)
 # Execute via Supabase dashboard during maintenance window
 ```
+
+## 🧪 Testing the Updated Architecture
+
+### Measurement Preferences Testing
+
+1. **API Endpoint Testing**
+   ```bash
+   # Test measurement preferences endpoints
+   curl -X GET "https://your-project-ref.supabase.co/rest/v1/patients/123/measurement-preferences" \
+     -H "apikey: your-anon-key" \
+     -H "Authorization: Bearer user-jwt-token"
+   ```
+
+2. **Modal Integration Testing**
+   - Test VitalSignsModal preference loading
+   - Verify PhysicalMeasurementsModal conditional rendering
+   - Check SubjectiveMeasurementsModal preference filtering
+   - Validate category-level disable functionality
+
+3. **Preset Application Testing**
+   - Test all medical scenario presets
+   - Verify custom configuration saves correctly
+   - Check real-time preference updates
+   - Validate user-specific settings per patient
+
+### Performance Testing
+
+```sql
+-- Test measurement preferences query performance
+EXPLAIN ANALYZE 
+SELECT * FROM api.measurement_preferences 
+WHERE patient_id = $1 AND user_id = $2;
+
+-- Check preset loading performance
+EXPLAIN ANALYZE 
+SELECT * FROM api.measurement_presets 
+ORDER BY sort_order;
+```
+
+### Security Testing
+
+1. **Row Level Security Verification**
+   ```sql
+   -- Verify users can only access their own preferences
+   SELECT * FROM api.measurement_preferences 
+   WHERE user_id != current_user_id();
+   -- Should return no results
+   ```
+
+2. **API Authorization Testing**
+   - Test preferences access without authentication
+   - Verify service role key is not exposed
+   - Check CORS settings for measurement endpoints
 
 This production setup ensures your MedTrack application is secure, performant, and compliant with medical data requirements! 🏥 

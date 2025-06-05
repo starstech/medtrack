@@ -14,7 +14,8 @@ import {
   Alert,
   Slider,
   Card,
-  Rate
+  Rate,
+  Spin
 } from 'antd'
 import { 
   BulbOutlined,
@@ -26,6 +27,7 @@ import {
 } from '@ant-design/icons'
 import { usePatients } from '../../../hooks/usePatients'
 import { MeasurementImageUpload } from '../../common/FileUpload'
+import { measurementPreferencesService } from '../../../services/measurementPreferencesService'
 import dayjs from 'dayjs'
 import './SubjectiveMeasurementsModal.css'
 
@@ -36,15 +38,61 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
   const [form] = Form.useForm()
   const { addMeasurement } = usePatients()
   const [loading, setLoading] = useState(false)
+  const [preferencesLoading, setPreferencesLoading] = useState(true)
+  const [availableMeasurements, setAvailableMeasurements] = useState({})
 
   useEffect(() => {
-    if (visible) {
+    if (visible && patient?.id) {
+      loadPreferences()
       form.setFieldsValue({
         recordedAt: dayjs(),
         recordedBy: 'Current User'
       })
     }
-  }, [visible, form])
+  }, [visible, patient, form])
+
+  const loadPreferences = async () => {
+    try {
+      setPreferencesLoading(true)
+      const result = await measurementPreferencesService.getMeasurementAvailability(patient.id)
+      
+      if (result.success) {
+        // Check if subjective measurements category is enabled
+        if (!result.data.categories.subjectiveMeasurements) {
+          // Category is disabled, close the modal
+          onClose()
+          message.warning('Subjective assessments are disabled in your preferences.')
+          return
+        }
+        
+        // Extract available subjective measurements
+        const subjectiveMeasurements = result.data.measurements.subjective || {}
+        setAvailableMeasurements(subjectiveMeasurements)
+      } else {
+        console.error('Failed to load preferences:', result.error)
+        // Default to all measurements enabled on error
+        setAvailableMeasurements({
+          pain_level: true,
+          mood: true,
+          energy_level: true,
+          sleep_quality: true,
+          appetite: true
+        })
+      }
+    } catch (error) {
+      console.error('Error loading measurement preferences:', error)
+      // Default to all measurements enabled on error
+      setAvailableMeasurements({
+        pain_level: true,
+        mood: true,
+        energy_level: true,
+        sleep_quality: true,
+        appetite: true
+      })
+    } finally {
+      setPreferencesLoading(false)
+    }
+  }
 
   const handleSubmit = async (values) => {
     setLoading(true)
@@ -272,66 +320,70 @@ const SubjectiveMeasurementsModal = ({ visible, onClose, patient }) => {
             <BulbOutlined /> Subjective Assessments
           </Title>
 
-          {/* Pain Level */}
-          <Card style={{ marginBottom: 16 }}>
-            <Row align="top" gutter={[16, 16]}>
-              <Col span={24}>
-                <Space>
-                  <AlertOutlined style={{ color: '#ff4d4f' }} />
-                  <Text strong>Pain Level Assessment</Text>
-                </Space>
-              </Col>
-              
-              <Col span={24}>
-                <Form.Item
-                  name="painLevel"
-                  label="Pain Level (0-10 scale)"
-                  rules={[{ type: 'number', min: 0, max: 10, message: 'Pain level must be between 0 and 10' }]}
-                >
-                  <Slider
-                    min={0}
-                    max={10}
-                    marks={{
-                      0: '0 - No Pain',
-                      2: '2',
-                      4: '4',
-                      6: '6 - Moderate',
-                      8: '8',
-                      10: '10 - Severe'
-                    }}
-                    step={1}
-                    tipFormatter={(value) => `${value} - ${getPainLevelDescription(value)}`}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+          {/* Pain Level - only show if enabled */}
+          {(availableMeasurements.pain_level !== false) && (
+            <Card style={{ marginBottom: 16 }}>
+              <Row align="top" gutter={[16, 16]}>
+                <Col span={24}>
+                  <Space>
+                    <AlertOutlined style={{ color: '#ff4d4f' }} />
+                    <Text strong>Pain Level Assessment</Text>
+                  </Space>
+                </Col>
+                
+                <Col span={24}>
+                  <Form.Item
+                    name="painLevel"
+                    label="Pain Level (0-10 scale)"
+                    rules={[{ type: 'number', min: 0, max: 10, message: 'Pain level must be between 0 and 10' }]}
+                  >
+                    <Slider
+                      min={0}
+                      max={10}
+                      marks={{
+                        0: '0 - No Pain',
+                        2: '2',
+                        4: '4',
+                        6: '6 - Moderate',
+                        8: '8',
+                        10: '10 - Severe'
+                      }}
+                      step={1}
+                      tipFormatter={(value) => `${value} - ${getPainLevelDescription(value)}`}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
 
-          {/* Mood Rating */}
-          <Card style={{ marginBottom: 16 }}>
-            <Row align="top" gutter={[16, 16]}>
-              <Col span={24}>
-                <Space>
-                  <SmileOutlined style={{ color: '#52c41a' }} />
-                  <Text strong>Mood Rating</Text>
-                </Space>
-              </Col>
-              
-              <Col span={24}>
-                <Form.Item
-                  name="moodRating"
-                  label="Overall Mood (1-5 stars)"
-                  rules={[{ type: 'number', min: 1, max: 5, message: 'Mood rating must be between 1 and 5' }]}
-                >
-                  <Rate 
-                    character={<SmileOutlined />}
-                    style={{ fontSize: 32 }}
-                    tooltips={['Very Poor', 'Poor', 'Average', 'Good', 'Excellent']}
-                  />
-                </Form.Item>
-              </Col>
-            </Row>
-          </Card>
+          {/* Mood Rating - only show if enabled */}
+          {(availableMeasurements.mood !== false) && (
+            <Card style={{ marginBottom: 16 }}>
+              <Row align="top" gutter={[16, 16]}>
+                <Col span={24}>
+                  <Space>
+                    <SmileOutlined style={{ color: '#52c41a' }} />
+                    <Text strong>Mood Rating</Text>
+                  </Space>
+                </Col>
+                
+                <Col span={24}>
+                  <Form.Item
+                    name="moodRating"
+                    label="Overall Mood (1-5 stars)"
+                    rules={[{ type: 'number', min: 1, max: 5, message: 'Mood rating must be between 1 and 5' }]}
+                  >
+                    <Rate 
+                      character={<SmileOutlined />}
+                      style={{ fontSize: 32 }}
+                      tooltips={['Very Poor', 'Poor', 'Average', 'Good', 'Excellent']}
+                    />
+                  </Form.Item>
+                </Col>
+              </Row>
+            </Card>
+          )}
 
           {/* Assessment Photo */}
           <Form.Item

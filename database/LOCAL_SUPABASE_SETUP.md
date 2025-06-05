@@ -8,6 +8,8 @@ Think of this like setting up a mini version of your website on your own compute
 - Test everything safely before going live
 - Make changes without breaking anything
 - Work without an internet connection
+- Test the measurement preferences system locally
+- Verify API integrations with mock data
 
 ## 📋 Step 1: Check What You Have
 
@@ -174,13 +176,17 @@ Now we need to tell your React app to use the local database instead of the onli
 
 ```env
 # Local Supabase Configuration
-NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-from-step-4
+VITE_SUPABASE_URL=http://localhost:54321
+VITE_SUPABASE_ANON_KEY=your-anon-key-from-step-4
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-from-step-4
 
 # Local development flag
 NODE_ENV=development
-NEXT_PUBLIC_ENVIRONMENT=local
+VITE_ENVIRONMENT=local
+
+# API Configuration
+VITE_API_BASE_URL=http://localhost:54321/rest/v1
+VITE_ENABLE_MOCK_DATA=true
 ```
 
 3. Replace `your-anon-key-from-step-4` with the actual anon key from step 4
@@ -227,7 +233,16 @@ pnpm dev
 1. **Register a new account** in your app
 2. **Check the email verification** flow
 3. **Add a patient** and see it appear in the database
-4. **Go to Supabase Studio** (`http://localhost:54323`) and see your data
+4. **Test measurement preferences:**
+   - Go to Profile → Measurement Settings
+   - Try different medical scenario presets
+   - Customize individual measurements
+   - Test measurement entry modals
+5. **Verify API integration:**
+   - Check network tab for API calls
+   - Confirm measurement preferences are saved
+   - Test real-time preference updates
+6. **Go to Supabase Studio** (`http://localhost:54323`) and see your data
 
 ## 🛠️ Daily Development Workflow
 
@@ -254,6 +269,9 @@ supabase migration new my_new_feature
 
 # Edit the file, then apply changes
 supabase db reset
+
+# For measurement preferences changes
+supabase migration new update_measurement_preferences
 ```
 
 ## 🆘 When Things Go Wrong
@@ -280,9 +298,11 @@ sudo supabase start
 3. Wait a full 2-3 minutes for everything to start
 
 ### App shows errors
-1. Check your `.env.local` file has the right keys
+1. Check your `.env.local` file has the right keys (use `VITE_` prefix)
 2. Make sure both the database AND app are running
 3. Try refreshing your browser
+4. Check browser console for specific error messages
+5. Verify measurement preferences service is working
 
 ## 🎓 What You've Learned
 
@@ -290,6 +310,9 @@ sudo supabase start
 - ✅ Connected your app to a local database
 - ✅ Used professional development tools
 - ✅ Can test changes safely before going live
+- ✅ Configured measurement preferences system
+- ✅ Set up REST API integration with mock data
+- ✅ Tested self-contained modal architecture
 
 ## 🚀 Next Steps
 
