@@ -1,8 +1,24 @@
 import { createClient } from '@supabase/supabase-js'
 
-// Replace these with your actual Supabase project credentials
-const supabaseUrl = process.env.REACT_APP_SUPABASE_URL || 'https://your-project-id.supabase.co'
-const supabaseAnonKey = process.env.REACT_APP_SUPABASE_ANON_KEY || 'your-anon-public-key'
+// Support both REACT_APP_ and VITE_ environment variable formats
+const supabaseUrl = 
+  import.meta.env.VITE_SUPABASE_URL || 
+  process.env.REACT_APP_SUPABASE_URL || 
+  'https://your-project-id.supabase.co'
+
+const supabaseAnonKey = 
+  import.meta.env.VITE_SUPABASE_ANON_KEY || 
+  process.env.REACT_APP_SUPABASE_ANON_KEY || 
+  'your-anon-public-key'
+
+// Log configuration in development
+if (import.meta.env.DEV) {
+  console.log('Supabase Configuration:', {
+    url: supabaseUrl,
+    hasAnonKey: !!supabaseAnonKey,
+    environment: import.meta.env.MODE
+  })
+}
 
 // Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
