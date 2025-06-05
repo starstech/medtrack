@@ -297,7 +297,7 @@ const AppLayout = ({ children }) => {
           </Space>
           <Space>
             <Dropdown
-              overlay={<NotificationPanel />}
+              popupRender={() => <NotificationPanel />}
               trigger={['click']}
               placement="bottomRight"
               arrow={{ pointAtCenter: true }}

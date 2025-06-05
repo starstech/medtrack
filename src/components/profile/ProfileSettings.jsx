@@ -426,7 +426,7 @@ const ProfileSettings = ({ user }) => {
             Change Password
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="password-modal"
       >
         <div className="modal-form">
@@ -509,7 +509,7 @@ const ProfileSettings = ({ user }) => {
             Delete Account
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="delete-account-modal"
         width={500}
       >

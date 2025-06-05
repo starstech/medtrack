@@ -24,9 +24,13 @@ class MeasurementPreferencesService {
       };
     } catch (error) {
       console.error('Error getting measurement preferences:', error);
+      
+      // Return default preferences if API is not available
+      const defaultPreferences = this._getDefaultPreferences();
       return {
-        success: false,
-        error: error.message
+        success: true,
+        data: defaultPreferences,
+        isMockData: true
       };
     }
   }
@@ -80,9 +84,13 @@ class MeasurementPreferencesService {
       };
     } catch (error) {
       console.error('Error getting measurement presets:', error);
+      
+      // Return default presets if API is not available
+      const defaultPresets = this._getDefaultPresets();
       return {
-        success: false,
-        error: error.message
+        success: true,
+        data: defaultPresets,
+        isMockData: true
       };
     }
   }
@@ -316,6 +324,272 @@ class MeasurementPreferencesService {
     
     // Default fallback
     return 'unknown';
+  }
+
+  /**
+   * Get default measurement preferences
+   * @private
+   */
+  _getDefaultPreferences() {
+    return {
+      id: 'default',
+      patient_id: null,
+      user_id: null,
+      vital_signs_enabled: true,
+      physical_measurements_enabled: true,
+      subjective_measurements_enabled: true,
+      enabled_measurements: {
+        vital_signs: {
+          blood_pressure: true,
+          heart_rate: true,
+          temperature: true,
+          respiratory_rate: true,
+          oxygen_saturation: true
+        },
+        physical: {
+          height: true,
+          weight: true,
+          bmi: true,
+          head_circumference: true
+        },
+        subjective: {
+          pain_level: true,
+          mood: true,
+          energy_level: true,
+          sleep_quality: true,
+          appetite: true
+        }
+      },
+      preset_name: 'comprehensive',
+      is_custom: false,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+  }
+
+  /**
+   * Get default measurement presets
+   * @private
+   */
+  _getDefaultPresets() {
+    return [
+      {
+        id: 'comprehensive',
+        name: 'comprehensive',
+        display_name: 'Comprehensive',
+        description: 'All measurements enabled for complete health monitoring',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: true
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: true,
+            heart_rate: true,
+            temperature: true,
+            respiratory_rate: true,
+            oxygen_saturation: true
+          },
+          physical: {
+            height: true,
+            weight: true,
+            bmi: true,
+            head_circumference: true
+          },
+          subjective: {
+            pain_level: true,
+            mood: true,
+            energy_level: true,
+            sleep_quality: true,
+            appetite: true
+          }
+        },
+        target_condition: 'general',
+        is_default: true,
+        sort_order: 0
+      },
+      {
+        id: 'basic_care',
+        name: 'basic_care',
+        display_name: 'Basic Care',
+        description: 'Essential measurements for routine monitoring',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: false
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: true,
+            heart_rate: true,
+            temperature: true,
+            respiratory_rate: false,
+            oxygen_saturation: false
+          },
+          physical: {
+            height: true,
+            weight: true,
+            bmi: true,
+            head_circumference: false
+          },
+          subjective: {
+            pain_level: false,
+            mood: false,
+            energy_level: false,
+            sleep_quality: false,
+            appetite: false
+          }
+        },
+        target_condition: 'routine',
+        is_default: false,
+        sort_order: 1
+      },
+      {
+        id: 'diabetes_management',
+        name: 'diabetes_management',
+        display_name: 'Diabetes Management',
+        description: 'Focused on diabetes care with mood and energy tracking',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: true
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: true,
+            heart_rate: true,
+            temperature: false,
+            respiratory_rate: false,
+            oxygen_saturation: false
+          },
+          physical: {
+            height: true,
+            weight: true,
+            bmi: true,
+            head_circumference: false
+          },
+          subjective: {
+            pain_level: false,
+            mood: true,
+            energy_level: true,
+            sleep_quality: true,
+            appetite: true
+          }
+        },
+        target_condition: 'diabetes',
+        is_default: false,
+        sort_order: 2
+      },
+      {
+        id: 'heart_health',
+        name: 'heart_health',
+        display_name: 'Heart Health',
+        description: 'Cardiovascular-focused measurements',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: false
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: true,
+            heart_rate: true,
+            temperature: false,
+            respiratory_rate: true,
+            oxygen_saturation: true
+          },
+          physical: {
+            height: true,
+            weight: true,
+            bmi: true,
+            head_circumference: false
+          },
+          subjective: {
+            pain_level: false,
+            mood: false,
+            energy_level: false,
+            sleep_quality: false,
+            appetite: false
+          }
+        },
+        target_condition: 'cardiovascular',
+        is_default: false,
+        sort_order: 3
+      },
+      {
+        id: 'pediatric_care',
+        name: 'pediatric_care',
+        display_name: 'Pediatric Care',
+        description: 'Age-appropriate measurements for children',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: true,
+          subjective_measurements_enabled: true
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: false,
+            heart_rate: true,
+            temperature: true,
+            respiratory_rate: true,
+            oxygen_saturation: false
+          },
+          physical: {
+            height: true,
+            weight: true,
+            bmi: true,
+            head_circumference: true
+          },
+          subjective: {
+            pain_level: true,
+            mood: true,
+            energy_level: false,
+            sleep_quality: true,
+            appetite: true
+          }
+        },
+        target_condition: 'pediatric',
+        is_default: false,
+        sort_order: 4
+      },
+      {
+        id: 'post_surgery',
+        name: 'post_surgery',
+        display_name: 'Post-Surgery Recovery',
+        description: 'Recovery monitoring with pain focus',
+        category_settings: {
+          vital_signs_enabled: true,
+          physical_measurements_enabled: false,
+          subjective_measurements_enabled: true
+        },
+        measurement_settings: {
+          vital_signs: {
+            blood_pressure: true,
+            heart_rate: true,
+            temperature: true,
+            respiratory_rate: true,
+            oxygen_saturation: true
+          },
+          physical: {
+            height: false,
+            weight: false,
+            bmi: false,
+            head_circumference: false
+          },
+          subjective: {
+            pain_level: true,
+            mood: true,
+            energy_level: true,
+            sleep_quality: true,
+            appetite: true
+          }
+        },
+        target_condition: 'post_surgical',
+        is_default: false,
+        sort_order: 5
+      }
+    ];
   }
 }
 

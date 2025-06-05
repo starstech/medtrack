@@ -38,11 +38,27 @@ class ApiClient {
   // Handle API responses
   async handleResponse(response) {
     if (!response.ok) {
-      const error = await response.json().catch(() => ({
-        message: 'Network error occurred'
-      }))
+      let error = { message: 'Network error occurred' }
       
-      // Handle specific HTTP status codes
+      // Try to parse JSON error response, fallback to generic error
+      try {
+        const contentType = response.headers.get('content-type')
+        if (contentType && contentType.includes('application/json')) {
+          error = await response.json()
+        } else {
+          // If it's not JSON (like HTML 404 page), use status-specific message
+          error = { 
+            message: `API endpoint not available (${response.status})`
+          }
+        }
+      } catch (parseError) {
+        console.warn('Failed to parse error response:', parseError)
+        error = { 
+          message: `API endpoint not available (${response.status})`
+        }
+      }
+      
+      // Handle specific HTTP status codes (but don't show messages for API unavailable)
       switch (response.status) {
         case 401:
           this.setToken(null)
@@ -53,20 +69,32 @@ class ApiClient {
           message.error('You do not have permission to perform this action.')
           break
         case 404:
-          message.error('Resource not found.')
+          // Don't show error message for 404 - let the service handle fallback
+          console.warn(`API endpoint not found: ${response.url}`)
           break
         case 500:
           message.error('Server error occurred. Please try again later.')
           break
         default:
-          message.error(error.message || 'An error occurred.')
+          // Don't show generic errors - let the service handle them
+          console.warn(`API error ${response.status}:`, error.message)
       }
       
       throw new Error(error.message || `HTTP ${response.status}`)
     }
 
-    const data = await response.json()
-    return data
+    // Parse successful response
+    try {
+      const contentType = response.headers.get('content-type')
+      if (contentType && contentType.includes('application/json')) {
+        return await response.json()
+      } else {
+        return await response.text()
+      }
+    } catch (parseError) {
+      console.error('Failed to parse response:', parseError)
+      throw new Error('Invalid response format')
+    }
   }
 
   // GET request

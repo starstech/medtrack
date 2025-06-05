@@ -11,7 +11,7 @@ import {
   Spin, 
   Row, 
   Col,
-  message,
+  App,
   Modal,
   Tooltip
 } from 'antd';
@@ -35,6 +35,7 @@ const { confirm } = Modal;
 
 const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
   const { user } = useAuthContext();
+  const { message } = App.useApp();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [preferences, setPreferences] = useState(null);
@@ -67,12 +68,14 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
       }
       
       if (presetsResult.success) {
-        setPresets(presetsResult.data);
+        setPresets(Array.isArray(presetsResult.data) ? presetsResult.data : []);
       } else {
+        setPresets([]);
         message.error('Failed to load measurement presets');
       }
     } catch (error) {
       console.error('Error loading data:', error);
+      setPresets([]); // Ensure presets is always an array
       message.error('Failed to load measurement settings');
     } finally {
       setLoading(false);
@@ -265,6 +268,7 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
   };
 
   const getPresetDescription = (presetName) => {
+    if (!Array.isArray(presets) || !presetName) return '';
     const preset = presets.find(p => p.name === presetName);
     return preset?.description || '';
   };
@@ -313,19 +317,37 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
   };
 
   return (
-    <div className="measurement-preferences">
-      <div className="preferences-header">
-        <Title level={3}>
-          <SettingOutlined /> Measurement Settings
-        </Title>
-        <Paragraph type="secondary">
-          Customize which measurements are available for tracking. You can use medical scenario presets 
-          or create your own custom configuration.
-        </Paragraph>
-      </div>
+    <App>
+      <div className="measurement-preferences">
+        {/* Header */}
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <SettingOutlined />
+                <span>Measurement Settings</span>
+              </Space>
+            </div>
+          </div>
+          <div className="settings-content">
+            <Paragraph type="secondary">
+              Customize which measurements are available for tracking. You can use medical scenario presets 
+              or create your own custom configuration.
+            </Paragraph>
+          </div>
+        </div>
 
-      {/* Preset Selection */}
-      <Card title="Medical Scenario Presets" className="preset-card">
+        {/* Preset Selection */}
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <MedicineBoxOutlined />
+                <span>Medical Scenario Presets</span>
+              </Space>
+            </div>
+          </div>
+          <div className="settings-content">
         <Space direction="vertical" size="middle" style={{ width: '100%' }}>
           <div>
             <Text strong>Choose a preset based on your medical needs:</Text>
@@ -341,7 +363,7 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             placeholder="Select a medical scenario preset"
             loading={saving}
           >
-            {presets.map(preset => (
+            {Array.isArray(presets) ? presets.map(preset => (
               <Option key={preset.name} value={preset.name}>
                 <Space>
                   <Text strong>{preset.display_name}</Text>
@@ -351,7 +373,7 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
                   {preset.description}
                 </div>
               </Option>
-            ))}
+            )) : null}
             <Option value="custom">
               <Space>
                 <Text strong>Custom Configuration</Text>
@@ -363,17 +385,26 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             </Option>
           </Select>
         </Space>
-      </Card>
+          </div>
+        </div>
 
-      <Divider />
+        <Divider />
 
-      {/* Custom Configuration */}
-      <div className="measurement-sections">
-        <Title level={4}>Available Measurements</Title>
+        {/* Custom Configuration */}
+        <div className="settings-group">
+          <div className="settings-group-header">
+            <div className="group-title">
+              <Space>
+                <HeartOutlined />
+                <span>Available Measurements</span>
+              </Space>
+            </div>
+          </div>
+          <div className="settings-content">
         {!isCustomMode && selectedPreset !== 'custom' && (
           <Alert
             message="Using Preset Configuration"
-            description={`Currently using "${presets.find(p => p.name === selectedPreset)?.display_name}" preset. Make any changes below to switch to custom mode.`}
+            description={`Currently using "${Array.isArray(presets) ? presets.find(p => p.name === selectedPreset)?.display_name || selectedPreset : selectedPreset}" preset. Make any changes below to switch to custom mode.`}
             type="info"
             showIcon
             style={{ marginBottom: 16 }}
@@ -402,10 +433,12 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             measurementTypes.subjective
           )}
         </Space>
-      </div>
+          </div>
+        </div>
 
-      {/* Action Buttons */}
-      <div className="preferences-actions">
+        {/* Action Buttons */}
+        <div className="settings-group">
+          <div className="settings-content">
         <Space>
           <Button
             type="primary"
@@ -431,24 +464,29 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
             </Text>
           )}
         </Space>
-      </div>
-
-      {/* Information Alert */}
-      <Alert
-        message="Important Information"
-        description={
-          <div>
-            <p>• Disabled measurements will be hidden from all measurement entry forms</p>
-            <p>• Historical data for disabled measurements is preserved and can be re-enabled</p>
-            <p>• Changes affect only your view - other caregivers have independent settings</p>
-            <p>• Some preset combinations may be recommended by healthcare providers</p>
           </div>
-        }
-        type="info"
-        showIcon
-        style={{ marginTop: 24 }}
-      />
-    </div>
+        </div>
+
+        {/* Information Alert */}
+        <div className="settings-group">
+          <div className="settings-content">
+            <Alert
+              message="Important Information"
+              description={
+                <div>
+                  <p>• Disabled measurements will be hidden from all measurement entry forms</p>
+                  <p>• Historical data for disabled measurements is preserved and can be re-enabled</p>
+                  <p>• Changes affect only your view - other caregivers have independent settings</p>
+                  <p>• Some preset combinations may be recommended by healthcare providers</p>
+                </div>
+              }
+              type="info"
+              showIcon
+            />
+          </div>
+        </div>
+      </div>
+    </App>
   );
 };
 
