@@ -1,4 +1,5 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext()
 
@@ -47,53 +48,111 @@ const initialState = {
 export const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(authReducer, initialState)
 
-  // Simulate checking for existing session on app load
+  // Check for existing session on app load
   useEffect(() => {
-    const checkAuthStatus = () => {
-      // In real app, this would check localStorage/sessionStorage for token
-      // or make API call to verify existing session
-      const storedUser = localStorage.getItem('user')
-      
-      if (storedUser) {
-        try {
-          const user = JSON.parse(storedUser)
-          dispatch({ type: 'LOGIN_SUCCESS', payload: user })
-        } catch {
-          localStorage.removeItem('user')
+    const checkAuthStatus = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+          dispatch({ type: 'SET_LOADING', payload: false })
+          return
+        }
+
+        if (session?.user) {
+          // Get user profile from our profiles table
+          const { data: profile, error: profileError } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+
+          if (profileError) {
+            console.error('Error fetching profile:', profileError)
+            // User exists in auth but not in profiles table - this shouldn't happen
+            // but we'll handle it gracefully
+            dispatch({ type: 'LOGIN_SUCCESS', payload: {
+              id: session.user.id,
+              email: session.user.email,
+              name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+              role: 'caregiver'
+            }})
+          } else {
+            dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+          }
+        } else {
           dispatch({ type: 'SET_LOADING', payload: false })
         }
-      } else {
+      } catch (error) {
+        console.error('Auth check failed:', error)
         dispatch({ type: 'SET_LOADING', payload: false })
       }
     }
 
-    // Simulate API call delay
-    setTimeout(checkAuthStatus, 1000)
+    checkAuthStatus()
+
+    // Listen for auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Get user profile
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single()
+
+          if (!error && profile) {
+            dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+          }
+        } else if (event === 'SIGNED_OUT') {
+          dispatch({ type: 'LOGOUT' })
+        }
+      }
+    )
+
+    return () => subscription.unsubscribe()
   }, [])
 
   const login = async (email, password) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
-      // Mock login - in real app this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      // Mock user data
-      const mockUser = {
-        id: '1',
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
-        name: email.split('@')[0],
-        role: 'caregiver',
-        joinedAt: new Date().toISOString()
-      }
+        password
+      })
       
-      localStorage.setItem('user', JSON.stringify(mockUser))
-      dispatch({ type: 'LOGIN_SUCCESS', payload: mockUser })
+      if (error) {
+        dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+        return { success: false, error: error.message }
+      }
+
+      // Get user profile
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', data.user.id)
+        .single()
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+        // Fallback to basic user data
+        dispatch({ type: 'LOGIN_SUCCESS', payload: {
+          id: data.user.id,
+          email: data.user.email,
+          name: data.user.user_metadata?.name || data.user.email.split('@')[0],
+          role: 'caregiver'
+        }})
+      } else {
+        dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+      }
       
       return { success: true }
     } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR', payload: 'Invalid email or password' })
-      return { success: false, error: 'Invalid email or password' }
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+      return { success: false, error: error.message }
     }
   }
 
@@ -101,23 +160,38 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
-      // Mock registration - in real app this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            name: name
+          }
+        }
+      })
       
-      // In real implementation, this would create user account and send verification email
-      // For now, we'll simulate the email verification flow
-      
+      if (error) {
+        dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+        return { success: false, error: error.message }
+      }
+
       dispatch({ type: 'SET_LOADING', payload: false })
       
-      return { 
-        success: true, 
-        requiresVerification: true,
-        email: email,
-        message: 'Registration successful. Please check your email to verify your account.'
+      // Check if email confirmation is required
+      if (data.user && !data.session) {
+        return { 
+          success: true, 
+          requiresVerification: true,
+          email: email,
+          message: 'Registration successful. Please check your email to verify your account.'
+        }
+      } else {
+        // Auto-login if no email confirmation required (local dev)
+        return { success: true, requiresVerification: false }
       }
     } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR', payload: 'Registration failed' })
-      return { success: false, error: 'Registration failed' }
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+      return { success: false, error: error.message }
     }
   }
 
@@ -125,43 +199,62 @@ export const AuthProvider = ({ children }) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
-      // Mock email verification - in real app this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { data, error } = await supabase.auth.verifyOtp({
+        token_hash: token,
+        type: 'signup'
+      })
       
-      // Simulate successful verification
-      const mockUser = {
-        id: Date.now().toString(),
-        email: 'user@example.com', // In real app, get from token
-        name: 'User Name', // In real app, get from token 
-        role: 'caregiver',
-        joinedAt: new Date().toISOString(),
-        emailVerified: true
+      if (error) {
+        dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+        return { success: false, error: error.message }
       }
-      
-      localStorage.setItem('user', JSON.stringify(mockUser))
-      dispatch({ type: 'LOGIN_SUCCESS', payload: mockUser })
+
+      // Get user profile after verification
+      if (data.user) {
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single()
+
+        if (!profileError && profile) {
+          dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+        }
+      }
       
       return { success: true }
     } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR', payload: 'Email verification failed' })
-      return { success: false, error: 'Email verification failed' }
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message })
+      return { success: false, error: error.message }
     }
   }
 
   const resendVerificationEmail = async (email) => {
     try {
-      // Mock resend verification - in real app this would be an API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const { error } = await supabase.auth.resend({
+        type: 'signup',
+        email: email
+      })
+      
+      if (error) {
+        return { success: false, error: error.message }
+      }
       
       return { success: true, message: 'Verification email sent successfully' }
     } catch (error) {
-      return { success: false, error: 'Failed to send verification email' }
+      return { success: false, error: error.message }
     }
   }
 
-  const logout = () => {
-    localStorage.removeItem('user')
-    dispatch({ type: 'LOGOUT' })
+  const logout = async () => {
+    try {
+      await supabase.auth.signOut()
+      dispatch({ type: 'LOGOUT' })
+    } catch (error) {
+      console.error('Logout error:', error)
+      // Force logout even if API call fails
+      dispatch({ type: 'LOGOUT' })
+    }
   }
 
   const clearError = () => {

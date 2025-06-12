@@ -1,89 +1,214 @@
 // Authentication service
-import apiClient, { setAuthToken, clearAuthToken } from './api'
+import { supabase } from '../lib/supabase'
 
 export const authService = {
-  // Register new user
-  async register(userData) {
-    const response = await apiClient.post('/auth/register', userData)
-    if (response.token) {
-      setAuthToken(response.token)
-    }
-    return response
-  },
-
-  // Login user
-  async login(credentials) {
-    const response = await apiClient.post('/auth/login', credentials)
-    if (response.token) {
-      setAuthToken(response.token)
-    }
-    return response
-  },
-
-  // Logout user
-  async logout() {
+  // Sign up with email and password
+  async signUp(email, password, userData = {}) {
     try {
-      await apiClient.post('/auth/logout')
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: userData.fullName || userData.name,
+            phone: userData.phone,
+            date_of_birth: userData.dateOfBirth,
+            emergency_contact: userData.emergencyContact
+          }
+        }
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        data: {
+          user: data.user,
+          session: data.session
+        },
+        message: data.user?.email_confirmed_at 
+          ? 'Account created successfully!' 
+          : 'Please check your email to confirm your account.'
+      }
     } catch (error) {
-      // Continue with logout even if API call fails
-      console.warn('Logout API call failed:', error)
-    } finally {
-      clearAuthToken()
+      console.error('Sign up error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
     }
   },
 
-  // Refresh authentication token
-  async refreshToken() {
-    const response = await apiClient.post('/auth/refresh')
-    if (response.token) {
-      setAuthToken(response.token)
+  // Sign in with email and password
+  async signIn(email, password) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        data: {
+          user: data.user,
+          session: data.session
+        }
+      }
+    } catch (error) {
+      console.error('Sign in error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
     }
-    return response
   },
 
-  // Get current user profile
-  async getProfile() {
-    return apiClient.get('/auth/profile')
+  // Sign out
+  async signOut() {
+    try {
+      const { error } = await supabase.auth.signOut()
+      if (error) throw error
+
+      return {
+        success: true
+      }
+    } catch (error) {
+      console.error('Sign out error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  // Get current user
+  async getCurrentUser() {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser()
+      if (error) throw error
+
+      return {
+        success: true,
+        data: user
+      }
+    } catch (error) {
+      console.error('Get current user error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  // Get current session
+  async getCurrentSession() {
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession()
+      if (error) throw error
+
+      return {
+        success: true,
+        data: session
+      }
+    } catch (error) {
+      console.error('Get current session error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  // Reset password
+  async resetPassword(email) {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        message: 'Password reset email sent. Please check your inbox.'
+      }
+    } catch (error) {
+      console.error('Reset password error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
+  },
+
+  // Update password
+  async updatePassword(newPassword) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: newPassword
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        message: 'Password updated successfully'
+      }
+    } catch (error) {
+      console.error('Update password error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
   },
 
   // Update user profile
-  async updateProfile(profileData) {
-    return apiClient.put('/auth/profile', profileData)
+  async updateProfile(updates) {
+    try {
+      const { error } = await supabase.auth.updateUser({
+        data: updates
+      })
+
+      if (error) throw error
+
+      return {
+        success: true,
+        message: 'Profile updated successfully'
+      }
+    } catch (error) {
+      console.error('Update profile error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
   },
 
-  // Upload user avatar
-  async uploadAvatar(file) {
-    return apiClient.uploadFile('/users/upload-avatar', file)
+  // Listen to auth state changes
+  onAuthStateChange(callback) {
+    return supabase.auth.onAuthStateChange(callback)
   },
 
-  // Change password
-  async changePassword(passwordData) {
-    return apiClient.put('/auth/change-password', passwordData)
-  },
+  // Refresh session
+  async refreshSession() {
+    try {
+      const { data, error } = await supabase.auth.refreshSession()
+      if (error) throw error
 
-  // Request password reset
-  async requestPasswordReset(email) {
-    return apiClient.post('/auth/request-password-reset', { email })
-  },
-
-  // Reset password with token
-  async resetPassword(resetData) {
-    return apiClient.post('/auth/reset-password', resetData)
-  },
-
-  // Verify email
-  async verifyEmail(token) {
-    return apiClient.post('/auth/verify-email', { token })
-  },
-
-  // Check if user is authenticated
-  isAuthenticated() {
-    return !!localStorage.getItem('auth_token')
-  },
-
-  // Get stored auth token
-  getToken() {
-    return localStorage.getItem('auth_token')
+      return {
+        success: true,
+        data: data.session
+      }
+    } catch (error) {
+      console.error('Refresh session error:', error)
+      return {
+        success: false,
+        error: error.message
+      }
+    }
   }
 }
 

@@ -1,30 +1,125 @@
 // Patient service
-import apiClient from './api'
+import { supabase } from '../lib/supabase'
 
 export const patientService = {
-  // Get all patients for current user
+  // Get all patients for the current user
   async getPatients() {
-    return apiClient.get('/patients')
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select(`
+          *,
+          patient_caregivers!inner(
+            role,
+            is_active
+          )
+        `)
+        .eq('patient_caregivers.is_active', true)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching patients:', error)
+      return { data: null, error: error.message }
+    }
   },
 
-  // Get patient by ID
+  // Get a specific patient by ID
   async getPatient(patientId) {
-    return apiClient.get(`/patients/${patientId}`)
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .select(`
+          *,
+          patient_caregivers!inner(
+            role,
+            is_active,
+            caregiver:profiles(name, email)
+          )
+        `)
+        .eq('id', patientId)
+        .eq('patient_caregivers.is_active', true)
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching patient:', error)
+      return { data: null, error: error.message }
+    }
   },
 
-  // Create new patient
+  // Create a new patient
   async createPatient(patientData) {
-    return apiClient.post('/patients', patientData)
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      // Create patient
+      const { data: patient, error: patientError } = await supabase
+        .from('patients')
+        .insert({
+          ...patientData,
+          created_by: user.id
+        })
+        .select()
+        .single()
+
+      if (patientError) throw patientError
+
+      // Create caregiver relationship
+      const { error: caregiverError } = await supabase
+        .from('patient_caregivers')
+        .insert({
+          patient_id: patient.id,
+          caregiver_id: user.id,
+          role: 'primary',
+          accepted_at: new Date().toISOString(),
+          is_active: true
+        })
+
+      if (caregiverError) throw caregiverError
+
+      return { data: patient, error: null }
+    } catch (error) {
+      console.error('Error creating patient:', error)
+      return { data: null, error: error.message }
+    }
   },
 
-  // Update patient
+  // Update a patient
   async updatePatient(patientId, patientData) {
-    return apiClient.put(`/patients/${patientId}`, patientData)
+    try {
+      const { data, error } = await supabase
+        .from('patients')
+        .update(patientData)
+        .eq('id', patientId)
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating patient:', error)
+      return { data: null, error: error.message }
+    }
   },
 
-  // Delete patient
+  // Delete a patient
   async deletePatient(patientId) {
-    return apiClient.delete(`/patients/${patientId}`)
+    try {
+      const { error } = await supabase
+        .from('patients')
+        .delete()
+        .eq('id', patientId)
+
+      if (error) throw error
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error deleting patient:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Search patients
@@ -33,42 +128,42 @@ export const patientService = {
       query,
       ...filters
     }
-    return apiClient.get('/patients/search', params)
+    return supabase.from('patients').select('*').ilike('name', `%${query}%`)
   },
 
   // Get patient caregivers
   async getPatientCaregivers(patientId) {
-    return apiClient.get(`/patients/${patientId}/caregivers`)
+    return supabase.from('patient_caregivers').select('*').eq('patient_id', patientId)
   },
 
   // Add caregiver to patient
   async addCaregiver(patientId, caregiverData) {
-    return apiClient.post(`/patients/${patientId}/caregivers`, caregiverData)
+    return supabase.from('patient_caregivers').insert(caregiverData).eq('patient_id', patientId)
   },
 
   // Update caregiver role/permissions
   async updateCaregiver(patientId, caregiverId, caregiverData) {
-    return apiClient.put(`/patients/${patientId}/caregivers/${caregiverId}`, caregiverData)
+    return supabase.from('patient_caregivers').update(caregiverData).eq('patient_id', patientId).eq('id', caregiverId)
   },
 
   // Remove caregiver from patient
   async removeCaregiver(patientId, caregiverId) {
-    return apiClient.delete(`/patients/${patientId}/caregivers/${caregiverId}`)
+    return supabase.from('patient_caregivers').delete().eq('patient_id', patientId).eq('id', caregiverId)
   },
 
   // Get patient statistics
   async getPatientStats(patientId) {
-    return apiClient.get(`/patients/${patientId}/stats`)
+    return supabase.from('patients').select('*').eq('id', patientId).single()
   },
 
   // Get patient activity timeline
   async getPatientActivity(patientId, limit = 10) {
-    return apiClient.get(`/patients/${patientId}/activity`, { limit })
+    return supabase.from('patient_activities').select('*').eq('patient_id', patientId).order('created_at', { ascending: false }).limit(limit)
   },
 
   // Upload patient profile image
   async uploadProfileImage(patientId, file) {
-    return apiClient.uploadFile(`/patients/${patientId}/profile-image`, file)
+    return supabase.storage.from('patient_images').upload(`${patientId}/profile-image`, file)
   }
 }
 
