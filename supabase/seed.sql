@@ -1,21 +1,26 @@
 -- Sample Data for MedTrack Application
 -- Version: 03 - Sample Data for Testing
+-- DISABLED: This seed data requires real authenticated users
+-- Use the api.create_sample_data_for_user() function instead after user signup
 
 -- Set search path to use api schema
 SET search_path TO api, public;
+
+-- Seed data is disabled - uncomment below to enable after creating real users
 
 -- NOTE: This sample data assumes you have at least one user registered
 -- The user ID should be replaced with actual user IDs from auth.users table
 
 -- Sample patient data
 -- Using generated UUIDs for sample data
-INSERT INTO api.patients (id, name, date_of_birth, gender, medical_record_number, emergency_contact, created_by) VALUES
+/*
+-- INSERT INTO api.patients (id, name, date_of_birth, gender, medical_record_number, emergency_contact, created_by) VALUES
 (
   '11111111-1111-1111-1111-111111111111',
   'Emma Johnson',
   '2018-03-15',
   'female',
-  'MRN-001',
+  'MRN001',
   '{
     "name": "Sarah Johnson",
     "relationship": "Mother",
@@ -29,7 +34,7 @@ INSERT INTO api.patients (id, name, date_of_birth, gender, medical_record_number
   'Michael Chen',
   '2020-07-22',
   'male',
-  'MRN-002',
+  'MRN002',
   '{
     "name": "Lisa Chen",
     "relationship": "Mother",
@@ -38,7 +43,9 @@ INSERT INTO api.patients (id, name, date_of_birth, gender, medical_record_number
   }',
   '00000000-0000-0000-0000-000000000000'
 );
+*/
 
+/*
 -- Sample patient-caregiver relationships
 -- User becomes primary caregiver for their patients
 INSERT INTO api.patient_caregivers (patient_id, caregiver_id, role, accepted_at, is_active) VALUES
@@ -190,7 +197,7 @@ INSERT INTO api.notifications (id, user_id, type, title, message, data, read, cr
   NOW() + INTERVAL '4 hours'
 ),
 (
-  'notification-2-uuid',
+  '12345678-1234-1234-1234-123456789024',
   '00000000-0000-0000-0000-000000000000',
   'dose_marked',
   'Dose Recorded',
@@ -199,6 +206,7 @@ INSERT INTO api.notifications (id, user_id, type, title, message, data, read, cr
   true,
   NOW() - INTERVAL '9 hours'
 );
+*/
 
 -- Sample notification preferences (will be created automatically by trigger)
 -- This is just for reference - the trigger handles this automatically
