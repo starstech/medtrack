@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   List, 
   Button, 
@@ -15,7 +15,8 @@ import {
   Row,
   Col,
   Dropdown,
-  Divider
+  Divider,
+  Spin
 } from 'antd'
 import { 
   TeamOutlined,
@@ -31,12 +32,15 @@ import {
   CloseCircleOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
+import { caregiverService } from '../../services/caregiverService'
+import { useAuth } from '../../hooks/useAuth'
 import './CaregiverManagement.css'
 
 const { Title, Text } = Typography
 const { Option } = Select
 
 const CaregiverManagement = () => {
+  const { user } = useAuth()
   const { patients } = usePatients()
   const [inviteModalVisible, setInviteModalVisible] = useState(false)
   const [editRoleModalVisible, setEditRoleModalVisible] = useState(false)
@@ -49,67 +53,80 @@ const CaregiverManagement = () => {
   const [form] = Form.useForm()
   const [editForm] = Form.useForm()
   const [loading, setLoading] = useState(false)
+  const [dataLoading, setDataLoading] = useState(true)
 
-  // Mock caregiver invitations and connections
-  const [invitations, setInvitations] = useState([
-    {
-      id: 'inv1',
-      email: 'john.doe@example.com',
-      patientName: 'Emma Johnson',
-      role: 'secondary',
-      status: 'pending',
-      sentAt: '2024-06-01T10:00:00Z'
-    },
-    {
-      id: 'inv2',
-      email: 'nurse.smith@hospital.com',
-      patientName: 'Maria Garcia',
-      role: 'medical',
-      status: 'accepted',
-      sentAt: '2024-05-28T14:30:00Z'
-    }
-  ])
+  // Real data states
+  const [caregiverConnections, setCaregiverConnections] = useState([])
+  const [invitations, setInvitations] = useState([])
 
-  const [caregiverConnections, setCaregiverConnections] = useState([
-    {
-      id: 'cg1',
-      name: 'Dr. Sarah Wilson',
-      email: 'sarah.wilson@clinic.com',
-      role: 'medical',
-      patients: ['Emma Johnson', 'James Wilson'],
-      status: 'active',
-      joinedAt: '2024-01-15T08:00:00Z'
-    },
-    {
-      id: 'cg2',
-      name: 'Mike Johnson',
-      email: 'mike@example.com',
-      role: 'family',
-      patients: ['Emma Johnson'],
-      status: 'active',
-      joinedAt: '2024-02-20T12:00:00Z'
-    },
-    {
-      id: 'cg3',
-      name: 'Lisa Chen',
-      email: 'lisa.chen@nurse.com',
-      role: 'nurse',
-      patients: ['Maria Garcia'],
-      status: 'inactive',
-      joinedAt: '2024-03-10T16:00:00Z'
+  // Load caregiver data on component mount
+  useEffect(() => {
+    loadCaregiverData()
+  }, [user])
+
+  const loadCaregiverData = async () => {
+    if (!user) return
+    
+    setDataLoading(true)
+    try {
+      // Load caregiver connections
+      const { data: caregivers, error: caregiversError } = await caregiverService.getCaregivers()
+      if (caregiversError) {
+        console.error('Error loading caregivers:', caregiversError)
+        message.error('Failed to load caregiver connections')
+      } else {
+        // Transform the data to match our UI format
+        const transformedCaregivers = caregivers?.map(connection => ({
+          id: connection.id,
+          name: connection.caregiver?.name || 'Unknown User',
+          email: connection.caregiver?.email || 'Unknown Email',
+          role: connection.role || 'caregiver',
+          patients: [connection.patient?.name || 'Unknown Patient'],
+          status: connection.is_active ? 'active' : 'inactive',
+          joinedAt: connection.accepted_at || connection.invited_at,
+          caregiverId: connection.caregiver_id,
+          patientId: connection.patient_id,
+          permissions: connection.permissions || {}
+        })) || []
+        setCaregiverConnections(transformedCaregivers)
+      }
+
+      // Load pending invitations (placeholder since API is not implemented)
+      // TODO: Implement when invitation API is ready
+      try {
+        const { data: pendingInvites, error: invitesError } = await caregiverService.getPendingInvitations()
+        if (!invitesError && pendingInvites) {
+          setInvitations(pendingInvites)
+        }
+      } catch (error) {
+        // API not implemented yet, use empty array
+        console.log('Invitation API not implemented yet')
+        setInvitations([])
+      }
+
+    } catch (error) {
+      console.error('Error loading caregiver data:', error)
+      message.error('Failed to load caregiver data')
+    } finally {
+      setDataLoading(false)
     }
-  ])
+  }
 
   const handleSendInvite = async (values) => {
     setLoading(true)
     
     try {
-      // TODO: Implement invite API
+      // TODO: Implement invite API when backend is ready
+      console.log('Sending invitation:', values)
+      // For now, show success message
       await new Promise(resolve => setTimeout(resolve, 1000))
       
       message.success(`Invitation sent to ${values.email}!`)
       setInviteModalVisible(false)
       form.resetFields()
+      
+      // Reload data to show updated state
+      await loadCaregiverData()
       
     } catch (error) {
       message.error('Failed to send invitation. Please try again.')
@@ -129,19 +146,22 @@ const CaregiverManagement = () => {
 
   const handleSaveRoleChange = async (values) => {
     try {
-      // Update caregiver role
-      setCaregiverConnections(prev => 
-        prev.map(cg => 
-          cg.id === selectedCaregiver.id 
-            ? { ...cg, role: values.role }
-            : cg
-        )
-      )
+      // Update caregiver role using API
+      const { error } = await caregiverService.updateCaregiver(selectedCaregiver.id, {
+        role: values.role
+      })
+      
+      if (error) {
+        throw new Error(error)
+      }
       
       message.success(`${selectedCaregiver.name}'s role updated to ${values.role}!`)
       setEditRoleModalVisible(false)
       setSelectedCaregiver(null)
       editForm.resetFields()
+      
+      // Reload data to show updated state
+      await loadCaregiverData()
       
     } catch (error) {
       message.error('Failed to update role. Please try again.')
@@ -154,21 +174,33 @@ const CaregiverManagement = () => {
     setToggleStatusVisible(true)
   }
 
-  const confirmToggleStatus = () => {
-    const newStatus = selectedCaregiver.status === 'active' ? 'inactive' : 'active'
-    const action = newStatus === 'active' ? 'activated' : 'deactivated'
-    
-    setCaregiverConnections(prev => 
-      prev.map(cg => 
-        cg.id === selectedCaregiver.id 
-          ? { ...cg, status: newStatus }
-          : cg
-      )
-    )
-    
-    message.success(`${selectedCaregiver.name} has been ${action} successfully!`)
-    setToggleStatusVisible(false)
-    setSelectedCaregiver(null)
+  const confirmToggleStatus = async () => {
+    try {
+      const newStatus = selectedCaregiver.status === 'active' ? 'inactive' : 'active'
+      const action = newStatus === 'active' ? 'activated' : 'deactivated'
+      
+      // Update caregiver status using API
+      const { error } = await caregiverService.updateCaregiver(selectedCaregiver.id, {
+        is_active: newStatus === 'active'
+      })
+      
+      if (error) {
+        throw new Error(error)
+      }
+      
+      message.success(`${selectedCaregiver.name} has been ${action} successfully!`)
+      setToggleStatusVisible(false)
+      setSelectedCaregiver(null)
+      
+      // Reload data to show updated state
+      await loadCaregiverData()
+      
+    } catch (error) {
+      message.error('Failed to update caregiver status. Please try again.')
+      console.error('Error updating status:', error)
+      setToggleStatusVisible(false)
+      setSelectedCaregiver(null)
+    }
   }
 
   const handleRemoveCaregiver = (caregiver) => {
@@ -176,11 +208,28 @@ const CaregiverManagement = () => {
     setRemoveConfirmVisible(true)
   }
 
-  const confirmRemoveCaregiver = () => {
-    setCaregiverConnections(prev => prev.filter(cg => cg.id !== selectedCaregiver.id))
-    message.success(`${selectedCaregiver.name} has been removed from your caregiver network.`)
-    setRemoveConfirmVisible(false)
-    setSelectedCaregiver(null)
+  const confirmRemoveCaregiver = async () => {
+    try {
+      // Remove caregiver using API
+      const { error } = await caregiverService.removeCaregiver(selectedCaregiver.id)
+      
+      if (error) {
+        throw new Error(error)
+      }
+      
+      message.success(`${selectedCaregiver.name} has been removed from your caregiver network.`)
+      setRemoveConfirmVisible(false)
+      setSelectedCaregiver(null)
+      
+      // Reload data to show updated state
+      await loadCaregiverData()
+      
+    } catch (error) {
+      message.error('Failed to remove caregiver. Please try again.')
+      console.error('Error removing caregiver:', error)
+      setRemoveConfirmVisible(false)
+      setSelectedCaregiver(null)
+    }
   }
 
   const handleResendInvite = (invite) => {
@@ -303,7 +352,9 @@ const CaregiverManagement = () => {
           </div>
 
           <div className="settings-content">
-            {caregiverConnections.length > 0 ? (
+            {dataLoading ? (
+              <Spin />
+            ) : caregiverConnections.length > 0 ? (
               <List
                 dataSource={caregiverConnections}
                 renderItem={(caregiver) => (

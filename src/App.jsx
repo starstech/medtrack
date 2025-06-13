@@ -30,21 +30,19 @@ function AppContent() {
     <PasswordResetHandler>
       <Routes>
         {/* Public routes - only show when not authenticated */}
-        {!user && (
+        {!user ? (
           <>
-            <Route path="/" element={<LoginPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/verify-email" element={<EmailVerificationPage />} />
             <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/reset-password-code" element={<PasswordResetCodeEntry />} />
-            <Route path="/*" element={<LoginPage />} />
+            {/* Redirect all other routes to login when not authenticated */}
+            <Route path="*" element={<LoginPage />} />
           </>
-        )}
-        
-        {/* Protected routes - only show when authenticated */}
-        {user && (
-          <Route path="/*" element={
+        ) : (
+          /* Protected routes - only show when authenticated */
+          <Route path="*" element={
             <AppLayout>
               <Routes>
                 <Route path="/" element={<DashboardPage />} />
@@ -55,6 +53,8 @@ function AppContent() {
                 <Route path="/calendar" element={<CalendarPage />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/notifications" element={<NotificationsPage />} />
+                {/* Redirect any unmatched routes to dashboard when authenticated */}
+                <Route path="*" element={<DashboardPage />} />
               </Routes>
             </AppLayout>
           } />

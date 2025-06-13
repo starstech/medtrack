@@ -59,19 +59,10 @@ const AppLayout = ({ children }) => {
 
   const userMenuItems = [
     {
-      key: 'profile',
-      icon: <SettingOutlined />,
-      label: 'Profile & Settings',
-      onClick: () => navigate('/profile')
-    },
-    {
-      type: 'divider'
-    },
-    {
       key: 'logout',
       icon: <LogoutOutlined />,
       label: 'Sign Out',
-      onClick: logout
+      onClick: () => logout()
     }
   ]
 
