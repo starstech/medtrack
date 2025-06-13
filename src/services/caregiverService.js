@@ -84,8 +84,30 @@ export const caregiverService = {
 
   // Invite caregiver
   async inviteCaregiver(invitationData) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      // Generate a unique invitation token
+      const invitationToken = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+
+      const { data, error } = await supabase
+        .from('caregiver_invitations')
+        .insert({
+          ...invitationData,
+          invited_by: user.id,
+          invitation_token: invitationToken,
+          status: 'pending'
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error inviting caregiver:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Accept caregiver invitation
@@ -102,8 +124,27 @@ export const caregiverService = {
 
   // Get pending invitations (sent by current user)
   async getPendingInvitations() {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('User not authenticated')
+
+      const { data, error } = await supabase
+        .from('caregiver_invitations')
+        .select(`
+          *,
+          patient:patients(*),
+          invited_by_profile:profiles!invited_by(*)
+        `)
+        .eq('invited_by', user.id)
+        .eq('status', 'pending')
+        .order('invited_at', { ascending: false })
+
+      if (error) throw error
+      return { data: data || [], error: null }
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error)
+      return { data: [], error: error.message }
+    }
   },
 
   // Get received invitations (for current user)

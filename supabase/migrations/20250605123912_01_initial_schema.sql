@@ -46,6 +46,23 @@ CREATE TABLE api.patient_caregivers (
   UNIQUE(patient_id, caregiver_id)
 );
 
+-- 3a. Caregiver Invitations (pending invitations)
+CREATE TABLE api.caregiver_invitations (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id UUID REFERENCES api.patients(id) ON DELETE CASCADE,
+  invited_by UUID REFERENCES api.profiles(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'caregiver',
+  permissions JSONB DEFAULT '{}',
+  invitation_token TEXT UNIQUE NOT NULL,
+  status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'accepted', 'declined', 'expired', 'cancelled')),
+  invited_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT (NOW() + INTERVAL '7 days'),
+  responded_at TIMESTAMP WITH TIME ZONE,
+  accepted_by UUID REFERENCES api.profiles(id) ON DELETE SET NULL,
+  decline_reason TEXT
+);
+
 -- 4. Medications table
 CREATE TABLE api.medications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -213,6 +230,7 @@ ALTER TABLE api.user_devices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.notification_preferences ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.appointments ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.appointment_reminders ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api.caregiver_invitations ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes for better performance
 CREATE INDEX idx_patient_caregivers_patient_id ON api.patient_caregivers(patient_id);
@@ -231,6 +249,11 @@ CREATE INDEX idx_appointments_date ON api.appointments(appointment_date);
 CREATE INDEX idx_appointments_status ON api.appointments(status);
 CREATE INDEX idx_appointment_reminders_appointment_id ON api.appointment_reminders(appointment_id);
 CREATE INDEX idx_appointment_reminders_time ON api.appointment_reminders(reminder_time);
+CREATE INDEX idx_caregiver_invitations_patient_id ON api.caregiver_invitations(patient_id);
+CREATE INDEX idx_caregiver_invitations_invited_by ON api.caregiver_invitations(invited_by);
+CREATE INDEX idx_caregiver_invitations_email ON api.caregiver_invitations(email);
+CREATE INDEX idx_caregiver_invitations_status ON api.caregiver_invitations(status);
+CREATE INDEX idx_caregiver_invitations_token ON api.caregiver_invitations(invitation_token);
 
 -- Insert default notification preferences for new users
 CREATE OR REPLACE FUNCTION api.create_profile_and_preferences()

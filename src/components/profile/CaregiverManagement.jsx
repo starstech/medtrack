@@ -65,7 +65,10 @@ const CaregiverManagement = () => {
   }, [user])
 
   const loadCaregiverData = async () => {
-    if (!user) return
+    if (!user) {
+      setDataLoading(false)
+      return
+    }
     
     setDataLoading(true)
     try {
@@ -73,7 +76,11 @@ const CaregiverManagement = () => {
       const { data: caregivers, error: caregiversError } = await caregiverService.getCaregivers()
       if (caregiversError) {
         console.error('Error loading caregivers:', caregiversError)
-        message.error('Failed to load caregiver connections')
+        // Don't show error message if it's just empty data
+        if (caregiversError !== 'No data found') {
+          message.error('Failed to load caregiver connections')
+        }
+        setCaregiverConnections([])
       } else {
         // Transform the data to match our UI format
         const transformedCaregivers = caregivers?.map(connection => ({
@@ -91,23 +98,36 @@ const CaregiverManagement = () => {
         setCaregiverConnections(transformedCaregivers)
       }
 
-      // Load pending invitations (placeholder since API is not implemented)
-      // TODO: Implement when invitation API is ready
-      try {
-        const { data: pendingInvites, error: invitesError } = await caregiverService.getPendingInvitations()
-        if (!invitesError && pendingInvites) {
-          setInvitations(pendingInvites)
-        }
-      } catch (error) {
-        // API not implemented yet, use empty array
-        console.log('Invitation API not implemented yet')
+      // Load pending invitations
+      const { data: pendingInvites, error: invitesError } = await caregiverService.getPendingInvitations()
+      if (invitesError) {
+        console.error('Error loading invitations:', invitesError)
         setInvitations([])
+      } else {
+        const transformedInvites = pendingInvites?.map(invite => ({
+          id: invite.id,
+          email: invite.email,
+          role: invite.role,
+          patient: invite.patient?.name || 'Unknown Patient',
+          patientId: invite.patient_id,
+          sentAt: invite.invited_at,
+          expiresAt: invite.expires_at,
+          status: invite.status
+        })) || []
+        setInvitations(transformedInvites)
       }
 
     } catch (error) {
       console.error('Error loading caregiver data:', error)
-      message.error('Failed to load caregiver data')
+      // Set empty arrays to stop loading
+      setCaregiverConnections([])
+      setInvitations([])
+      // Only show error if it's a real error, not just empty data
+      if (!error.message?.includes('No rows') && !error.message?.includes('not found')) {
+        message.error('Failed to load caregiver data')
+      }
     } finally {
+      // Always set loading to false
       setDataLoading(false)
     }
   }
@@ -116,10 +136,18 @@ const CaregiverManagement = () => {
     setLoading(true)
     
     try {
-      // TODO: Implement invite API when backend is ready
-      console.log('Sending invitation:', values)
-      // For now, show success message
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Send invitation
+      const invitationData = {
+        patient_id: values.patientId,
+        email: values.email,
+        role: values.role || 'caregiver'
+      }
+      
+      const { data, error } = await caregiverService.inviteCaregiver(invitationData)
+      
+      if (error) {
+        throw new Error(error)
+      }
       
       message.success(`Invitation sent to ${values.email}!`)
       setInviteModalVisible(false)
