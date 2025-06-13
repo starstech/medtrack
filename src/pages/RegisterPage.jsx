@@ -67,14 +67,6 @@ const RegisterPage = () => {
       <div className="register-container">
         {/* Header */}
         <div className="register-header">
-          <Button 
-            type="text" 
-            icon={<ArrowLeftOutlined />} 
-            onClick={() => navigate('/')}
-            className="back-button"
-          >
-            Back to Home
-          </Button>
           
           <div className="register-brand">
             <Space align="center" size="middle">

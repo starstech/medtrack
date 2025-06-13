@@ -129,7 +129,7 @@ const RecentActivity = () => {
     return (
       <Card
         className="dashboard-card recent-activity-card"
-        bordered={false}
+        variant="filled"
         title={
           <Space>
             <ClockCircleOutlined />
@@ -171,7 +171,7 @@ const RecentActivity = () => {
   return (
     <Card
       className="dashboard-card recent-activity-card"
-      bordered={false}
+      variant="filled"
       title={
         <Space>
           <ClockCircleOutlined />

@@ -275,7 +275,7 @@ const MedicationSection = ({ patient }) => {
         </Button>
       ]}
       width={800}
-      destroyOnClose
+      destroyOnHidden
       className="add-medication-modal"
       centered
     >

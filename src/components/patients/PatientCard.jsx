@@ -153,7 +153,7 @@ const PatientCard = ({ patient }) => {
         className="patient-card"
         hoverable
         onClick={handleCardClick}
-        bordered={false}
+        variant="filled"
       >
         {/* Patient Header */}
         <div className="patient-header">

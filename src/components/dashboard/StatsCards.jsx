@@ -121,7 +121,7 @@ const StatsCards = () => {
     const patientMedicalConditions = selectedPatient.medical_conditions || selectedPatient.medicalConditions
 
     return (
-      <Card className="stat-card selected-patient-stat-card" bordered={false}>
+      <Card className="stat-card selected-patient-stat-card" variant="filled">
         <Space direction="vertical" size="small" style={{ width: '100%' }}>
           <div className="stat-header">
             <Avatar 
@@ -262,7 +262,7 @@ const StatsCards = () => {
             {stat.isCustom ? stat.component : (
               <Card 
                 className="stat-card" 
-                bordered={false}
+                variant="filled"
               >
                 <div className="stat-header">
                   <div 

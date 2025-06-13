@@ -23,27 +23,30 @@ const LoginPage = () => {
     
     const result = await login(values.email, values.password)
     
-    if (!result.success) {
+    if (result.success) {
+      // Redirect to dashboard on successful login
+      navigate('/dashboard', { replace: true })
+    } else {
       // Error is handled by the context
     }
     
     setLocalLoading(false)
-  }, [login, clearError])
+  }, [login, clearError, navigate])
 
   const handleForgotPassword = useCallback(async (values) => {
     setResetLoading(true)
     
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
+      const { error } = await supabase.auth.resetPasswordForEmail(values.email)
       
       if (error) {
         message.error(`Failed to send reset email: ${error.message}`)
       } else {
-        message.success('Password reset email sent! Please check your inbox.')
+        message.success('Password reset code sent! Check your email and enter the code.')
         setResetModalVisible(false)
         resetForm.resetFields()
+        // Redirect to code entry page
+        navigate('/reset-password-code')
       }
     } catch (error) {
       message.error('Failed to send reset email. Please try again.')
@@ -68,14 +71,6 @@ const LoginPage = () => {
       <div className="login-container">
         {/* Header */}
         <div className="login-header">
-          <Button 
-            type="text" 
-            icon={<ArrowLeftOutlined />} 
-            onClick={() => navigate('/')}
-            className="back-button"
-          >
-            Back to Home
-          </Button>
           
           <div className="login-brand">
             <Space align="center" size="middle">
@@ -252,7 +247,7 @@ const LoginPage = () => {
         open={resetModalVisible}
         onCancel={handleResetModalClose}
         footer={null}
-        destroyOnClose
+        destroyOnHidden
         className="reset-modal"
       >
         <Space direction="vertical" size="large" style={{ width: '100%' }}>

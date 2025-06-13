@@ -34,7 +34,7 @@ const EmailVerificationPending = ({ email, onResendVerification, onBackToLogin }
 
   return (
     <div className="email-verification-pending">
-      <Card className="verification-card" bordered={false}>
+      <Card className="verification-card" variant="filled">
         <Space direction="vertical" size="large" className="verification-content">
           {/* Icon and Header */}
           <div className="verification-header">

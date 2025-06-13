@@ -54,7 +54,14 @@ export const AuthProvider = ({ children }) => {
 
     const checkAuthStatus = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession()
+        // Add a timeout to prevent infinite loading
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+        )
+        
+        const authPromise = supabase.auth.getSession()
+        
+        const { data: { session }, error } = await Promise.race([authPromise, timeoutPromise])
         
         if (!mounted) return
 
@@ -65,27 +72,48 @@ export const AuthProvider = ({ children }) => {
         }
 
         if (session?.user) {
-          // Get user profile from our profiles table
-          const { data: profile, error: profileError } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+          try {
+            // Get user profile from our profiles table with timeout
+            const profilePromise = supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
+            
+            const profileTimeoutPromise = new Promise((_, reject) => 
+              setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+            )
+            
+            const { data: profile, error: profileError } = await Promise.race([
+              profilePromise, 
+              profileTimeoutPromise
+            ])
 
-          if (!mounted) return
+            if (!mounted) return
 
-          if (profileError) {
-            console.error('Error fetching profile:', profileError)
-            // User exists in auth but not in profiles table - this shouldn't happen
-            // but we'll handle it gracefully
-            dispatch({ type: 'LOGIN_SUCCESS', payload: {
-              id: session.user.id,
-              email: session.user.email,
-              name: session.user.user_metadata?.name || session.user.email.split('@')[0],
-              role: 'caregiver'
-            }})
-          } else {
-            dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+            if (profileError) {
+              console.error('Error fetching profile:', profileError)
+              // User exists in auth but not in profiles table - use fallback
+              dispatch({ type: 'LOGIN_SUCCESS', payload: {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+                role: 'caregiver'
+              }})
+            } else {
+              dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+            }
+          } catch (profileError) {
+            console.error('Profile fetch failed:', profileError)
+            if (mounted) {
+              // Fallback to basic user data
+              dispatch({ type: 'LOGIN_SUCCESS', payload: {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+                role: 'caregiver'
+              }})
+            }
           }
         } else {
           dispatch({ type: 'SET_LOADING', payload: false })
@@ -106,20 +134,47 @@ export const AuthProvider = ({ children }) => {
         if (!mounted) return
 
         if (event === 'SIGNED_IN' && session?.user) {
-          // Get user profile
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single()
+          try {
+            // Get user profile
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single()
 
-          if (mounted && !error && profile) {
-            dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+            if (!mounted) return
+
+            if (error) {
+              console.error('Error fetching profile on auth change:', error)
+              // Fallback to basic user data
+              dispatch({ type: 'LOGIN_SUCCESS', payload: {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+                role: 'caregiver'
+              }})
+            } else {
+              dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
+            }
+          } catch (error) {
+            console.error('Auth state change error:', error)
+            if (mounted) {
+              // Fallback to basic user data
+              dispatch({ type: 'LOGIN_SUCCESS', payload: {
+                id: session.user.id,
+                email: session.user.email,
+                name: session.user.user_metadata?.name || session.user.email.split('@')[0],
+                role: 'caregiver'
+              }})
+            }
           }
         } else if (event === 'SIGNED_OUT') {
           if (mounted) {
             dispatch({ type: 'LOGOUT' })
           }
+        } else if (event === 'TOKEN_REFRESHED') {
+          // Handle token refresh without changing loading state
+          console.log('Token refreshed')
         }
       }
     )

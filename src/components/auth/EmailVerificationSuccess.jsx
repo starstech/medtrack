@@ -6,7 +6,7 @@ const { Title, Text } = Typography
 const EmailVerificationSuccess = ({ onContinue, userName }) => {
   return (
     <div className="email-verification-success">
-      <Card className="verification-card" bordered={false}>
+      <Card className="verification-card" variant="filled">
         <Space direction="vertical" size="large" className="verification-content">
           {/* Success Icon and Header */}
           <div className="verification-header">

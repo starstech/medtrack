@@ -153,7 +153,7 @@ const AppointmentModal = ({ visible, onClose, patients, selectedPatient }) => {
       ]}
       width={900}
       className="appointment-modal"
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       <Form

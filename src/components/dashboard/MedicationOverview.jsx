@@ -32,7 +32,7 @@ const MedicationOverview = () => {
     return (
       <Card 
         className="dashboard-card medication-overview-card"
-        bordered={false}
+        variant="filled"
         title={
           <Space>
             <MedicineBoxOutlined />
@@ -55,7 +55,7 @@ const MedicationOverview = () => {
     return (
       <Card 
         className="dashboard-card medication-overview-card"
-        bordered={false}
+        variant="filled"
         title={
           <Space>
             <MedicineBoxOutlined />
@@ -207,7 +207,7 @@ const MedicationOverview = () => {
   return (
     <Card 
       className="dashboard-card medication-overview-card"
-      bordered={false}
+      variant="filled"
       title={
         <Space>
           <MedicineBoxOutlined />

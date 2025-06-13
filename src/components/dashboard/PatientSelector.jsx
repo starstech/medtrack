@@ -159,7 +159,7 @@ export const SelectedPatientCard = () => {
         border: 'none'
       }}
       bodyStyle={{ padding: '20px' }}
-      bordered={false}
+      variant="filled"
     >
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
         {/* Header with avatar and basic info */}

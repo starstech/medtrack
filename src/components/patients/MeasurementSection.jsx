@@ -768,7 +768,7 @@ const MeasurementSection = ({ patient }) => {
         footer={null}
         width={720}
         centered
-        destroyOnClose
+        destroyOnHidden
         className="type-selection-modal"
       >
         <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>
@@ -829,7 +829,7 @@ const MeasurementSection = ({ patient }) => {
       footer={null}
       width={720}
       centered
-      destroyOnClose
+      destroyOnHidden
       className="subcategory-selection-modal"
     >
       <Text type="secondary" style={{ marginBottom: 24, display: 'block' }}>

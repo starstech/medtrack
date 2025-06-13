@@ -514,7 +514,7 @@ const DailyLogs = ({ patient }) => {
         </Button>
       ]}
       width={600}
-      destroyOnClose
+      destroyOnHidden
       className="daily-log-modal"
     >
       <div className="modal-form">

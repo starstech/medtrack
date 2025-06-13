@@ -372,7 +372,7 @@ const TrendsModal = ({ visible, onClose, patient, measurements }) => {
         </Button>
       ]}
       width={1200}
-      destroyOnClose
+      destroyOnHidden
       className="trends-modal"
       centered
     >

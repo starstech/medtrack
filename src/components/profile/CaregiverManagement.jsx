@@ -510,7 +510,7 @@ const CaregiverManagement = () => {
             Send Invitation
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="invite-caregiver-modal"
       >
         <div className="modal-form">
@@ -606,7 +606,7 @@ const CaregiverManagement = () => {
             Update Role
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="edit-role-modal"
       >
         <div className="modal-form">
@@ -675,7 +675,7 @@ const CaregiverManagement = () => {
             Remove Caregiver
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="remove-caregiver-modal"
         width={500}
       >
@@ -730,7 +730,7 @@ const CaregiverManagement = () => {
             {selectedCaregiver && selectedCaregiver.status === 'active' ? 'Deactivate' : 'Activate'}
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="toggle-status-modal"
       >
         <div className="modal-form">
@@ -777,7 +777,7 @@ const CaregiverManagement = () => {
             Resend
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="resend-invite-modal"
       >
         <div className="modal-form">
@@ -816,7 +816,7 @@ const CaregiverManagement = () => {
             Cancel Invitation
           </Button>
         ]}
-        destroyOnClose
+        destroyOnHidden
         className="cancel-invite-modal"
       >
         <div className="modal-form">

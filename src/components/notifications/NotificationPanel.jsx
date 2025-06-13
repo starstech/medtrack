@@ -110,7 +110,7 @@ const NotificationPanel = () => {
   const hasMoreNotifications = notifications.length > visibleCount
 
   return (
-    <Card className="notification-panel" bordered={false}>
+    <Card className="notification-panel" variant="filled">
       {/* Header */}
       <div className="notification-header">
         <div className="header-title">

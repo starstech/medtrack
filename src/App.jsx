@@ -3,11 +3,13 @@ import { AuthProvider } from './contexts/AuthContext'
 import { PatientProvider } from './contexts/PatientContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import AppLayout from './components/common/Layout'
-import LandingPage from './pages/LandingPage'
+import PasswordResetHandler from './components/auth/PasswordResetHandler'
+
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import EmailVerificationPage from './pages/EmailVerificationPage'
 import ResetPasswordPage from './pages/ResetPasswordPage'
+import PasswordResetCodeEntry from './components/auth/PasswordResetCodeEntry'
 import DashboardPage from './pages/DashboardPage'
 import PatientsPage from './pages/PatientsPage'
 import PatientDetailsPage from './pages/PatientDetailsPage'
@@ -25,33 +27,40 @@ function AppContent() {
   }
 
   return (
-    <Routes>
-      {/* Public routes */}
-      <Route path="/" element={!user ? <LandingPage /> : <DashboardPage />} />
-      <Route path="/login" element={!user ? <LoginPage /> : <DashboardPage />} />
-      <Route path="/register" element={!user ? <RegisterPage /> : <DashboardPage />} />
-      <Route path="/verify-email" element={<EmailVerificationPage />} />
-      <Route path="/reset-password" element={<ResetPasswordPage />} />
-      
-      {/* Protected routes */}
-      {user ? (
-        <Route path="/*" element={
-          <AppLayout>
-            <Routes>
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/patients" element={<PatientsPage />} />
-              <Route path="/patients/:id" element={<PatientDetailsPage />} />
-              <Route path="/todays-doses" element={<TodaysDosesPage />} />
-              <Route path="/calendar" element={<CalendarPage />} />
-              <Route path="/profile" element={<ProfilePage />} />
-              <Route path="/notifications" element={<NotificationsPage />} />
-            </Routes>
-          </AppLayout>
-        } />
-      ) : (
-        <Route path="/*" element={<LandingPage />} />
-      )}
-    </Routes>
+    <PasswordResetHandler>
+      <Routes>
+        {/* Public routes - only show when not authenticated */}
+        {!user && (
+          <>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/verify-email" element={<EmailVerificationPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
+            <Route path="/reset-password-code" element={<PasswordResetCodeEntry />} />
+            <Route path="/*" element={<LoginPage />} />
+          </>
+        )}
+        
+        {/* Protected routes - only show when authenticated */}
+        {user && (
+          <Route path="/*" element={
+            <AppLayout>
+              <Routes>
+                <Route path="/" element={<DashboardPage />} />
+                <Route path="/dashboard" element={<DashboardPage />} />
+                <Route path="/patients" element={<PatientsPage />} />
+                <Route path="/patients/:id" element={<PatientDetailsPage />} />
+                <Route path="/todays-doses" element={<TodaysDosesPage />} />
+                <Route path="/calendar" element={<CalendarPage />} />
+                <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/notifications" element={<NotificationsPage />} />
+              </Routes>
+            </AppLayout>
+          } />
+        )}
+      </Routes>
+    </PasswordResetHandler>
   )
 }
 

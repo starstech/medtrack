@@ -234,37 +234,58 @@ const AppLayout = ({ children }) => {
               placement="bottomRight"
               trigger={['click']}
             >
-              <div style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                cursor: 'pointer',
-                padding: '8px 12px',
-                borderRadius: '8px',
-                transition: 'background-color 0.3s',
-                ':hover': {
-                  backgroundColor: '#f5f5f5'
-                }
-              }}>
+              <div 
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '8px',
+                  transition: 'background-color 0.3s',
+                  minHeight: '48px',
+                  gap: '12px'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+              >
                 <Avatar 
                   style={{ 
                     backgroundColor: '#1890ff',
                     color: '#fff',
-                    fontWeight: 600
+                    fontWeight: 600,
+                    flexShrink: 0
                   }} 
                   size="default"
                 >
                   {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
                 </Avatar>
-                {!collapsed && (
-                  <Space direction="vertical" size={0} style={{ marginLeft: '12px' }}>
-                    <Text strong style={{ fontSize: '14px', lineHeight: 1.2 }}>
-                      {user?.name || 'User'}
-                    </Text>
-                    <Text type="secondary" style={{ fontSize: '12px', lineHeight: 1.2 }}>
-                      {user?.role || 'Caregiver'}
-                    </Text>
-                  </Space>
-                )}
+                <div style={{ 
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center',
+                  minWidth: 0,
+                  overflow: 'hidden'
+                }}>
+                  <Text strong style={{ 
+                    fontSize: '14px', 
+                    lineHeight: '1.4',
+                    margin: 0,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '120px'
+                  }}>
+                    {user?.name || 'User'}
+                  </Text>
+                  <Text type="secondary" style={{ 
+                    fontSize: '12px', 
+                    lineHeight: '1.2',
+                    margin: 0,
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {user?.role || 'Caregiver'}
+                  </Text>
+                </div>
               </div>
             </Dropdown>
           </Space>

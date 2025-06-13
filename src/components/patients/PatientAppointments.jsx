@@ -462,7 +462,7 @@ const PatientAppointments = ({ patient }) => {
         </Button>
       ]}
       width={700}
-      destroyOnClose
+      destroyOnHidden
       className="appointment-modal"
     >
       <div className="modal-form">

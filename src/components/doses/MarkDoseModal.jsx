@@ -135,7 +135,7 @@ const MarkDoseModal = ({ visible, dose, onMarkDose, onClose }) => {
       ]}
       width={600}
       className="mark-dose-modal"
-      destroyOnClose
+      destroyOnHidden
       centered
     >
       {/* Dose Information Card */}
