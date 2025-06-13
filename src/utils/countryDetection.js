@@ -138,6 +138,7 @@ const detectCountryFromTimezone = () => {
     
     // Common timezone to country mappings
     const timezoneCountryMap = {
+      // North America
       'America/Toronto': 'ca',
       'America/Vancouver': 'ca',
       'America/Montreal': 'ca',
@@ -146,11 +147,22 @@ const detectCountryFromTimezone = () => {
       'America/Los_Angeles': 'us',
       'America/Chicago': 'us',
       'America/Denver': 'us',
+      
+      // Europe
       'Europe/London': 'gb',
       'Europe/Paris': 'fr',
       'Europe/Berlin': 'de',
       'Europe/Rome': 'it',
       'Europe/Madrid': 'es',
+      
+      // Middle East
+      'Asia/Dubai': 'ae',
+      'Asia/Riyadh': 'sa',
+      'Asia/Kuwait': 'kw',
+      'Asia/Qatar': 'qa',
+      'Asia/Bahrain': 'bh',
+      
+      // Asia Pacific
       'Asia/Tokyo': 'jp',
       'Asia/Shanghai': 'cn',
       'Australia/Sydney': 'au',
@@ -217,16 +229,28 @@ export const detectUserCountry = async (forceRefresh = false) => {
  * @returns {string} - Country code
  */
 export const getUserCountrySync = () => {
+  // Check cache first
   const cached = getCachedCountry()
-  if (cached) return cached
+  if (cached) {
+    console.log('Using cached country:', cached)
+    return cached
+  }
 
-  // Try quick synchronous methods
-  const localeCountry = detectCountryFromLocale()
-  if (localeCountry) return localeCountry
-
+  // Try timezone first (more reliable for location than locale)
   const timezoneCountry = detectCountryFromTimezone()
-  if (timezoneCountry) return timezoneCountry
+  if (timezoneCountry) {
+    console.log('Sync country detected via timezone:', timezoneCountry, 'from:', Intl.DateTimeFormat().resolvedOptions().timeZone)
+    return timezoneCountry
+  }
 
+  // Then try locale (language preference)
+  const localeCountry = detectCountryFromLocale()
+  if (localeCountry) {
+    console.log('Sync country detected via locale:', localeCountry, 'from:', navigator.language)
+    return localeCountry
+  }
+
+  console.log('Using default country for sync detection:', DEFAULT_COUNTRY)
   return DEFAULT_COUNTRY
 }
 
