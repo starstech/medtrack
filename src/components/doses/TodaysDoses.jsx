@@ -116,7 +116,7 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter, viewMode }) => {
         <div className="empty-state">
           <Empty
             image={<MedicineBoxOutlined className="empty-icon" />}
-            imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+            styles={{ image: { fontSize: 64, color: '#d9d9d9' } }}
             description={
               <div>
                 <Text type="secondary">No doses scheduled for today</Text>
@@ -157,7 +157,7 @@ const TodaysDoses = ({ doses, selectedPatient, statusFilter, viewMode }) => {
         <div className="empty-state">
           <Empty
             image={<CalendarOutlined className="empty-icon" />}
-            imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+            styles={{ image: { fontSize: 64, color: '#d9d9d9' } }}
             description={
               <div>
                 <Text type="secondary">No doses found</Text>

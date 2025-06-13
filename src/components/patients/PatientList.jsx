@@ -11,7 +11,7 @@ const PatientList = ({ patients, searchTerm }) => {
       <div className="patients-empty-state">
         <Empty
           image={<UserAddOutlined className="empty-icon" />}
-          imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+          styles={{ image: { fontSize: 64, color: '#d9d9d9' } }}
           description={
             <div className="empty-description">
               <Text strong>No patients added yet</Text>

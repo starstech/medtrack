@@ -507,7 +507,7 @@ const CaregiverManagement = () => {
                       description={
                         <div className="invitation-details">
                           <Text type="secondary" style={{ display: 'block' }}>
-                            Invited to care for {invite.patientName} as {invite.role} caregiver
+                            Invited to care for {invite.patient} as {invite.role} caregiver
                           </Text>
                           <Text type="secondary" size="small">
                             Sent {new Date(invite.sentAt).toLocaleDateString()}

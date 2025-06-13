@@ -59,8 +59,10 @@ const CalendarView = ({
   const periodAppointments = getAppointmentsForPeriod()
 
   // Calendar cell renderer for month view
-  const dateCellRender = (value) => {
-    const dayAppointments = getAppointmentsForDate(value)
+  const cellRender = (current, info) => {
+    if (info.type !== 'date') return info.originNode;
+    
+    const dayAppointments = getAppointmentsForDate(current)
     
     if (dayAppointments.length === 0) return null
 
@@ -132,7 +134,7 @@ const CalendarView = ({
           value={currentDate}
           onSelect={handleDateSelect}
           onPanelChange={handlePanelChange}
-          dateCellRender={dateCellRender}
+          cellRender={cellRender}
           className="appointment-calendar"
           mode="month"
         />
@@ -214,7 +216,7 @@ const CalendarView = ({
           {dayAppointments.length === 0 ? (
             <Empty
               image={<CalendarOutlined className="empty-icon" />}
-              imageStyle={{ fontSize: 64, color: '#d9d9d9' }}
+              styles={{ image: { fontSize: 64, color: '#d9d9d9' } }}
               description={
                 <div className="empty-description">
                   <Text strong>No appointments today</Text>
