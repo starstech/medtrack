@@ -1,4 +1,4 @@
-import { Card, List, Avatar, Tag, Typography, Space, Button, Progress, Empty, theme } from 'antd'
+import { Card, List, Avatar, Tag, Typography, Space, Button, Progress, Empty, theme, Spin, Alert } from 'antd'
 import { 
   MedicineBoxOutlined,
   ClockCircleOutlined,
@@ -12,51 +12,86 @@ import { usePatients } from '../../hooks/usePatients'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import './MedicationOverview.css'
-import { mockMedications, mockPatients } from '../../utils/mockData'
 
 const { Text, Title } = Typography
 
 const MedicationOverview = () => {
   const { 
-    selectedPatient
+    patients,
+    medications,
+    selectedPatient,
+    loading,
+    error,
+    getTodaysDoses
   } = usePatients()
   const navigate = useNavigate()
   const { token: { colorPrimary, colorSuccess, colorWarning, colorError } } = theme.useToken()
 
-  // Mock function to get today's doses
-  const getMockTodaysDoses = () => {
-    const today = new Date()
-    const doses = []
-    
-    mockMedications.forEach(medication => {
-      const patient = mockPatients.find(p => p.id === medication.patientId)
-      medication.doses?.forEach(dose => {
-        // Create doses for today by updating the date part while keeping the time
-        const originalDate = new Date(dose.scheduledTime)
-        const todaysDate = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 
-          originalDate.getHours(), originalDate.getMinutes(), originalDate.getSeconds())
-        
-        doses.push({
-          ...dose,
-          scheduledTime: todaysDate.toISOString(),
-          medication,
-          patient
-        })
-      })
-    })
-    
-    return doses.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime))
+  // Handle loading state
+  if (loading) {
+    return (
+      <Card 
+        className="dashboard-card medication-overview-card"
+        bordered={false}
+        title={
+          <Space>
+            <MedicineBoxOutlined />
+            <Text strong style={{ fontSize: '16px' }}>Medication Overview</Text>
+          </Space>
+        }
+      >
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <Text type="secondary" style={{ display: 'block', marginTop: '16px' }}>
+            Loading medications...
+          </Text>
+        </div>
+      </Card>
+    )
   }
 
-  // Filter medications based on selected patient using mock data
-  const filteredMedications = selectedPatient 
-    ? mockMedications.filter(med => med.patientId === selectedPatient.id && med.isActive)
-    : mockMedications.filter(med => med.isActive)
+  // Handle error state
+  if (error) {
+    return (
+      <Card 
+        className="dashboard-card medication-overview-card"
+        bordered={false}
+        title={
+          <Space>
+            <MedicineBoxOutlined />
+            <Text strong style={{ fontSize: '16px' }}>Medication Overview</Text>
+          </Space>
+        }
+      >
+        <Alert
+          message="Error Loading Medications"
+          description={error}
+          type="error"
+          showIcon
+        />
+      </Card>
+    )
+  }
 
-  // Get today's doses for overview using mock data
-  const todaysDoses = getMockTodaysDoses()
+  // Use real context data
+  const allPatients = patients || []
+  const allMedications = medications || []
+
+  // Filter medications based on selected patient using real data
+  const filteredMedications = selectedPatient 
+    ? allMedications.filter(med => 
+        (med.patient_id === selectedPatient.id || med.patientId === selectedPatient.id) && 
+        (med.is_active === true || med.isActive === true)
+      )
+    : allMedications.filter(med => med.is_active === true || med.isActive === true)
+
+  // Get today's doses using real context data
+  const todaysDoses = getTodaysDoses ? getTodaysDoses() : []
   const filteredTodaysDoses = selectedPatient
-    ? todaysDoses.filter(dose => dose.patient.id === selectedPatient.id)
+    ? todaysDoses.filter(dose => {
+        const patientId = dose.patient_id || dose.patientId
+        return patientId === selectedPatient.id
+      })
     : todaysDoses
 
   const takenToday = filteredTodaysDoses.filter(dose => dose.status === 'taken').length
@@ -69,25 +104,34 @@ const MedicationOverview = () => {
     
     // First, try to get medications with today's doses
     filteredTodaysDoses.forEach(dose => {
-      const medId = dose.medication.id
-      if (!medicationDoses[medId]) {
-        medicationDoses[medId] = {
-          medication: dose.medication,
-          patient: dose.patient,
-          doses: []
+      const medId = dose.medication_id || dose.medicationId
+      const medication = allMedications.find(m => m.id === medId)
+      if (medication) {
+        const patientId = medication.patient_id || medication.patientId
+        const patient = allPatients.find(p => p.id === patientId)
+        
+        if (!medicationDoses[medId]) {
+          medicationDoses[medId] = {
+            medication,
+            patient,
+            doses: []
+          }
         }
+        medicationDoses[medId].doses.push(dose)
       }
-      medicationDoses[medId].doses.push(dose)
     })
 
     // If no medications with today's doses, show active medications anyway
     if (Object.keys(medicationDoses).length === 0) {
       filteredMedications.forEach(medication => {
-        const patient = mockPatients.find(p => p.id === medication.patientId)
-        medicationDoses[medication.id] = {
-          medication,
-          patient,
-          doses: medication.doses || []
+        const patientId = medication.patient_id || medication.patientId
+        const patient = allPatients.find(p => p.id === patientId)
+        if (patient) {
+          medicationDoses[medication.id] = {
+            medication,
+            patient,
+            doses: medication.doses || []
+          }
         }
       })
     }
@@ -100,9 +144,9 @@ const MedicationOverview = () => {
   const getNextDoseTime = (doses) => {
     const pendingDoses = doses
       .filter(dose => dose.status === 'pending')
-      .sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime))
+      .sort((a, b) => new Date(a.scheduledTime || a.scheduled_time) - new Date(b.scheduledTime || b.scheduled_time))
     
-    return pendingDoses.length > 0 ? pendingDoses[0].scheduledTime : null
+    return pendingDoses.length > 0 ? (pendingDoses[0].scheduledTime || pendingDoses[0].scheduled_time) : null
   }
 
   const getDoseStatus = (doses) => {
@@ -171,7 +215,7 @@ const MedicationOverview = () => {
         </Space>
       }
       extra={
-<Button 
+        <Button 
           type="text"
           icon={<EyeOutlined />}
           onClick={handleViewAllMedications}
@@ -220,6 +264,11 @@ const MedicationOverview = () => {
           const nextDose = getNextDoseTime(doses)
           const status = getDoseStatus(doses)
           
+          // Handle both database schema formats
+          const medicationName = medication.name || medication.medication_name
+          const medicationDosage = medication.dosage || medication.dose_amount
+          const medicationFrequency = medication.frequency || medication.dose_frequency
+          
           return (
             <div 
               key={medication.id} 
@@ -236,8 +285,8 @@ const MedicationOverview = () => {
                 />
                 <div className="medication-info">
                   <div className="medication-header">
-                    <Text strong>{medication.name}</Text>
-                    {!selectedPatient && (
+                    <Text strong>{medicationName}</Text>
+                    {!selectedPatient && patient && (
                       <Tag 
                         color="blue"
                         style={{ 
@@ -251,7 +300,7 @@ const MedicationOverview = () => {
                   </div>
                   
                   <Text type="secondary" className="medication-details">
-                    {medication.dosage} • {medication.frequency}
+                    {medicationDosage} • {medicationFrequency}
                   </Text>
 
                   {nextDose && (
@@ -261,13 +310,15 @@ const MedicationOverview = () => {
                     </div>
                   )}
 
-                  <Progress 
-                    percent={(status.taken / status.total) * 100}
-                    size="small"
-                    strokeColor={colorSuccess}
-                    showInfo={false}
-                    style={{ marginTop: '8px' }}
-                  />
+                  {status.total > 0 && (
+                    <Progress 
+                      percent={(status.taken / status.total) * 100}
+                      size="small"
+                      strokeColor={colorSuccess}
+                      showInfo={false}
+                      style={{ marginTop: '8px' }}
+                    />
+                  )}
                 </div>
               </Space>
 

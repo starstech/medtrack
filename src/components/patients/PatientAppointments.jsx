@@ -22,7 +22,9 @@ import {
   Dropdown,
   Divider,
   Checkbox,
-  Segmented
+  Segmented,
+  Spin,
+  Alert
 } from 'antd'
 import { 
   CalendarOutlined,
@@ -39,7 +41,7 @@ import {
   UnorderedListOutlined,
   NodeIndexOutlined
 } from '@ant-design/icons'
-import { getAppointmentsByPatient } from '../../utils/mockData'
+import { appointmentService } from '../../services/appointmentService'
 import dayjs from 'dayjs'
 import './PatientAppointments.css'
 
@@ -59,7 +61,38 @@ const PatientAppointments = ({ patient }) => {
   const [isScrollable, setIsScrollable] = useState(false)
   const containerRef = useRef(null)
 
-  const appointments = getAppointmentsByPatient(patient.id)
+  // Appointment data state
+  const [appointments, setAppointments] = useState([])
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true)
+  const [appointmentsError, setAppointmentsError] = useState(null)
+
+  // Load appointments for the patient
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (!patient?.id) return
+
+      try {
+        setAppointmentsLoading(true)
+        setAppointmentsError(null)
+
+        const { data: patientAppointments, error } = await appointmentService.getPatientAppointments(patient.id)
+        
+        if (error) {
+          throw new Error(`Failed to load appointments: ${error}`)
+        }
+
+        setAppointments(patientAppointments || [])
+      } catch (error) {
+        console.error('Error loading patient appointments:', error)
+        setAppointmentsError(error.message)
+        setAppointments([])
+      } finally {
+        setAppointmentsLoading(false)
+      }
+    }
+
+    loadAppointments()
+  }, [patient?.id])
 
   const appointmentTypes = [
     { value: 'routine_checkup', label: 'Routine Checkup', color: '#1890ff' },
@@ -93,13 +126,22 @@ const PatientAppointments = ({ patient }) => {
     // Filter by time
     switch (filter) {
       case 'upcoming':
-        filtered = appointments.filter(apt => dayjs(apt.dateTime).isAfter(now))
+        filtered = appointments.filter(apt => {
+          const aptDate = apt.appointment_date || apt.dateTime
+          return dayjs(aptDate).isAfter(now)
+        })
         break
       case 'past':
-        filtered = appointments.filter(apt => dayjs(apt.dateTime).isBefore(now))
+        filtered = appointments.filter(apt => {
+          const aptDate = apt.appointment_date || apt.dateTime
+          return dayjs(aptDate).isBefore(now)
+        })
         break
       case 'today':
-        filtered = appointments.filter(apt => dayjs(apt.dateTime).isSame(today, 'day'))
+        filtered = appointments.filter(apt => {
+          const aptDate = apt.appointment_date || apt.dateTime
+          return dayjs(aptDate).isSame(today, 'day')
+        })
         break
       default:
         filtered = appointments
@@ -117,8 +159,8 @@ const PatientAppointments = ({ patient }) => {
   
   // Sort appointments by date (upcoming first, then past in reverse chronological order)
   const sortedAppointments = filteredAppointments.sort((a, b) => {
-    const dateA = dayjs(a.dateTime)
-    const dateB = dayjs(b.dateTime)
+    const dateA = dayjs(a.appointment_date || a.dateTime)
+    const dateB = dayjs(b.appointment_date || b.dateTime)
     const now = dayjs()
     
     const aIsUpcoming = dateA.isAfter(now)
@@ -163,22 +205,34 @@ const PatientAppointments = ({ patient }) => {
         .minute(values.time.minute())
 
       const appointmentData = {
-        ...values,
-        patientId: patient.id,
-        dateTime: appointmentDateTime.toISOString(),
-        createdAt: new Date().toISOString(),
-        reminders: values.reminders || []
+        patient_id: patient.id,
+        title: values.title,
+        doctor: values.doctor,
+        type: values.type,
+        appointment_date: appointmentDateTime.toISOString(),
+        duration: values.duration,
+        location: values.location,
+        address: values.address,
+        notes: values.notes,
+        reminders: values.reminders || [],
+        status: 'scheduled'
       }
 
-      // TODO: Implement actual API call
-      console.log('Adding appointment:', appointmentData)
+      const { data: newAppointment, error } = await appointmentService.createAppointment(appointmentData)
+      
+      if (error) {
+        throw new Error(error)
+      }
+      
+      // Add to local state for immediate feedback
+      setAppointments(prev => [...prev, newAppointment])
       
       message.success('Appointment scheduled successfully!')
       setAddModalVisible(false)
       form.resetFields()
       
     } catch (error) {
-      message.error('Failed to schedule appointment. Please try again.')
+      message.error(`Failed to schedule appointment: ${error.message}`)
       console.error('Error adding appointment:', error)
     } finally {
       setLoading(false)
@@ -195,15 +249,30 @@ const PatientAppointments = ({ patient }) => {
         .minute(values.time.minute())
 
       const appointmentData = {
-        ...values,
-        id: selectedAppointment.id,
-        patientId: patient.id,
-        dateTime: appointmentDateTime.toISOString(),
+        title: values.title,
+        doctor: values.doctor,
+        type: values.type,
+        appointment_date: appointmentDateTime.toISOString(),
+        duration: values.duration,
+        location: values.location,
+        address: values.address,
+        notes: values.notes,
         reminders: values.reminders || []
       }
 
-      // TODO: Implement actual API call
-      console.log('Updating appointment:', appointmentData)
+      const { data: updatedAppointment, error } = await appointmentService.updateAppointment(
+        selectedAppointment.id, 
+        appointmentData
+      )
+      
+      if (error) {
+        throw new Error(error)
+      }
+      
+      // Update local state for immediate feedback
+      setAppointments(prev => 
+        prev.map(apt => apt.id === selectedAppointment.id ? updatedAppointment : apt)
+      )
       
       message.success('Appointment updated successfully!')
       setEditModalVisible(false)
@@ -211,7 +280,7 @@ const PatientAppointments = ({ patient }) => {
       form.resetFields()
       
     } catch (error) {
-      message.error('Failed to update appointment. Please try again.')
+      message.error(`Failed to update appointment: ${error.message}`)
       console.error('Error updating appointment:', error)
     } finally {
       setLoading(false)
@@ -225,9 +294,22 @@ const PatientAppointments = ({ patient }) => {
       okText: 'Delete',
       okType: 'danger',
       cancelText: 'Cancel',
-      onOk: () => {
-        // TODO: Implement delete functionality
-        message.success('Appointment deleted successfully!')
+      onOk: async () => {
+        try {
+          const { error } = await appointmentService.deleteAppointment(appointmentId)
+          
+          if (error) {
+            throw new Error(error)
+          }
+          
+          // Remove from local state for immediate feedback
+          setAppointments(prev => prev.filter(apt => apt.id !== appointmentId))
+          
+          message.success('Appointment deleted successfully!')
+        } catch (error) {
+          message.error(`Failed to delete appointment: ${error.message}`)
+          console.error('Error deleting appointment:', error)
+        }
       }
     })
   }
@@ -235,8 +317,8 @@ const PatientAppointments = ({ patient }) => {
   const handleEditClick = (appointment) => {
     setSelectedAppointment(appointment)
     
-    // Pre-fill form with appointment data
-    const appointmentDateTime = dayjs(appointment.dateTime)
+    // Pre-fill form with appointment data - handle both schema formats
+    const appointmentDateTime = dayjs(appointment.appointment_date || appointment.dateTime)
     form.setFieldsValue({
       title: appointment.title,
       doctor: appointment.doctor,
@@ -255,7 +337,7 @@ const PatientAppointments = ({ patient }) => {
 
   const getAppointmentStatus = (appointment) => {
     const now = dayjs()
-    const aptTime = dayjs(appointment.dateTime)
+    const aptTime = dayjs(appointment.appointment_date || appointment.dateTime)
     
     if (aptTime.isBefore(now)) {
       return { status: 'default', text: 'Completed', color: '#8c8c8c' }
@@ -295,6 +377,43 @@ const PatientAppointments = ({ patient }) => {
       }
     }
     return {}
+  }
+
+  // Show loading state
+  if (appointmentsLoading) {
+    return (
+      <div className="patient-appointments-section">
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <Spin size="large" />
+          <Text type="secondary" style={{ display: 'block', marginTop: '16px' }}>
+            Loading appointments...
+          </Text>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error state
+  if (appointmentsError) {
+    return (
+      <div className="patient-appointments-section">
+        <Alert
+          message="Error Loading Appointments"
+          description={appointmentsError}
+          type="error"
+          showIcon
+          action={
+            <Button 
+              size="small" 
+              type="primary"
+              onClick={() => window.location.reload()}
+            >
+              Retry
+            </Button>
+          }
+        />
+      </div>
+    )
   }
 
   const renderAppointmentModal = (isEdit = false) => (
@@ -561,6 +680,7 @@ const PatientAppointments = ({ patient }) => {
         renderItem={(appointment) => {
           const status = getAppointmentStatus(appointment)
           const typeInfo = getAppointmentTypeInfo(appointment.type)
+          const appointmentDate = appointment.appointment_date || appointment.dateTime
           
           return (
             <List.Item className="appointment-list-item">
@@ -580,7 +700,7 @@ const PatientAppointments = ({ patient }) => {
                       <Text strong>{appointment.title}</Text>
                       <div className="appointment-meta">
                         <Text type="secondary" size="small">
-                          {dayjs(appointment.dateTime).format('MMMM D, YYYY • h:mm A')} • {appointment.duration} min
+                          {dayjs(appointmentDate).format('MMMM D, YYYY • h:mm A')} • {appointment.duration} min
                         </Text>
                       </div>
                     </div>
@@ -655,8 +775,15 @@ const PatientAppointments = ({ patient }) => {
     </div>
   )
 
-  const upcomingCount = appointments.filter(apt => dayjs(apt.dateTime).isAfter(dayjs())).length
-  const todayCount = appointments.filter(apt => dayjs(apt.dateTime).isSame(dayjs(), 'day')).length
+  const upcomingCount = appointments.filter(apt => {
+    const aptDate = apt.appointment_date || apt.dateTime
+    return dayjs(aptDate).isAfter(dayjs())
+  }).length
+  
+  const todayCount = appointments.filter(apt => {
+    const aptDate = apt.appointment_date || apt.dateTime
+    return dayjs(aptDate).isSame(dayjs(), 'day')
+  }).length
 
   return (
     <div className="patient-appointments-section">

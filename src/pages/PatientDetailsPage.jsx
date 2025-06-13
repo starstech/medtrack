@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom'
 import { useEffect, useRef } from 'react'
-import { Button, Tabs } from 'antd'
+import { Button, Tabs, Card, Typography } from 'antd'
 import { ArrowLeftOutlined, EditOutlined } from '@ant-design/icons'
 import PatientDetails from '../components/patients/PatientDetails'
 import MedicationSection from '../components/patients/MedicationSection'
@@ -8,18 +8,19 @@ import MeasurementSection from '../components/patients/MeasurementSection'
 import DailyLogs from '../components/patients/DailyLogs'
 import PatientAppointments from '../components/patients/PatientAppointments'
 import { usePatients } from '../hooks/usePatients'
-import { mockPatients } from '../utils/mockData'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import './PatientDetailsPage.css'
+
+const { Title, Text } = Typography
 
 const PatientDetailsPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { selectPatient } = usePatients()
+  const { patients, loading, error, selectPatient } = usePatients()
   const hasSelectedPatient = useRef(false)
 
-  // Use mock data for immediate functionality
-  const patient = mockPatients.find(p => p.id === id)
+  // Find patient from real context data
+  const patient = patients?.find(p => p.id === id)
 
   // Fix setState in render issue - use useEffect with ref to prevent infinite loop
   useEffect(() => {
@@ -33,6 +34,32 @@ const PatientDetailsPage = () => {
   useEffect(() => {
     hasSelectedPatient.current = false
   }, [id])
+
+  if (loading) {
+    return <LoadingSpinner message="Loading patient details..." />
+  }
+
+  if (error) {
+    return (
+      <div className="patient-details-page">
+        <div className="patient-not-found">
+          <Button 
+            icon={<ArrowLeftOutlined />}
+            onClick={() => navigate('/patients')}
+            className="back-button"
+          >
+            Back to Patients
+          </Button>
+          <Card style={{ marginTop: '20px' }}>
+            <div style={{ textAlign: 'center', padding: '40px' }}>
+              <Title level={4} type="danger">Error Loading Patient</Title>
+              <Text type="secondary">{error}</Text>
+            </div>
+          </Card>
+        </div>
+      </div>
+    )
+  }
 
   if (!patient) {
     return (

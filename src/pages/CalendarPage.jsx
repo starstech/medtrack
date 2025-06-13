@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Typography, Button, Space, Select, Badge, Row, Col } from 'antd'
+import { useState, useEffect } from 'react'
+import { Typography, Button, Space, Select, Badge, Row, Col, Alert, Spin } from 'antd'
 import { 
   CalendarOutlined, 
   PlusOutlined, 
@@ -9,7 +9,7 @@ import CalendarView from '../components/calendar/CalendarView'
 import CalendarControls from '../components/calendar/CalendarControls'
 import AppointmentModal from '../components/calendar/AppointmentModal'
 import { usePatients } from '../hooks/usePatients'
-import { mockAppointments, getUpcomingAppointments } from '../utils/mockData'
+import { appointmentService } from '../services/appointmentService'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import dayjs from 'dayjs'
 import './CalendarPage.css'
@@ -18,26 +18,139 @@ const { Text } = Typography
 const { Option } = Select
 
 const CalendarPage = () => {
-  const { patients, loading } = usePatients()
+  const { patients, loading: patientsLoading, error: patientsError } = usePatients()
   const [selectedPatient, setSelectedPatient] = useState('all')
   const [viewType, setViewType] = useState('month')
   const [currentDate, setCurrentDate] = useState(dayjs())
   const [appointmentModalVisible, setAppointmentModalVisible] = useState(false)
+  
+  // Appointment data state
+  const [appointments, setAppointments] = useState([])
+  const [upcomingAppointments, setUpcomingAppointments] = useState([])
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true)
+  const [appointmentsError, setAppointmentsError] = useState(null)
 
-  if (loading) {
+  // Load appointments data
+  useEffect(() => {
+    const loadAppointments = async () => {
+      try {
+        setAppointmentsLoading(true)
+        setAppointmentsError(null)
+
+        // Load all appointments
+        const { data: allAppointments, error: appointmentsErr } = await appointmentService.getAppointments()
+        if (appointmentsErr) {
+          throw new Error(`Failed to load appointments: ${appointmentsErr}`)
+        }
+
+        // Load upcoming appointments (next 7 days)
+        const { data: upcoming, error: upcomingErr } = await appointmentService.getUpcomingAppointments(7)
+        if (upcomingErr) {
+          console.warn('Failed to load upcoming appointments:', upcomingErr)
+          setUpcomingAppointments([])
+        } else {
+          setUpcomingAppointments(upcoming || [])
+        }
+
+        setAppointments(allAppointments || [])
+      } catch (error) {
+        console.error('Error loading appointments:', error)
+        setAppointmentsError(error.message)
+        setAppointments([])
+        setUpcomingAppointments([])
+      } finally {
+        setAppointmentsLoading(false)
+      }
+    }
+
+    loadAppointments()
+  }, [])
+
+  // Re-load appointments when selectedPatient changes (for filtered data)
+  useEffect(() => {
+    if (selectedPatient !== 'all') {
+      const loadPatientAppointments = async () => {
+        try {
+          setAppointmentsLoading(true)
+          setAppointmentsError(null)
+
+          // Load appointments for specific patient
+          const { data: patientAppointments, error: appointmentsErr } = await appointmentService.getPatientAppointments(selectedPatient)
+          if (appointmentsErr) {
+            throw new Error(`Failed to load patient appointments: ${appointmentsErr}`)
+          }
+
+          // Load upcoming appointments for specific patient
+          const { data: patientUpcoming, error: upcomingErr } = await appointmentService.getUpcomingAppointments(7, selectedPatient)
+          if (upcomingErr) {
+            console.warn('Failed to load upcoming appointments for patient:', upcomingErr)
+          }
+
+          setAppointments(patientAppointments || [])
+          setUpcomingAppointments(patientUpcoming || [])
+        } catch (error) {
+          console.error('Error loading patient appointments:', error)
+          setAppointmentsError(error.message)
+        } finally {
+          setAppointmentsLoading(false)
+        }
+      }
+
+      loadPatientAppointments()
+    } else {
+      // Reload all appointments when switching back to 'all'
+      const loadAllAppointments = async () => {
+        try {
+          setAppointmentsLoading(true)
+          setAppointmentsError(null)
+
+          const { data: allAppointments, error: appointmentsErr } = await appointmentService.getAppointments()
+          if (appointmentsErr) {
+            throw new Error(`Failed to load all appointments: ${appointmentsErr}`)
+          }
+
+          const { data: upcoming, error: upcomingErr } = await appointmentService.getUpcomingAppointments(7)
+          if (upcomingErr) {
+            console.warn('Failed to load upcoming appointments:', upcomingErr)
+          }
+
+          setAppointments(allAppointments || [])
+          setUpcomingAppointments(upcoming || [])
+        } catch (error) {
+          console.error('Error loading all appointments:', error)
+          setAppointmentsError(error.message)
+        } finally {
+          setAppointmentsLoading(false)
+        }
+      }
+
+      loadAllAppointments()
+    }
+  }, [selectedPatient])
+
+  if (patientsLoading) {
     return <LoadingSpinner message="Loading calendar..." />
   }
 
-  // Filter appointments by selected patient
-  const filteredAppointments = selectedPatient === 'all'
-    ? mockAppointments
-    : mockAppointments.filter(apt => apt.patientId === selectedPatient)
+  if (patientsError) {
+    return (
+      <div className="calendar-page">
+        <Alert
+          message="Error Loading Calendar"
+          description={patientsError}
+          type="error"
+          showIcon
+          style={{ margin: '20px' }}
+        />
+      </div>
+    )
+  }
 
-  // Get upcoming appointments for quick view
-  const upcomingAppointments = getUpcomingAppointments(7)
-  const filteredUpcoming = selectedPatient === 'all'
-    ? upcomingAppointments
-    : upcomingAppointments.filter(apt => apt.patientId === selectedPatient)
+  const allPatients = patients || []
+
+  // Use real appointment data with database schema compatibility
+  const filteredAppointments = appointments
+  const filteredUpcoming = upcomingAppointments
 
   const handlePatientChange = (value) => {
     setSelectedPatient(value)
@@ -67,6 +180,11 @@ const CalendarPage = () => {
     setAppointmentModalVisible(false)
   }
 
+  const handleAppointmentAdded = () => {
+    // Refresh appointments when a new one is added
+    setSelectedPatient(selectedPatient) // This will trigger the useEffect
+  }
+
   // Generate year options (current year ± 5 years)
   const currentYear = dayjs().year()
   const yearOptions = Array.from({ length: 11 }, (_, i) => currentYear - 5 + i)
@@ -92,9 +210,10 @@ const CalendarPage = () => {
                 onChange={handlePatientChange}
                 style={{ width: 160 }}
                 size="large"
+                loading={patientsLoading}
               >
                 <Option value="all">All Patients</Option>
-                {patients.map(patient => (
+                {allPatients.map(patient => (
                   <Option key={patient.id} value={patient.id}>
                     {patient.name}
                   </Option>
@@ -164,14 +283,29 @@ const CalendarPage = () => {
             <div className="calendar-stats">
               <Space size="large">
                 <div className="calendar-stat">
-                  <Badge count={filteredAppointments.length} color="#1890ff" />
+                  {appointmentsLoading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <Badge count={filteredAppointments.length} color="#1890ff" />
+                  )}
                   <Text type="secondary">Total Appointments</Text>
                 </div>
                 <div className="calendar-stat">
-                  <Badge count={filteredUpcoming.length} color="#52c41a" />
+                  {appointmentsLoading ? (
+                    <Spin size="small" />
+                  ) : (
+                    <Badge count={filteredUpcoming.length} color="#52c41a" />
+                  )}
                   <Text type="secondary">Upcoming (7 days)</Text>
                 </div>
               </Space>
+              {appointmentsError && (
+                <div style={{ marginTop: '8px' }}>
+                  <Text type="danger" style={{ fontSize: '12px' }}>
+                    Error loading appointments: {appointmentsError}
+                  </Text>
+                </div>
+              )}
             </div>
           </Col>
         </Row>
@@ -179,21 +313,39 @@ const CalendarPage = () => {
 
       {/* Calendar View */}
       <div className="calendar-content">
-        <CalendarView
-          appointments={filteredAppointments}
-          viewType={viewType}
-          currentDate={currentDate}
-          onDateChange={handleDateChange}
-          selectedPatient={selectedPatient}
-        />
+        {appointmentsLoading ? (
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Spin size="large" />
+            <Text type="secondary" style={{ display: 'block', marginTop: '16px' }}>
+              Loading appointments...
+            </Text>
+          </div>
+        ) : appointmentsError ? (
+          <Alert
+            message="Error Loading Appointments"
+            description={appointmentsError}
+            type="error"
+            showIcon
+            style={{ margin: '20px' }}
+          />
+        ) : (
+          <CalendarView
+            appointments={filteredAppointments}
+            viewType={viewType}
+            currentDate={currentDate}
+            onDateChange={handleDateChange}
+            selectedPatient={selectedPatient}
+          />
+        )}
       </div>
 
       {/* Add Appointment Modal */}
       <AppointmentModal
         visible={appointmentModalVisible}
         onClose={handleModalClose}
-        patients={patients}
+        patients={allPatients}
         selectedPatient={selectedPatient === 'all' ? null : selectedPatient}
+        onAppointmentAdded={handleAppointmentAdded}
       />
     </div>
   )

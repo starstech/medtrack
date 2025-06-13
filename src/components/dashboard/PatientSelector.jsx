@@ -1,4 +1,4 @@
-import { Card, Select, Button, Space, Typography, Avatar, Tag, theme } from 'antd'
+import { Card, Select, Button, Space, Typography, Avatar, Tag, theme, Spin } from 'antd'
 import { 
   UserOutlined, 
   PlusOutlined, 
@@ -10,23 +10,20 @@ import {
 import { usePatients } from '../../hooks/usePatients'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
-import { mockPatients } from '../../utils/mockData'
 
 const { Text, Title } = Typography
 const { Option } = Select
 
 // Dropdown component only
 export const PatientDropdown = () => {
-  const { selectedPatient, selectPatient } = usePatients()
-  
-  // Use mock data for immediate functionality
-  const patients = mockPatients
+  const { patients, selectedPatient, selectPatient, loading, error } = usePatients()
   
   const handlePatientChange = (patientId) => {
     selectPatient(patientId)
   }
 
-  const selectedPatientData = patients.find(p => p.id === selectedPatient?.id) || selectedPatient
+  const patientsList = patients || []
+  const selectedPatientData = patientsList.find(p => p.id === selectedPatient?.id) || selectedPatient
 
   const getPatientAge = (dateOfBirth) => {
     return dayjs().diff(dayjs(dateOfBirth), 'year')
@@ -41,16 +38,18 @@ export const PatientDropdown = () => {
         <Select
           value={selectedPatientData?.id}
           onChange={handlePatientChange}
-          placeholder="Select a patient"
+          placeholder={loading ? "Loading patients..." : "Select a patient"}
           size="large"
           className="patient-dropdown"
           style={{ minWidth: '280px' }}
           allowClear
           showSearch
+          loading={loading}
+          disabled={loading || error}
           filterOption={(input, option) =>
             option?.label?.toLowerCase().includes(input.toLowerCase())
           }
-          options={patients.map(patient => ({
+          options={patientsList.map(patient => ({
             value: patient.id,
             label: patient.name,
             patient: patient
@@ -75,12 +74,35 @@ export const PatientDropdown = () => {
                 <Text strong>{option.data.label}</Text>
                 <br />
                 <Text type="secondary" size="small">
-                  {option.data.patient?.medicalConditions?.join(', ') || 'No conditions'}
+                  {(option.data.patient?.medical_conditions || option.data.patient?.medicalConditions)?.join(', ') || 'No conditions'}
                 </Text>
               </div>
             </Space>
           )}
+          notFoundContent={
+            error ? (
+              <div style={{ padding: '16px', textAlign: 'center' }}>
+                <Text type="danger">Error loading patients</Text>
+                <br />
+                <Text type="secondary" style={{ fontSize: '12px' }}>{error}</Text>
+              </div>
+            ) : loading ? (
+              <div style={{ padding: '16px', textAlign: 'center' }}>
+                <Spin size="small" />
+                <Text type="secondary" style={{ marginLeft: '8px' }}>Loading...</Text>
+              </div>
+            ) : (
+              <div style={{ padding: '16px', textAlign: 'center' }}>
+                <Text type="secondary">No patients found</Text>
+              </div>
+            )
+          }
         />
+        {error && (
+          <Text type="danger" style={{ fontSize: '12px' }}>
+            Failed to load patients: {error}
+          </Text>
+        )}
       </Space>
     </div>
   )
@@ -121,6 +143,11 @@ export const SelectedPatientCard = () => {
     return null
   }
 
+  // Handle both database schema formats
+  const patientDateOfBirth = selectedPatient.date_of_birth || selectedPatient.dateOfBirth
+  const patientMedicalConditions = selectedPatient.medical_conditions || selectedPatient.medicalConditions
+  const patientCaregivers = selectedPatient.patient_caregivers || selectedPatient.caregivers
+
   return (
     <Card 
       className="selected-patient-card stat-card"
@@ -152,12 +179,16 @@ export const SelectedPatientCard = () => {
                 {selectedPatient.name}
               </Title>
               <Space split="•" style={{ color: 'rgba(0,0,0,0.45)', fontSize: '14px' }}>
-                <Text type="secondary">{getPatientAge(selectedPatient.dateOfBirth)} years</Text>
-                <Text type="secondary">{selectedPatient.gender}</Text>
+                {patientDateOfBirth && (
+                  <Text type="secondary">{getPatientAge(patientDateOfBirth)} years</Text>
+                )}
+                {selectedPatient.gender && (
+                  <Text type="secondary">{selectedPatient.gender}</Text>
+                )}
               </Space>
-              {selectedPatient.caregivers?.length > 0 && (
+              {patientCaregivers?.length > 0 && (
                 <Text type="secondary" style={{ fontSize: '13px', display: 'block', marginTop: '4px' }}>
-                  {selectedPatient.caregivers.length} caregiver{selectedPatient.caregivers.length !== 1 ? 's' : ''} assigned
+                  {patientCaregivers.length} caregiver{patientCaregivers.length !== 1 ? 's' : ''} assigned
                 </Text>
               )}
             </div>
@@ -165,7 +196,7 @@ export const SelectedPatientCard = () => {
         </div>
 
         {/* Medical conditions */}
-        {selectedPatient.medicalConditions?.length > 0 && (
+        {patientMedicalConditions?.length > 0 && (
           <div className="patient-conditions-section">
             <Text 
               type="secondary" 
@@ -181,7 +212,7 @@ export const SelectedPatientCard = () => {
               Medical Conditions
             </Text>
             <Space size={[6, 6]} wrap>
-              {selectedPatient.medicalConditions.slice(0, 3).map((condition, index) => (
+              {patientMedicalConditions.slice(0, 3).map((condition, index) => (
                 <Tag
                   key={index}
                   color="blue"
@@ -195,7 +226,7 @@ export const SelectedPatientCard = () => {
                   {condition}
                 </Tag>
               ))}
-              {selectedPatient.medicalConditions.length > 3 && (
+              {patientMedicalConditions.length > 3 && (
                 <Tag
                   color="default"
                   style={{
@@ -205,7 +236,7 @@ export const SelectedPatientCard = () => {
                     border: 'none'
                   }}
                 >
-                  +{selectedPatient.medicalConditions.length - 3} more
+                  +{patientMedicalConditions.length - 3} more
                 </Tag>
               )}
             </Space>

@@ -56,7 +56,7 @@ import {
   PictureOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
-import { MEASUREMENT_TYPES } from '../../utils/mockData'
+import { MEASUREMENT_TYPES } from '../../constants'
 import { measurementPreferencesService } from '../../services/measurementPreferencesService'
 import VitalSignsModal from './modals/VitalSignsModal'
 import BloodTestModal from './modals/BloodTestModal'

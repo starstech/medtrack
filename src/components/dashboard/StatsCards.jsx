@@ -1,4 +1,4 @@
-import { Row, Col, Card, Statistic, Space, Progress, theme, Avatar, Tag, Typography } from 'antd'
+import { Row, Col, Card, Statistic, Space, Progress, theme, Avatar, Tag, Typography, Spin } from 'antd'
 import { 
   UserOutlined, 
   MedicineBoxOutlined, 
@@ -9,7 +9,8 @@ import {
   HeartOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
-import { getUpcomingAppointments } from '../../utils/mockData'
+import { appointmentService } from '../../services/appointmentService'
+import { useState, useEffect } from 'react'
 import dayjs from 'dayjs'
 
 const { Text } = Typography
@@ -20,115 +21,176 @@ const StatsCards = () => {
     selectedPatient, 
     medications, 
     measurements, 
-    getTodaysDoses 
+    getTodaysDoses,
+    loading: patientsLoading,
+    error: patientsError
   } = usePatients()
+
+  // Appointment data state
+  const [upcomingAppointments, setUpcomingAppointments] = useState([])
+  const [appointmentsLoading, setAppointmentsLoading] = useState(true)
+  const [appointmentsError, setAppointmentsError] = useState(null)
 
   const {
     token: { colorPrimary, colorSuccess, colorWarning, colorInfo }
   } = theme.useToken()
 
-  // Filter data based on selected patient
-  const filteredPatients = selectedPatient ? [selectedPatient] : patients
-  const filteredMedications = selectedPatient 
-    ? medications.filter(med => med.patientId === selectedPatient.id)
-    : medications
-  const filteredMeasurements = selectedPatient
-    ? measurements.filter(measure => measure.patientId === selectedPatient.id)
-    : measurements
+  // Load upcoming appointments
+  useEffect(() => {
+    const loadUpcomingAppointments = async () => {
+      try {
+        setAppointmentsLoading(true)
+        setAppointmentsError(null)
 
-  // Calculate stats
-  const activeMedications = filteredMedications.filter(med => med.isActive).length
-  const todaysDoses = getTodaysDoses()
+        const { data: upcoming, error } = await appointmentService.getUpcomingAppointments(7)
+        if (error) {
+          console.warn('Failed to load upcoming appointments:', error)
+          setUpcomingAppointments([])
+          setAppointmentsError(error)
+        } else {
+          setUpcomingAppointments(upcoming || [])
+        }
+      } catch (error) {
+        console.error('Error loading upcoming appointments:', error)
+        setUpcomingAppointments([])
+        setAppointmentsError(error.message)
+      } finally {
+        setAppointmentsLoading(false)
+      }
+    }
+
+    loadUpcomingAppointments()
+  }, [])
+
+  // Use fallback empty arrays if data is not loaded yet
+  const allPatients = patients || []
+  const allMedications = medications || []
+  const allMeasurements = measurements || []
+
+  // Filter data based on selected patient
+  const filteredPatients = selectedPatient ? [selectedPatient] : allPatients
+  const filteredMedications = selectedPatient 
+    ? allMedications.filter(med => 
+        (med.patient_id === selectedPatient.id || med.patientId === selectedPatient.id)
+      )
+    : allMedications
+  const filteredMeasurements = selectedPatient
+    ? allMeasurements.filter(measure => 
+        (measure.patient_id === selectedPatient.id || measure.patientId === selectedPatient.id)
+      )
+    : allMeasurements
+
+  // Calculate stats with database schema compatibility
+  const activeMedications = filteredMedications.filter(med => 
+    med.is_active === true || med.isActive === true
+  ).length
+  
+  const todaysDoses = getTodaysDoses ? getTodaysDoses() : []
   const filteredTodaysDoses = selectedPatient
-    ? todaysDoses.filter(dose => dose.patient.id === selectedPatient.id)
+    ? todaysDoses.filter(dose => {
+        const patientId = dose.patient_id || dose.patientId || (dose.patient && dose.patient.id)
+        return patientId === selectedPatient.id
+      })
     : todaysDoses
   
   const takenDoses = filteredTodaysDoses.filter(dose => dose.status === 'taken').length
   const pendingDoses = filteredTodaysDoses.filter(dose => dose.status === 'pending').length
   const totalDoses = filteredTodaysDoses.length
   
-  const recentMeasurements = filteredMeasurements.filter(measure => 
-    dayjs().diff(dayjs(measure.recordedAt), 'days') <= 7
-  ).length
+  const recentMeasurements = filteredMeasurements.filter(measure => {
+    const recordedDate = measure.recorded_at || measure.recordedAt
+    return dayjs().diff(dayjs(recordedDate), 'days') <= 7
+  }).length
 
-  const upcomingAppointments = getUpcomingAppointments(7)
+  // Filter appointments by selected patient with database schema compatibility
   const filteredAppointments = selectedPatient
-    ? upcomingAppointments.filter(apt => apt.patientId === selectedPatient.id)
+    ? upcomingAppointments.filter(apt => 
+        (apt.patient_id === selectedPatient.id || apt.patientId === selectedPatient.id)
+      )
     : upcomingAppointments
 
   const getPatientAge = (dateOfBirth) => {
-    return dayjs().diff(dayjs(dateOfBirth), 'year')
+    const birthDate = dateOfBirth || selectedPatient?.date_of_birth
+    return birthDate ? dayjs().diff(dayjs(birthDate), 'year') : 0
   }
 
   // Custom Selected Patient Card Component
-  const SelectedPatientCard = () => (
-    <Card className="stat-card selected-patient-stat-card" bordered={false}>
-      <Space direction="vertical" size="small" style={{ width: '100%' }}>
-        <div className="stat-header">
-          <Avatar 
-            size={32}
-            icon={<UserOutlined />}
-            style={{
-              backgroundColor: colorPrimary,
-              color: '#fff'
-            }}
-          />
-        </div>
-        
-        <div style={{ textAlign: 'center' }}>
-          <div className="stat-title" style={{ fontSize: '12px', marginBottom: '4px' }}>
-            Selected Patient
-          </div>
-          <Text strong style={{ 
-            fontSize: '16px', 
-            fontWeight: 600, 
-            color: colorPrimary,
-            display: 'block',
-            marginBottom: '2px'
-          }}>
-            {selectedPatient.name}
-          </Text>
-          <Text type="secondary" style={{ fontSize: '12px' }}>
-            {getPatientAge(selectedPatient.dateOfBirth)} years • {selectedPatient.gender}
-          </Text>
-        </div>
+  const SelectedPatientCard = () => {
+    // Handle both database schema formats
+    const patientDateOfBirth = selectedPatient.date_of_birth || selectedPatient.dateOfBirth
+    const patientMedicalConditions = selectedPatient.medical_conditions || selectedPatient.medicalConditions
 
-        {selectedPatient.medicalConditions?.length > 0 && (
-          <div style={{ textAlign: 'center', marginTop: '4px' }}>
-            <Space size={[4, 4]} wrap style={{ justifyContent: 'center' }}>
-              {selectedPatient.medicalConditions.slice(0, 2).map((condition, index) => (
-                <Tag
-                  key={index}
-                  color="blue"
-                  style={{
-                    fontSize: '10px',
-                    padding: '1px 6px',
-                    borderRadius: '4px',
-                    border: 'none'
-                  }}
-                >
-                  {condition}
-                </Tag>
-              ))}
-              {selectedPatient.medicalConditions.length > 2 && (
-                <Tag
-                  color="default"
-                  style={{
-                    fontSize: '10px',
-                    padding: '1px 6px',
-                    borderRadius: '4px',
-                    border: 'none'
-                  }}
-                >
-                  +{selectedPatient.medicalConditions.length - 2}
-                </Tag>
-              )}
-            </Space>
+    return (
+      <Card className="stat-card selected-patient-stat-card" bordered={false}>
+        <Space direction="vertical" size="small" style={{ width: '100%' }}>
+          <div className="stat-header">
+            <Avatar 
+              size={32}
+              icon={<UserOutlined />}
+              style={{
+                backgroundColor: colorPrimary,
+                color: '#fff'
+              }}
+            />
           </div>
-        )}
-      </Space>
-    </Card>
-  )
+          
+          <div style={{ textAlign: 'center' }}>
+            <div className="stat-title" style={{ fontSize: '12px', marginBottom: '4px' }}>
+              Selected Patient
+            </div>
+            <Text strong style={{ 
+              fontSize: '16px', 
+              fontWeight: 600, 
+              color: colorPrimary,
+              display: 'block',
+              marginBottom: '2px'
+            }}>
+              {selectedPatient.name}
+            </Text>
+            <Text type="secondary" style={{ fontSize: '12px' }}>
+              {patientDateOfBirth && getPatientAge(patientDateOfBirth)} 
+              {patientDateOfBirth && ' years'}
+              {selectedPatient.gender && (patientDateOfBirth ? ` • ${selectedPatient.gender}` : selectedPatient.gender)}
+            </Text>
+          </div>
+
+          {patientMedicalConditions?.length > 0 && (
+            <div style={{ textAlign: 'center', marginTop: '4px' }}>
+              <Space size={[4, 4]} wrap style={{ justifyContent: 'center' }}>
+                {patientMedicalConditions.slice(0, 2).map((condition, index) => (
+                  <Tag
+                    key={index}
+                    color="blue"
+                    style={{
+                      fontSize: '10px',
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      border: 'none'
+                    }}
+                  >
+                    {condition}
+                  </Tag>
+                ))}
+                {patientMedicalConditions.length > 2 && (
+                  <Tag
+                    color="default"
+                    style={{
+                      fontSize: '10px',
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      border: 'none'
+                    }}
+                  >
+                    +{patientMedicalConditions.length - 2}
+                  </Tag>
+                )}
+              </Space>
+            </div>
+          )}
+        </Space>
+      </Card>
+    )
+  }
 
   const statsData = [
     // First card: Either Total Patients or Selected Patient
@@ -174,10 +236,14 @@ const StatsCards = () => {
     },
     {
       title: 'Upcoming Appointments',
-      value: filteredAppointments.length,
-      icon: <CalendarOutlined />,
-      color: colorInfo,
-      description: 'Scheduled in the next 7 days'
+      value: appointmentsLoading ? 0 : filteredAppointments.length,
+      icon: appointmentsLoading ? <Spin size="small" /> : <CalendarOutlined />,
+      color: appointmentsError ? colorWarning : colorInfo,
+      description: appointmentsLoading 
+        ? 'Loading appointments...'
+        : appointmentsError 
+          ? 'Error loading appointments'
+          : 'Scheduled in the next 7 days'
     }
   ]
 

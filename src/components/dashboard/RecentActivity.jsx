@@ -9,7 +9,7 @@ import {
   RightOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
-import { LOG_TYPES, SEVERITY_LEVELS } from '../../utils/mockData'
+import { LOG_TYPES, SEVERITY_LEVELS } from '../../constants'
 import { useNavigate } from 'react-router-dom'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'

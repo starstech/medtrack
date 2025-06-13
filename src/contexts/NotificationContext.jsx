@@ -1,12 +1,20 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
 import { notification } from 'antd'
+import { notificationService } from '../services/notificationService'
+import { supabase } from '../lib/supabase'
 
 const NotificationContext = createContext()
 
 const notificationReducer = (state, action) => {
   switch (action.type) {
+    case 'SET_LOADING':
+      return { ...state, loading: action.payload }
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, loading: false }
+    case 'CLEAR_ERROR':
+      return { ...state, error: null }
     case 'SET_NOTIFICATIONS':
-      return { ...state, notifications: action.payload }
+      return { ...state, notifications: action.payload, loading: false, error: null }
     case 'ADD_NOTIFICATION':
       return {
         ...state,
@@ -45,6 +53,8 @@ const notificationReducer = (state, action) => {
 
 const initialState = {
   notifications: [],
+  loading: true,
+  error: null,
   preferences: {
     pushNotifications: true,
     emailNotifications: false,
@@ -58,99 +68,129 @@ const initialState = {
 export const NotificationProvider = ({ children }) => {
   const [state, dispatch] = useReducer(notificationReducer, initialState)
 
-  // Load notification preferences from localStorage
+  // Load notifications and preferences from backend
   useEffect(() => {
-    const savedPrefs = localStorage.getItem('notificationPreferences')
-    if (savedPrefs) {
+    const loadNotifications = async () => {
       try {
-        const preferences = JSON.parse(savedPrefs)
-        dispatch({ type: 'SET_PREFERENCES', payload: preferences })
+        dispatch({ type: 'SET_LOADING', payload: true })
+        dispatch({ type: 'CLEAR_ERROR' })
+
+        // Load notifications
+        const { data: notifications, error: notificationsError } = await notificationService.getNotifications({
+          limit: 50 // Get last 50 notifications
+        })
+
+        if (notificationsError) {
+          throw new Error(`Failed to load notifications: ${notificationsError}`)
+        }
+
+        dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications || [] })
+
+        // Load preferences
+        const { data: savedPrefs, error: prefsError } = await notificationService.getNotificationPreferences()
+        
+        if (savedPrefs && !prefsError) {
+          // Merge with default preferences
+          const mergedPrefs = { ...initialState.preferences, ...savedPrefs }
+          dispatch({ type: 'SET_PREFERENCES', payload: mergedPrefs })
+        } else {
+          // Try to load from localStorage as fallback
+          const localStoragePrefs = localStorage.getItem('notificationPreferences')
+          if (localStoragePrefs) {
+            try {
+              const preferences = JSON.parse(localStoragePrefs)
+              dispatch({ type: 'SET_PREFERENCES', payload: preferences })
+            } catch (error) {
+              console.error('Error loading notification preferences from localStorage:', error)
+            }
+          }
+        }
+
       } catch (error) {
-        console.error('Error loading notification preferences:', error)
+        console.error('Error loading notifications:', error)
+        dispatch({ type: 'SET_ERROR', payload: error.message })
       }
     }
+
+    loadNotifications()
   }, [])
 
-  // Mock notifications for demo
+  // Set up real-time notifications subscription
   useEffect(() => {
-    const mockNotifications = [
-      {
-        id: '1',
-        type: 'medication_reminder',
-        title: 'Medication Reminder',
-        message: 'Time to give Emma her Amoxicillin (1 tablet)',
-        timestamp: new Date().toISOString(),
-        read: false,
-        patientId: 'patient1',
-        medicationId: 'med1'
-      },
-      {
-        id: '2',
-        type: 'caregiver_update',
-        title: 'Caregiver Update',
-        message: 'John marked Emma\'s morning dose as taken',
-        timestamp: new Date(Date.now() - 30 * 60 * 1000).toISOString(), // 30 minutes ago
-        read: false,
-        patientId: 'patient1'
-      },
-      {
-        id: '3',
-        type: 'appointment_reminder',
-        title: 'Appointment Reminder',
-        message: 'Emma has a doctor appointment tomorrow at 2:00 PM',
-        timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2 hours ago
-        read: true,
-        patientId: 'patient1'
-      },
-      {
-        id: '4',
-        type: 'measurement_reminder',
-        title: 'Measurement Reminder',
-        message: 'Time to check Emma\'s blood pressure',
-        timestamp: new Date(Date.now() - 4 * 60 * 60 * 1000).toISOString(), // 4 hours ago
-        read: false,
-        patientId: 'patient1'
-      },
-      {
-        id: '5',
-        type: 'system_alert',
-        title: 'System Alert',
-        message: 'Your subscription expires in 7 days',
-        timestamp: new Date(Date.now() - 6 * 60 * 60 * 1000).toISOString(), // 6 hours ago
-        read: true
-      },
-      {
-        id: '6',
-        type: 'medication_reminder',
-        title: 'Missed Dose Alert',
-        message: 'Emma missed her evening Lisinopril dose',
-        timestamp: new Date(Date.now() - 12 * 60 * 60 * 1000).toISOString(), // 12 hours ago
-        read: false,
-        patientId: 'patient1',
-        medicationId: 'med2'
-      },
-      {
-        id: '7',
-        type: 'caregiver_update',
-        title: 'New Caregiver Joined',
-        message: 'Dr. Sarah Wilson accepted your invitation',
-        timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
-        read: true,
-        patientId: 'patient1'
-      },
-      {
-        id: '8',
-        type: 'appointment_reminder',
-        title: 'Upcoming Lab Work',
-        message: 'Emma\'s blood work is scheduled for next Tuesday',
-        timestamp: new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString(), // 2 days ago
-        read: true,
-        patientId: 'patient1'
-      }
-    ]
+    let subscription = null
 
-    dispatch({ type: 'SET_NOTIFICATIONS', payload: mockNotifications })
-  }, [])
+    const setupRealtimeSubscription = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+
+        // Subscribe to notifications table changes for the current user
+        subscription = supabase
+          .channel('notifications')
+          .on(
+            'postgres_changes',
+            {
+              event: 'INSERT',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const newNotification = payload.new
+              dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
+              
+              // Show in-app notification if enabled
+              if (state.preferences.pushNotifications) {
+                showNotification('info', newNotification.title, newNotification.message)
+              }
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'UPDATE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const updatedNotification = payload.new
+              dispatch({ type: 'SET_NOTIFICATIONS', payload: 
+                state.notifications.map(notif => 
+                  notif.id === updatedNotification.id ? updatedNotification : notif
+                )
+              })
+            }
+          )
+          .on(
+            'postgres_changes',
+            {
+              event: 'DELETE',
+              schema: 'public',
+              table: 'notifications',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              const deletedNotification = payload.old
+              dispatch({ type: 'DELETE_NOTIFICATION', payload: deletedNotification.id })
+            }
+          )
+          .subscribe()
+
+      } catch (error) {
+        console.error('Error setting up realtime subscription:', error)
+      }
+    }
+
+    setupRealtimeSubscription()
+
+    // Cleanup subscription on unmount
+    return () => {
+      if (subscription) {
+        supabase.removeChannel(subscription)
+      }
+    }
+  }, [state.preferences.pushNotifications])
 
   const showNotification = (type, message, description = '', duration = 4.5) => {
     notification[type]({
@@ -161,19 +201,32 @@ export const NotificationProvider = ({ children }) => {
     })
   }
 
-  const addNotification = (notificationData) => {
-    const newNotification = {
-      id: Date.now().toString(),
-      timestamp: new Date().toISOString(),
-      read: false,
-      ...notificationData
-    }
+  const addNotification = async (notificationData) => {
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      
+      const { data: newNotification, error } = await notificationService.createNotification({
+        ...notificationData,
+        created_at: new Date().toISOString(),
+        read: false
+      })
 
-    dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
+      if (error) throw new Error(error)
 
-    // Show in-app notification if enabled
-    if (state.preferences.pushNotifications) {
-      showNotification('info', notificationData.title, notificationData.message)
+      // The notification will be added via realtime subscription
+      // But add locally for immediate feedback
+      dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
+
+      // Show in-app notification if enabled
+      if (state.preferences.pushNotifications) {
+        showNotification('info', notificationData.title, notificationData.message)
+      }
+
+      return newNotification
+    } catch (error) {
+      console.error('Error adding notification:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
   }
 
@@ -191,8 +244,8 @@ export const NotificationProvider = ({ children }) => {
             type: 'medication_reminder',
             title: 'Medication Reminder',
             message: `${patient.name} needs ${medication.name} in ${minutes} minutes`,
-            patientId: patient.id,
-            medicationId: medication.id
+            patient_id: patient.id,
+            medication_id: medication.id
           })
         }, reminderTime)
       }
@@ -211,7 +264,7 @@ export const NotificationProvider = ({ children }) => {
           type: 'appointment_reminder',
           title: 'Appointment Reminder',
           message: `${patient.name} has an appointment tomorrow at ${appointment.time}`,
-          patientId: patient.id
+          patient_id: patient.id
         })
       }, oneDayBefore)
     }
@@ -222,37 +275,88 @@ export const NotificationProvider = ({ children }) => {
           type: 'appointment_reminder',
           title: 'Appointment Reminder',
           message: `${patient.name} has an appointment in 1 hour`,
-          patientId: patient.id
+          patient_id: patient.id
         })
       }, oneHourBefore)
     }
   }
 
-  const markAsRead = (notificationId) => {
-    const notification = state.notifications.find(n => n.id === notificationId)
-    if (notification) {
+  const markAsRead = async (notificationId) => {
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      
+      const { error } = await notificationService.markAsRead(notificationId)
+      if (error) throw new Error(error)
+      
       dispatch({ type: 'MARK_READ', payload: notificationId })
+    } catch (error) {
+      console.error('Error marking notification as read:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
   }
 
-  const toggleReadStatus = (notificationId) => {
+  const toggleReadStatus = async (notificationId) => {
     const notification = state.notifications.find(n => n.id === notificationId)
     if (notification) {
-      dispatch({ type: 'TOGGLE_READ', payload: notificationId })
+      if (notification.read) {
+        // For toggling back to unread, we need to implement this in the service
+        dispatch({ type: 'TOGGLE_READ', payload: notificationId })
+      } else {
+        await markAsRead(notificationId)
+      }
     }
   }
 
-  const markAllAsRead = () => {
-    dispatch({ type: 'MARK_ALL_READ' })
+  const markAllAsRead = async () => {
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      
+      const { error } = await notificationService.markAllAsRead()
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'MARK_ALL_READ' })
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
+    }
   }
 
-  const deleteNotification = (notificationId) => {
-    dispatch({ type: 'DELETE_NOTIFICATION', payload: notificationId })
+  const deleteNotification = async (notificationId) => {
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      
+      const { error } = await notificationService.deleteNotification(notificationId)
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'DELETE_NOTIFICATION', payload: notificationId })
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
+    }
   }
 
-  const updatePreferences = (newPreferences) => {
-    dispatch({ type: 'SET_PREFERENCES', payload: newPreferences })
-    localStorage.setItem('notificationPreferences', JSON.stringify(newPreferences))
+  const updatePreferences = async (newPreferences) => {
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      
+      // Update in backend
+      const { error } = await notificationService.updateNotificationPreferences(newPreferences)
+      if (error) {
+        console.warn('Failed to save preferences to backend:', error)
+      }
+      
+      // Always update locally and in localStorage
+      dispatch({ type: 'SET_PREFERENCES', payload: newPreferences })
+      localStorage.setItem('notificationPreferences', JSON.stringify(newPreferences))
+    } catch (error) {
+      console.error('Error updating notification preferences:', error)
+      // Still update locally even if backend fails
+      dispatch({ type: 'SET_PREFERENCES', payload: newPreferences })
+      localStorage.setItem('notificationPreferences', JSON.stringify(newPreferences))
+    }
   }
 
   const getUnreadCount = () => {
@@ -260,8 +364,7 @@ export const NotificationProvider = ({ children }) => {
   }
 
   const value = {
-    notifications: state.notifications,
-    preferences: state.preferences,
+    ...state,
     addNotification,
     scheduleMedicationReminder,
     scheduleAppointmentReminder,
@@ -271,7 +374,8 @@ export const NotificationProvider = ({ children }) => {
     deleteNotification,
     updatePreferences,
     getUnreadCount,
-    showNotification
+    showNotification,
+    clearError: () => dispatch({ type: 'CLEAR_ERROR' })
   }
 
   return (

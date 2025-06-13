@@ -4,7 +4,6 @@ import { PlusOutlined, SearchOutlined, UserOutlined, MedicineBoxOutlined, Calend
 import PatientList from '../components/patients/PatientList'
 import AddPatientModal from '../components/patients/AddPatientModal'
 import { usePatients } from '../hooks/usePatients'
-import { mockPatients, mockMedications, getUpcomingAppointments } from '../utils/mockData'
 import LoadingSpinner from '../components/common/LoadingSpinner'
 import './PatientsPage.css'
 
@@ -12,7 +11,7 @@ const { Title, Text } = Typography
 const { Search } = Input
 
 const PatientsPage = () => {
-  const { patients, loading } = usePatients()
+  const { patients, medications, loading, error } = usePatients()
   const [searchTerm, setSearchTerm] = useState('')
   const [addModalVisible, setAddModalVisible] = useState(false)
 
@@ -20,25 +19,50 @@ const PatientsPage = () => {
     return <LoadingSpinner message="Loading patients..." />
   }
 
-  // Use mock data for now
-  const allPatients = mockPatients
+  if (error) {
+    return (
+      <div className="patients-page">
+        <Card>
+          <div style={{ textAlign: 'center', padding: '40px' }}>
+            <Title level={4} type="danger">Error Loading Patients</Title>
+            <Text type="secondary">{error}</Text>
+          </div>
+        </Card>
+      </div>
+    )
+  }
+
+  // Use real context data
+  const allPatients = patients || []
   
   const filteredPatients = allPatients.filter(patient =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    patient.medical_conditions?.some(condition => 
+      condition.toLowerCase().includes(searchTerm.toLowerCase())
+    ) ||
     patient.medicalConditions?.some(condition => 
       condition.toLowerCase().includes(searchTerm.toLowerCase())
     )
   )
 
-  // Calculate stats
+  // Calculate stats from real data
   const totalPatients = allPatients.length
-  const activeMedications = mockMedications.filter(med => med.isActive).length
-  const upcomingAppointments = getUpcomingAppointments(7).length
-  const criticalPatients = allPatients.filter(patient => 
-    patient.medicalConditions?.some(condition => 
-      ['Diabetes Type 2', 'Hypertension', 'Asthma'].includes(condition)
-    )
+  const activeMedications = (medications || []).filter(med => 
+    med.is_active === true || med.isActive === true
   ).length
+  
+  // For upcoming appointments, we'll set to 0 for now until we have an appointments service
+  const upcomingAppointments = 0
+  
+  const criticalPatients = allPatients.filter(patient => {
+    const conditions = patient.medical_conditions || patient.medicalConditions || []
+    return conditions.some(condition => 
+      ['Diabetes Type 2', 'Hypertension', 'Asthma'].includes(condition) ||
+      condition.toLowerCase().includes('diabetes') ||
+      condition.toLowerCase().includes('hypertension') ||
+      condition.toLowerCase().includes('asthma')
+    )
+  }).length
 
   const handleAddPatient = () => {
     setAddModalVisible(true)

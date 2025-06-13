@@ -1,5 +1,8 @@
 import { createContext, useContext, useReducer, useEffect } from 'react'
-import { mockPatients, mockMedications, mockMeasurements, mockLogs } from '../utils/mockData'
+import { patientService } from '../services/patientService'
+import { medicationService } from '../services/medicationService'
+import { measurementService } from '../services/measurementService'
+import { dailyLogService } from '../services/dailyLogService'
 
 const PatientContext = createContext()
 
@@ -7,8 +10,12 @@ const patientReducer = (state, action) => {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, loading: action.payload }
+    case 'SET_ERROR':
+      return { ...state, error: action.payload, loading: false }
+    case 'CLEAR_ERROR':
+      return { ...state, error: null }
     case 'SET_PATIENTS':
-      return { ...state, patients: action.payload, loading: false }
+      return { ...state, patients: action.payload, loading: false, error: null }
     case 'SET_SELECTED_PATIENT':
       return { ...state, selectedPatient: action.payload }
     case 'ADD_PATIENT':
@@ -83,7 +90,8 @@ const initialState = {
   medications: [],
   measurements: [],
   dailyLogs: [],
-  loading: true
+  loading: true,
+  error: null
 }
 
 export const PatientProvider = ({ children }) => {
@@ -92,13 +100,57 @@ export const PatientProvider = ({ children }) => {
   // Load initial data
   useEffect(() => {
     const loadData = async () => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 800))
-      
-      dispatch({ type: 'SET_PATIENTS', payload: mockPatients })
-      dispatch({ type: 'SET_MEDICATIONS', payload: mockMedications })
-      dispatch({ type: 'SET_MEASUREMENTS', payload: mockMeasurements })
-      dispatch({ type: 'SET_DAILY_LOGS', payload: mockLogs })
+      try {
+        dispatch({ type: 'SET_LOADING', payload: true })
+        dispatch({ type: 'CLEAR_ERROR' })
+        
+        // Load patients first
+        const { data: patients, error: patientsError } = await patientService.getPatients()
+        if (patientsError) throw new Error(`Failed to load patients: ${patientsError}`)
+        
+        dispatch({ type: 'SET_PATIENTS', payload: patients || [] })
+        
+        // If we have patients, load data for all patients
+        if (patients && patients.length > 0) {
+          // Load medications for all patients
+          const medicationsPromises = patients.map(patient => 
+            medicationService.getMedications(patient.id)
+          )
+          const medicationsResults = await Promise.allSettled(medicationsPromises)
+          const allMedications = medicationsResults
+            .filter(result => result.status === 'fulfilled' && result.value.data)
+            .flatMap(result => result.value.data)
+          
+          dispatch({ type: 'SET_MEDICATIONS', payload: allMedications })
+          
+          // Load measurements for all patients
+          const measurementsPromises = patients.map(patient => 
+            measurementService.getMeasurements(patient.id, { limit: 100 })
+          )
+          const measurementsResults = await Promise.allSettled(measurementsPromises)
+          const allMeasurements = measurementsResults
+            .filter(result => result.status === 'fulfilled' && result.value.data)
+            .flatMap(result => result.value.data)
+          
+          dispatch({ type: 'SET_MEASUREMENTS', payload: allMeasurements })
+          
+          // Load daily logs for all patients
+          const dailyLogsPromises = patients.map(patient => 
+            dailyLogService.getPatientLogs(patient.id, { limit: 100 })
+          )
+          const dailyLogsResults = await Promise.allSettled(dailyLogsPromises)
+          const allDailyLogs = dailyLogsResults
+            .filter(result => result.status === 'fulfilled' && result.value.data)
+            .flatMap(result => result.value.data)
+          
+          dispatch({ type: 'SET_DAILY_LOGS', payload: allDailyLogs })
+        }
+        
+        dispatch({ type: 'SET_LOADING', payload: false })
+      } catch (error) {
+        console.error('Error loading initial data:', error)
+        dispatch({ type: 'SET_ERROR', payload: error.message })
+      }
     }
 
     loadData()
@@ -110,140 +162,173 @@ export const PatientProvider = ({ children }) => {
   }
 
   const addPatient = async (patientData) => {
-    const newPatient = {
-      id: Date.now().toString(),
-      ...patientData,
-      createdAt: new Date().toISOString(),
-      caregivers: [{ id: '1', name: 'Current User', role: 'primary' }]
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: newPatient, error } = await patientService.createPatient(patientData)
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'ADD_PATIENT', payload: newPatient })
+      return newPatient
+    } catch (error) {
+      console.error('Error adding patient:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'ADD_PATIENT', payload: newPatient })
-    return newPatient
   }
 
   const updatePatient = async (patientId, patientData) => {
-    const updatedPatient = {
-      ...patientData,
-      id: patientId
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: updatedPatient, error } = await patientService.updatePatient(patientId, patientData)
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'UPDATE_PATIENT', payload: updatedPatient })
+      
+      // Update selected patient if it's the one being updated
+      if (state.selectedPatient?.id === patientId) {
+        dispatch({ type: 'SET_SELECTED_PATIENT', payload: updatedPatient })
+      }
+      
+      return updatedPatient
+    } catch (error) {
+      console.error('Error updating patient:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'UPDATE_PATIENT', payload: updatedPatient })
-    
-    // Update selected patient if it's the one being updated
-    if (state.selectedPatient?.id === patientId) {
-      dispatch({ type: 'SET_SELECTED_PATIENT', payload: updatedPatient })
-    }
-    
-    return updatedPatient
   }
 
   const addMedication = async (patientId, medicationData) => {
-    const newMedication = {
-      id: Date.now().toString(),
-      patientId,
-      ...medicationData,
-      createdAt: new Date().toISOString(),
-      doses: [] // Will be populated based on schedule
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: newMedication, error } = await medicationService.createMedication({
+        ...medicationData,
+        patient_id: patientId
+      })
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'ADD_MEDICATION', payload: newMedication })
+      return newMedication
+    } catch (error) {
+      console.error('Error adding medication:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'ADD_MEDICATION', payload: newMedication })
-    return newMedication
   }
 
   const updateMedication = async (medicationId, medicationData) => {
-    const updatedMedication = {
-      ...medicationData,
-      id: medicationId
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: updatedMedication, error } = await medicationService.updateMedication(medicationId, medicationData)
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'UPDATE_MEDICATION', payload: updatedMedication })
+      return updatedMedication
+    } catch (error) {
+      console.error('Error updating medication:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'UPDATE_MEDICATION', payload: updatedMedication })
-    return updatedMedication
   }
 
   const deleteMedication = async (medicationId) => {
-    dispatch({
-      type: 'DELETE_MEDICATION',
-      payload: { medicationId }
-    })
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { error } = await medicationService.deleteMedication(medicationId)
+      
+      if (error) throw new Error(error)
+      
+      dispatch({
+        type: 'DELETE_MEDICATION',
+        payload: { medicationId }
+      })
+    } catch (error) {
+      console.error('Error deleting medication:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
+    }
   }
 
   const addMeasurement = async (patientId, measurementData) => {
-    const newMeasurement = {
-      id: Date.now().toString(),
-      patientId,
-      ...measurementData,
-      recordedAt: new Date().toISOString()
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: newMeasurement, error } = await measurementService.createMeasurement({
+        ...measurementData,
+        patient_id: patientId
+      })
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'ADD_MEASUREMENT', payload: newMeasurement })
+      return newMeasurement
+    } catch (error) {
+      console.error('Error adding measurement:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'ADD_MEASUREMENT', payload: newMeasurement })
-    return newMeasurement
   }
 
   const addDailyLog = async (patientId, logData) => {
-    const newLog = {
-      id: Date.now().toString(),
-      patientId,
-      ...logData,
-      timestamp: new Date().toISOString()
+    try {
+      dispatch({ type: 'CLEAR_ERROR' })
+      const { data: newLog, error } = await dailyLogService.createLog(patientId, logData)
+      
+      if (error) throw new Error(error)
+      
+      dispatch({ type: 'ADD_DAILY_LOG', payload: newLog })
+      return newLog
+    } catch (error) {
+      console.error('Error adding daily log:', error)
+      dispatch({ type: 'SET_ERROR', payload: error.message })
+      throw error
     }
-    
-    dispatch({ type: 'ADD_DAILY_LOG', payload: newLog })
-    return newLog
   }
 
   const markDose = async (medicationId, doseId, status, notes = '') => {
+    // Note: This function needs to be updated once we have a dose tracking service
+    // For now, we'll update the local state only
     dispatch({ 
       type: 'MARK_DOSE_TAKEN', 
       payload: { 
         medicationId, 
         doseId, 
         status, 
-        takenAt: new Date().toISOString(),
+        takenAt: status === 'taken' ? new Date().toISOString() : null,
         notes 
-      } 
+      }
     })
   }
 
   const getTodaysDoses = () => {
     const today = new Date().toDateString()
-    const todaysDoses = []
-    
-    state.medications.forEach(medication => {
-      const patient = state.patients.find(p => p.id === medication.patientId)
-      medication.doses?.forEach(dose => {
-        const doseDate = new Date(dose.scheduledTime).toDateString()
-        if (doseDate === today) {
-          todaysDoses.push({
-            ...dose,
-            medication,
-            patient
-          })
-        }
-      })
-    })
-    
-    return todaysDoses.sort((a, b) => new Date(a.scheduledTime) - new Date(b.scheduledTime))
+    return state.medications.flatMap(medication => 
+      (medication.doses || []).filter(dose => 
+        new Date(dose.scheduledTime).toDateString() === today
+      ).map(dose => ({
+        ...dose,
+        medicationName: medication.name,
+        patientName: state.patients.find(p => p.id === medication.patientId)?.name || 'Unknown'
+      }))
+    )
   }
 
   const getPatientMedications = (patientId) => {
-    return state.medications.filter(med => med.patientId === patientId)
+    return state.medications.filter(m => m.patient_id === patientId || m.patientId === patientId)
   }
 
   const getPatientMeasurements = (patientId) => {
-    return state.measurements.filter(measurement => measurement.patientId === patientId)
+    return state.measurements.filter(m => m.patient_id === patientId || m.patientId === patientId)
   }
 
   const getPatientLogs = (patientId) => {
-    return state.dailyLogs.filter(log => log.patientId === patientId)
+    return state.dailyLogs.filter(l => l.patient_id === patientId || l.patientId === patientId)
   }
 
   const value = {
-    patients: state.patients,
-    selectedPatient: state.selectedPatient,
-    medications: state.medications,
-    measurements: state.measurements,
-    dailyLogs: state.dailyLogs,
-    loading: state.loading,
+    ...state,
     selectPatient,
     addPatient,
     updatePatient,
@@ -256,7 +341,8 @@ export const PatientProvider = ({ children }) => {
     getTodaysDoses,
     getPatientMedications,
     getPatientMeasurements,
-    getPatientLogs
+    getPatientLogs,
+    clearError: () => dispatch({ type: 'CLEAR_ERROR' })
   }
 
   return (
@@ -268,7 +354,7 @@ export const PatientProvider = ({ children }) => {
 
 export const usePatientContext = () => {
   const context = useContext(PatientContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('usePatientContext must be used within a PatientProvider')
   }
   return context

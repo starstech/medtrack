@@ -31,7 +31,7 @@ import {
   CalendarOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
-import { MEDICATION_FREQUENCIES, MEDICATION_FORMS } from '../../utils/mockData'
+import { MEDICATION_FREQUENCIES, MEDICATION_FORMS } from '../../constants'
 import EditMedicationModal from './EditMedicationModal'
 import dayjs from 'dayjs'
 import './MedicationSection.css'
