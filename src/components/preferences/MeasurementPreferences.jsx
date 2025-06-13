@@ -47,10 +47,19 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
 
   // Load initial data
   useEffect(() => {
-    loadData();
+    if (patientId) {
+      loadData();
+    } else {
+      setLoading(false);
+    }
   }, [patientId]);
 
   const loadData = async () => {
+    if (!patientId) {
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       
@@ -394,6 +403,17 @@ const MeasurementPreferences = ({ patientId, onPreferencesChange }) => {
     const preset = presets.find(p => p.name === presetName);
     return preset?.description || '';
   };
+
+  if (!patientId) {
+    return (
+      <Alert
+        message="No Patient Selected"
+        description="Please select a patient to configure measurement preferences."
+        type="info"
+        showIcon
+      />
+    );
+  }
 
   if (loading) {
     return (

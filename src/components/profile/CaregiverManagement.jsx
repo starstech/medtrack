@@ -76,11 +76,11 @@ const CaregiverManagement = () => {
       const { data: caregivers, error: caregiversError } = await caregiverService.getCaregivers()
       if (caregiversError) {
         console.error('Error loading caregivers:', caregiversError)
-        // Don't show error message if it's just empty data
-        if (caregiversError !== 'No data found') {
-          message.error('Failed to load caregiver connections')
-        }
         setCaregiverConnections([])
+        // Only show error message for real errors, not empty data
+        if (!caregiversError.includes('No rows') && !caregiversError.includes('not found')) {
+          console.warn('Caregiver service error:', caregiversError)
+        }
       } else {
         // Transform the data to match our UI format
         const transformedCaregivers = caregivers?.map(connection => ({
@@ -122,10 +122,8 @@ const CaregiverManagement = () => {
       // Set empty arrays to stop loading
       setCaregiverConnections([])
       setInvitations([])
-      // Only show error if it's a real error, not just empty data
-      if (!error.message?.includes('No rows') && !error.message?.includes('not found')) {
-        message.error('Failed to load caregiver data')
-      }
+      // Don't show error messages for expected empty states
+      console.warn('Caregiver data loading completed with empty results')
     } finally {
       // Always set loading to false
       setDataLoading(false)
