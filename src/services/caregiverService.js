@@ -17,7 +17,7 @@ export const caregiverService = {
         `)
         .eq('caregiver_id', user.id)
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .order('invited_at', { ascending: false })
 
       if (error) throw error
       return { data, error: null }
@@ -220,7 +220,7 @@ export const caregiverService = {
         `)
         .eq('caregiver_id', caregiverId)
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .order('invited_at', { ascending: false })
 
       if (error) throw error
       return { data, error: null }
@@ -330,7 +330,7 @@ export const caregiverService = {
         `)
         .eq('patient_id', patientId)
         .eq('is_active', true)
-        .order('created_at', { ascending: false })
+        .order('invited_at', { ascending: false })
 
       if (error) throw error
       return { data, error: null }
