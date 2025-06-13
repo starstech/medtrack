@@ -63,7 +63,7 @@ class ApiClient {
         case 401:
           this.setToken(null)
           message.error('Session expired. Please login again.')
-          window.location.href = '/auth'
+          window.location.href = '/login'
           break
         case 403:
           message.error('You do not have permission to perform this action.')

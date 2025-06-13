@@ -1,122 +1,33 @@
-import React, { useState, useEffect } from 'react'
-import { Layout, Menu, Button, Avatar, Badge, Dropdown, Typography, Space } from 'antd'
-import {
+import React, { useState, useEffect, useCallback } from 'react'
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, Badge } from 'antd'
+import { 
+  MenuUnfoldOutlined, 
   MenuFoldOutlined,
-  MenuUnfoldOutlined,
   DashboardOutlined,
   UserOutlined,
   MedicineBoxOutlined,
   CalendarOutlined,
   SettingOutlined,
+  LogoutOutlined,
   HeartOutlined,
-  BellOutlined,
-  LogoutOutlined
+  BellOutlined
 } from '@ant-design/icons'
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { useNotifications } from '../../hooks/useNotifications'
 import { usePatients } from '../../hooks/usePatients'
-import NotificationPanel from '../notifications/NotificationPanel'
+import { useNotifications } from '../../hooks/useNotifications'
+import './Layout.css'
 
 const { Header, Sider, Content } = Layout
-const { Title, Text } = Typography
+const { Text } = Typography
 
 const AppLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
-  
-  const navigate = useNavigate()
   const location = useLocation()
+  const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { getUnreadCount } = useNotifications()
   const { selectedPatient, patients } = usePatients()
-
-  // Add custom styles to the document head
-  useEffect(() => {
-    const style = document.createElement('style')
-    style.textContent = `
-      .custom-menu .ant-menu-inline .ant-menu-item {
-        margin: 4px 16px !important;
-        border-radius: 8px !important;
-        height: 44px !important;
-        line-height: 44px !important;
-        padding: 0 16px !important;
-        transition: all 0.3s ease !important;
-        color: rgba(0, 0, 0, 0.65) !important;
-        font-weight: 500 !important;
-        position: relative !important;
-        width: calc(100% - 32px) !important;
-        box-sizing: border-box !important;
-      }
-      
-      .custom-menu .ant-menu-inline .ant-menu-item:hover {
-        background: rgba(24, 144, 255, 0.08) !important;
-        color: #1890ff !important;
-        transform: translateX(4px) !important;
-      }
-      
-      .custom-menu .ant-menu-inline .ant-menu-item-selected {
-        background: linear-gradient(135deg, rgba(24, 144, 255, 0.1), rgba(114, 46, 209, 0.1)) !important;
-        color: #1890ff !important;
-        font-weight: 600 !important;
-        border-left: 4px solid #1890ff !important;
-        padding-left: 12px !important;
-        width: calc(100% - 32px) !important;
-        box-sizing: border-box !important;
-      }
-      
-      .custom-menu .ant-menu-inline .ant-menu-item-selected:hover {
-        background: linear-gradient(135deg, rgba(24, 144, 255, 0.15), rgba(114, 46, 209, 0.15)) !important;
-      }
-      
-      .custom-menu .ant-menu .ant-menu-item .ant-menu-item-icon {
-        font-size: 18px !important;
-        margin-right: 12px !important;
-        transition: all 0.3s ease !important;
-      }
-      
-      .custom-menu .ant-menu-inline .ant-menu-item:hover .ant-menu-item-icon,
-      .custom-menu .ant-menu-inline .ant-menu-item-selected .ant-menu-item-icon {
-        color: #1890ff !important;
-        transform: scale(1.1) !important;
-      }
-      
-      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item {
-        margin: 4px 12px !important;
-        padding: 0 !important;
-        justify-content: center !important;
-        text-align: center !important;
-        width: calc(100% - 24px) !important;
-      }
-      
-      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item-selected {
-        padding: 0 !important;
-        border-left: none !important;
-        position: relative !important;
-        width: calc(100% - 24px) !important;
-      }
-      
-      .custom-menu.ant-layout-sider-collapsed .ant-menu-inline .ant-menu-item-selected::after {
-        content: '' !important;
-        position: absolute !important;
-        left: 50% !important;
-        bottom: 8px !important;
-        transform: translateX(-50%) !important;
-        width: 6px !important;
-        height: 6px !important;
-        background: #1890ff !important;
-        border-radius: 50% !important;
-      }
-      
-      .custom-menu.ant-layout-sider-collapsed .ant-menu .ant-menu-item .ant-menu-item-icon {
-        margin-right: 0 !important;
-      }
-    `
-    document.head.appendChild(style)
-    
-    return () => {
-      document.head.removeChild(style)
-    }
-  }, [])
 
   const menuItems = [
     {
@@ -164,9 +75,13 @@ const AppLayout = ({ children }) => {
     }
   ]
 
-  const handleMenuClick = ({ key }) => {
+  const handleMenuClick = useCallback(({ key }) => {
     navigate(key)
-  }
+  }, [navigate])
+
+  const handleCollapse = useCallback((collapsed) => {
+    setCollapsed(collapsed)
+  }, [])
 
   const getPageTitle = () => {
     switch (location.pathname) {
@@ -193,7 +108,7 @@ const AppLayout = ({ children }) => {
       <Sider 
         collapsible 
         collapsed={collapsed} 
-        onCollapse={setCollapsed} 
+        onCollapse={handleCollapse} 
         width={280}
         className="custom-menu"
         style={{
@@ -227,118 +142,140 @@ const AppLayout = ({ children }) => {
             boxShadow: '0 4px 12px rgba(24, 144, 255, 0.25)'
           }}>
             <HeartOutlined style={{ 
-              fontSize: '20px', 
-              color: '#fff'
+              color: '#fff', 
+              fontSize: '20px' 
             }} />
           </div>
           {!collapsed && (
-            <Title level={3} style={{ 
-              margin: '0 0 0 16px', 
-              background: 'linear-gradient(135deg, #1890ff, #722ed1)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              fontWeight: 700
-            }}>
-              MedTracker
-            </Title>
+            <div style={{ marginLeft: '16px' }}>
+              <Text strong style={{ 
+                fontSize: '18px', 
+                color: '#1890ff',
+                fontWeight: 700,
+                background: 'linear-gradient(135deg, #1890ff, #722ed1)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                MedTrack
+              </Text>
+            </div>
           )}
         </div>
 
         {/* Menu */}
-        <div style={{ padding: '16px 0' }}>
-          <Menu 
-            mode="inline" 
-            selectedKeys={[location.pathname]} 
-            onClick={handleMenuClick} 
-            items={menuItems}
-            style={{
-              background: 'transparent',
-              border: 'none'
-            }}
-          />
-        </div>
+        <Menu
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          onClick={handleMenuClick}
+          items={menuItems}
+          style={{ 
+            border: 'none',
+            background: '#fff',
+            padding: '8px 0'
+          }}
+        />
       </Sider>
-      
+
       <Layout>
+        {/* Header */}
         <Header style={{ 
-          position: 'sticky', 
-          top: 0, 
-          zIndex: 100, 
           padding: '0 24px', 
           background: '#fff', 
-          display: 'flex', 
-          justifyContent: 'space-between', 
+          borderBottom: '1px solid #f0f0f0',
+          display: 'flex',
           alignItems: 'center',
-          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.06)',
-          borderBottom: '1px solid #f0f0f0'
+          justifyContent: 'space-between',
+          boxShadow: '0 1px 4px rgba(0, 0, 0, 0.04)'
         }}>
-          <Space>
-            <Button 
-              type="text" 
-              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} 
+          <div style={{ display: 'flex', alignItems: 'center' }}>
+            <Button
+              type="text"
+              icon={collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
               onClick={() => setCollapsed(!collapsed)}
               style={{
                 fontSize: '16px',
-                width: '40px',
-                height: '40px',
-                borderRadius: '8px',
-                transition: 'all 0.3s ease'
+                width: 64,
+                height: 64,
               }}
             />
-            <Title level={4} style={{ 
-              margin: 0,
-              background: 'linear-gradient(135deg, #1890ff, #722ed1)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+            <Typography.Title level={3} style={{ 
+              margin: 0, 
+              marginLeft: '16px',
+              color: '#2d3748',
               fontWeight: 600
             }}>
               {getPageTitle()}
-            </Title>
-          </Space>
-          <Space>
+            </Typography.Title>
+          </div>
+
+          <Space size="middle">
+            {/* Notifications */}
+            <Badge count={getUnreadCount()} offset={[-2, 2]}>
+              <Button 
+                type="text" 
+                icon={<BellOutlined />}
+                onClick={() => navigate('/notifications')}
+                style={{
+                  fontSize: '18px',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              />
+            </Badge>
+
+            {/* User Menu */}
             <Dropdown
-              popupRender={() => <NotificationPanel />}
-              trigger={['click']}
+              menu={{ items: userMenuItems }}
               placement="bottomRight"
-              arrow={{ pointAtCenter: true }}
+              trigger={['click']}
             >
-              <Badge count={getUnreadCount()} offset={[-8, 8]}>
-                <Button 
-                  type="text" 
-                  icon={<BellOutlined />}
-                  style={{
-                    fontSize: '16px',
-                    width: '40px',
-                    height: '40px',
-                    borderRadius: '8px',
-                    transition: 'all 0.3s ease'
-                  }}
-                />
-              </Badge>
-            </Dropdown>
-            <Dropdown menu={{ items: userMenuItems }}>
-              <Space style={{ 
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
                 cursor: 'pointer',
                 padding: '8px 12px',
                 borderRadius: '8px',
-                transition: 'all 0.3s ease'
+                transition: 'background-color 0.3s',
+                ':hover': {
+                  backgroundColor: '#f5f5f5'
+                }
               }}>
                 <Avatar 
-                  icon={<UserOutlined />}
-                  style={{
-                    background: 'linear-gradient(135deg, #1890ff, #722ed1)',
-                    boxShadow: '0 2px 8px rgba(24, 144, 255, 0.3)'
-                  }}
-                />
-                <Text style={{ fontWeight: 500 }}>{user?.name || 'User'}</Text>
-              </Space>
+                  style={{ 
+                    backgroundColor: '#1890ff',
+                    color: '#fff',
+                    fontWeight: 600
+                  }} 
+                  size="default"
+                >
+                  {user?.name?.charAt(0)?.toUpperCase() || user?.email?.charAt(0)?.toUpperCase() || 'U'}
+                </Avatar>
+                {!collapsed && (
+                  <Space direction="vertical" size={0} style={{ marginLeft: '12px' }}>
+                    <Text strong style={{ fontSize: '14px', lineHeight: 1.2 }}>
+                      {user?.name || 'User'}
+                    </Text>
+                    <Text type="secondary" style={{ fontSize: '12px', lineHeight: 1.2 }}>
+                      {user?.role || 'Caregiver'}
+                    </Text>
+                  </Space>
+                )}
+              </div>
             </Dropdown>
           </Space>
         </Header>
-        <Content style={{           
-          padding: '16px 32px', 
-          background: '#fff',          
-          boxShadow: '0 4px 24px rgba(0, 0, 0, 0.06)',          
+
+        {/* Content */}
+        <Content style={{ 
+          padding: '24px',
+          background: '#f5f7fa',
+          minHeight: 'calc(100vh - 64px)',
+          overflow: 'auto'
         }}>
           {children}
         </Content>

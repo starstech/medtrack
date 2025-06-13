@@ -7,7 +7,7 @@ export const APP_DESCRIPTION = 'Your family\'s medication management hub'
 
 // Routes
 export const ROUTES = {
-  AUTH: '/auth',
+  AUTH: '/login',
   EMAIL_VERIFICATION: '/verify-email',
   DASHBOARD: '/',
   PATIENTS: '/patients',

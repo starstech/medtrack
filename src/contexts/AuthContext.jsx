@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
 import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext()
@@ -50,10 +50,14 @@ export const AuthProvider = ({ children }) => {
 
   // Check for existing session on app load
   useEffect(() => {
+    let mounted = true
+
     const checkAuthStatus = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
         
+        if (!mounted) return
+
         if (error) {
           console.error('Error getting session:', error)
           dispatch({ type: 'SET_LOADING', payload: false })
@@ -67,6 +71,8 @@ export const AuthProvider = ({ children }) => {
             .select('*')
             .eq('id', session.user.id)
             .single()
+
+          if (!mounted) return
 
           if (profileError) {
             console.error('Error fetching profile:', profileError)
@@ -86,7 +92,9 @@ export const AuthProvider = ({ children }) => {
         }
       } catch (error) {
         console.error('Auth check failed:', error)
-        dispatch({ type: 'SET_LOADING', payload: false })
+        if (mounted) {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
       }
     }
 
@@ -95,6 +103,8 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        if (!mounted) return
+
         if (event === 'SIGNED_IN' && session?.user) {
           // Get user profile
           const { data: profile, error } = await supabase
@@ -103,19 +113,24 @@ export const AuthProvider = ({ children }) => {
             .eq('id', session.user.id)
             .single()
 
-          if (!error && profile) {
+          if (mounted && !error && profile) {
             dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
           }
         } else if (event === 'SIGNED_OUT') {
-          dispatch({ type: 'LOGOUT' })
+          if (mounted) {
+            dispatch({ type: 'LOGOUT' })
+          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
-  const login = async (email, password) => {
+  const login = useCallback(async (email, password) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
@@ -154,9 +169,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'LOGIN_ERROR', payload: error.message })
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
-  const register = async (email, password, name) => {
+  const register = useCallback(async (email, password, name) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
@@ -193,9 +208,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'LOGIN_ERROR', payload: error.message })
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
-  const verifyEmail = async (token) => {
+  const verifyEmail = useCallback(async (token) => {
     dispatch({ type: 'SET_LOADING', payload: true })
     
     try {
@@ -227,9 +242,9 @@ export const AuthProvider = ({ children }) => {
       dispatch({ type: 'LOGIN_ERROR', payload: error.message })
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
-  const resendVerificationEmail = async (email) => {
+  const resendVerificationEmail = useCallback(async (email) => {
     try {
       const { error } = await supabase.auth.resend({
         type: 'signup',
@@ -244,9 +259,9 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       return { success: false, error: error.message }
     }
-  }
+  }, [])
 
-  const logout = async () => {
+  const logout = useCallback(async () => {
     try {
       await supabase.auth.signOut()
       dispatch({ type: 'LOGOUT' })
@@ -255,13 +270,14 @@ export const AuthProvider = ({ children }) => {
       // Force logout even if API call fails
       dispatch({ type: 'LOGOUT' })
     }
-  }
+  }, [])
 
-  const clearError = () => {
+  const clearError = useCallback(() => {
     dispatch({ type: 'CLEAR_ERROR' })
-  }
+  }, [])
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     user: state.user,
     loading: state.loading,
     error: state.error,
@@ -271,7 +287,17 @@ export const AuthProvider = ({ children }) => {
     resendVerificationEmail,
     logout,
     clearError
-  }
+  }), [
+    state.user,
+    state.loading,
+    state.error,
+    login,
+    register,
+    verifyEmail,
+    resendVerificationEmail,
+    logout,
+    clearError
+  ])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

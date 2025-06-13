@@ -159,11 +159,9 @@ const theme = {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(
-  <React.StrictMode>
-    <BrowserRouter>
-      <ConfigProvider theme={theme}>
-        <App />
-      </ConfigProvider>
-    </BrowserRouter>
-  </React.StrictMode>,
+  <BrowserRouter>
+    <ConfigProvider theme={theme}>
+      <App />
+    </ConfigProvider>
+  </BrowserRouter>
 )

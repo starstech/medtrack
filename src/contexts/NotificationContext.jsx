@@ -1,4 +1,4 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useRef, useMemo } from 'react'
 import { notification } from 'antd'
 import { notificationService } from '../services/notificationService'
 import { supabase } from '../lib/supabase'
@@ -19,6 +19,13 @@ const notificationReducer = (state, action) => {
       return {
         ...state,
         notifications: [action.payload, ...state.notifications]
+      }
+    case 'UPDATE_NOTIFICATION':
+      return {
+        ...state,
+        notifications: state.notifications.map(notif =>
+          notif.id === action.payload.id ? action.payload : notif
+        )
       }
     case 'MARK_READ':
       return {
@@ -67,11 +74,27 @@ const initialState = {
 
 export const NotificationProvider = ({ children }) => {
   const [state, dispatch] = useReducer(notificationReducer, initialState)
+  
+  // Use ref to store latest state values to avoid closure issues
+  const stateRef = useRef(state)
+  stateRef.current = state
 
-  // Load notifications and preferences from backend
+  // Load notifications and preferences from backend (only when authenticated)
   useEffect(() => {
+    let mounted = true
+
     const loadNotifications = async () => {
       try {
+        // Check if user is authenticated before loading data
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !mounted) {
+          // User not authenticated or component unmounted, don't load data
+          if (mounted) {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
+          return
+        }
+
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'CLEAR_ERROR' })
 
@@ -84,16 +107,17 @@ export const NotificationProvider = ({ children }) => {
           throw new Error(`Failed to load notifications: ${notificationsError}`)
         }
 
+        if (!mounted) return
         dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications || [] })
 
         // Load preferences
         const { data: savedPrefs, error: prefsError } = await notificationService.getNotificationPreferences()
         
-        if (savedPrefs && !prefsError) {
+        if (savedPrefs && !prefsError && mounted) {
           // Merge with default preferences
           const mergedPrefs = { ...initialState.preferences, ...savedPrefs }
           dispatch({ type: 'SET_PREFERENCES', payload: mergedPrefs })
-        } else {
+        } else if (mounted) {
           // Try to load from localStorage as fallback
           const localStoragePrefs = localStorage.getItem('notificationPreferences')
           if (localStoragePrefs) {
@@ -108,21 +132,47 @@ export const NotificationProvider = ({ children }) => {
 
       } catch (error) {
         console.error('Error loading notifications:', error)
-        dispatch({ type: 'SET_ERROR', payload: error.message })
+        if (mounted) {
+          dispatch({ type: 'SET_ERROR', payload: error.message })
+        }
+      } finally {
+        if (mounted) {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
       }
     }
 
     loadNotifications()
+
+    // Listen for auth state changes to reload data when user logs in/out
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+
+      if (event === 'SIGNED_IN') {
+        loadNotifications()
+      } else if (event === 'SIGNED_OUT') {
+        // Clear notifications when user logs out
+        dispatch({ type: 'SET_NOTIFICATIONS', payload: [] })
+        dispatch({ type: 'SET_LOADING', payload: false })
+        dispatch({ type: 'CLEAR_ERROR' })
+      }
+    })
+
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   // Set up real-time notifications subscription
   useEffect(() => {
+    let mounted = true
     let subscription = null
 
     const setupRealtimeSubscription = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
+        if (!user || !mounted) return
 
         // Subscribe to notifications table changes for the current user
         subscription = supabase
@@ -136,11 +186,12 @@ export const NotificationProvider = ({ children }) => {
               filter: `user_id=eq.${user.id}`
             },
             (payload) => {
+              if (!mounted) return
               const newNotification = payload.new
               dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
               
-              // Show in-app notification if enabled
-              if (state.preferences.pushNotifications) {
+              // Show in-app notification if enabled (use ref to get current state)
+              if (stateRef.current.preferences?.pushNotifications) {
                 showNotification('info', newNotification.title, newNotification.message)
               }
             }
@@ -154,12 +205,9 @@ export const NotificationProvider = ({ children }) => {
               filter: `user_id=eq.${user.id}`
             },
             (payload) => {
+              if (!mounted) return
               const updatedNotification = payload.new
-              dispatch({ type: 'SET_NOTIFICATIONS', payload: 
-                state.notifications.map(notif => 
-                  notif.id === updatedNotification.id ? updatedNotification : notif
-                )
-              })
+              dispatch({ type: 'UPDATE_NOTIFICATION', payload: updatedNotification })
             }
           )
           .on(
@@ -171,6 +219,7 @@ export const NotificationProvider = ({ children }) => {
               filter: `user_id=eq.${user.id}`
             },
             (payload) => {
+              if (!mounted) return
               const deletedNotification = payload.old
               dispatch({ type: 'DELETE_NOTIFICATION', payload: deletedNotification.id })
             }
@@ -186,11 +235,12 @@ export const NotificationProvider = ({ children }) => {
 
     // Cleanup subscription on unmount
     return () => {
+      mounted = false
       if (subscription) {
         supabase.removeChannel(subscription)
       }
     }
-  }, [state.preferences.pushNotifications])
+  }, [])
 
   const showNotification = (type, message, description = '', duration = 4.5) => {
     notification[type]({
@@ -217,8 +267,8 @@ export const NotificationProvider = ({ children }) => {
       // But add locally for immediate feedback
       dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
 
-      // Show in-app notification if enabled
-      if (state.preferences.pushNotifications) {
+      // Show in-app notification if enabled (use ref to get current state)
+      if (stateRef.current.preferences.pushNotifications) {
         showNotification('info', notificationData.title, notificationData.message)
       }
 
@@ -235,7 +285,8 @@ export const NotificationProvider = ({ children }) => {
     const scheduledTime = new Date(doseTime)
     const timeDiff = scheduledTime.getTime() - now.getTime()
 
-    state.preferences.reminderMinutes.forEach(minutes => {
+    // Use ref to get current preferences
+    stateRef.current.preferences.reminderMinutes.forEach(minutes => {
       const reminderTime = timeDiff - (minutes * 60 * 1000)
       
       if (reminderTime > 0) {
@@ -297,7 +348,8 @@ export const NotificationProvider = ({ children }) => {
   }
 
   const toggleReadStatus = async (notificationId) => {
-    const notification = state.notifications.find(n => n.id === notificationId)
+    // Use ref to get current notifications
+    const notification = stateRef.current.notifications.find(n => n.id === notificationId)
     if (notification) {
       if (notification.read) {
         // For toggling back to unread, we need to implement this in the service
@@ -363,7 +415,8 @@ export const NotificationProvider = ({ children }) => {
     return state.notifications.filter(notif => !notif.read).length
   }
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     ...state,
     addNotification,
     scheduleMedicationReminder,
@@ -373,10 +426,8 @@ export const NotificationProvider = ({ children }) => {
     markAllAsRead,
     deleteNotification,
     updatePreferences,
-    getUnreadCount,
-    showNotification,
-    clearError: () => dispatch({ type: 'CLEAR_ERROR' })
-  }
+    getUnreadCount
+  }), [state])
 
   return (
     <NotificationContext.Provider value={value}>
@@ -387,7 +438,7 @@ export const NotificationProvider = ({ children }) => {
 
 export const useNotificationContext = () => {
   const context = useContext(NotificationContext)
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useNotificationContext must be used within a NotificationProvider')
   }
   return context

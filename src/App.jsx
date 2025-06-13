@@ -3,8 +3,11 @@ import { AuthProvider } from './contexts/AuthContext'
 import { PatientProvider } from './contexts/PatientContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 import AppLayout from './components/common/Layout'
-import AuthPage from './pages/AuthPage'
+import LandingPage from './pages/LandingPage'
+import LoginPage from './pages/LoginPage'
+import RegisterPage from './pages/RegisterPage'
 import EmailVerificationPage from './pages/EmailVerificationPage'
+import ResetPasswordPage from './pages/ResetPasswordPage'
 import DashboardPage from './pages/DashboardPage'
 import PatientsPage from './pages/PatientsPage'
 import PatientDetailsPage from './pages/PatientDetailsPage'
@@ -24,15 +27,17 @@ function AppContent() {
   return (
     <Routes>
       {/* Public routes */}
-      <Route path="/auth" element={!user ? <AuthPage /> : <DashboardPage />} />
+      <Route path="/" element={!user ? <LandingPage /> : <DashboardPage />} />
+      <Route path="/login" element={!user ? <LoginPage /> : <DashboardPage />} />
+      <Route path="/register" element={!user ? <RegisterPage /> : <DashboardPage />} />
       <Route path="/verify-email" element={<EmailVerificationPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       
       {/* Protected routes */}
       {user ? (
         <Route path="/*" element={
           <AppLayout>
             <Routes>
-              <Route path="/" element={<DashboardPage />} />
               <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/patients" element={<PatientsPage />} />
               <Route path="/patients/:id" element={<PatientDetailsPage />} />
@@ -44,20 +49,35 @@ function AppContent() {
           </AppLayout>
         } />
       ) : (
-        <Route path="/*" element={<AuthPage />} />
+        <Route path="/*" element={<LandingPage />} />
       )}
     </Routes>
   )
 }
 
+// Wrapper component to conditionally provide Patient and Notification contexts
+function AuthenticatedProviders({ children }) {
+  const { user } = useAuth()
+  
+  if (user) {
+    return (
+      <PatientProvider>
+        <NotificationProvider>
+          {children}
+        </NotificationProvider>
+      </PatientProvider>
+    )
+  }
+  
+  return children
+}
+
 function App() {
   return (
     <AuthProvider>
-      <PatientProvider>
-        <NotificationProvider>
-          <AppContent />
-        </NotificationProvider>
-      </PatientProvider>
+      <AuthenticatedProviders>
+        <AppContent />
+      </AuthenticatedProviders>
     </AuthProvider>
   )
 }

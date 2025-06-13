@@ -1,0 +1,532 @@
+/* Register Page Styles - Mobile First */
+.register-page {
+  min-height: 100vh;
+  background: #f5f7fa;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+}
+
+.register-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 24px;
+}
+
+/* Header - Reused from Login */
+.register-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 0;
+  border-bottom: 1px solid #e8eaed;
+  margin-bottom: 40px;
+}
+
+.back-button {
+  color: #718096 !important;
+  font-weight: 500 !important;
+  border: none !important;
+  background: transparent !important;
+  padding: 8px 12px !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: #f0f2f5 !important;
+  color: #1890ff !important;
+}
+
+.register-brand {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+}
+
+.brand-icon-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-icon {
+  font-size: 32px;
+  color: #1890ff;
+  filter: drop-shadow(0 2px 4px rgba(24, 144, 255, 0.2));
+}
+
+.brand-heart {
+  font-size: 14px;
+  color: #ff6b6b;
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #fff;
+  border-radius: 50%;
+  padding: 3px;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.1));
+}
+
+.brand-title {
+  color: #2d3748 !important;
+  margin: 0 !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  background: linear-gradient(135deg, #1890ff, #722ed1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Main Content */
+.register-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - 120px);
+  padding: 20px 0;
+}
+
+/* Register Info */
+.register-info {
+  padding: 40px 0;
+}
+
+.info-title {
+  color: #2d3748 !important;
+  margin: 0 0 16px 0 !important;
+  font-size: 36px !important;
+  font-weight: 700 !important;
+  line-height: 1.2 !important;
+}
+
+.info-subtitle {
+  color: #718096 !important;
+  font-size: 18px !important;
+  line-height: 1.6 !important;
+  max-width: 400px;
+}
+
+/* Benefits */
+.register-benefits {
+  margin-top: 40px;
+}
+
+.benefits-title {
+  color: #2d3748 !important;
+  margin: 0 0 20px 0 !important;
+  font-size: 18px !important;
+  font-weight: 600 !important;
+}
+
+.benefits-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.benefit-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e8eaed;
+  transition: all 0.3s ease;
+}
+
+.benefit-item:hover {
+  transform: translateX(4px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+  border-color: #52c41a;
+}
+
+.benefit-icon {
+  color: #52c41a;
+  font-size: 16px;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+/* Trust Indicators */
+.trust-indicators {
+  display: flex;
+  gap: 24px;
+  margin-top: 32px;
+}
+
+.trust-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  flex: 1;
+  padding: 20px;
+  background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+  border-radius: 12px;
+  border: 1px solid #bae7ff;
+}
+
+.trust-icon {
+  font-size: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #fff;
+  flex-shrink: 0;
+}
+
+/* Register Card */
+.register-card {
+  border-radius: 16px !important;
+  border: none !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08) !important;
+  background: #fff !important;
+  overflow: hidden;
+}
+
+.register-form-container {
+  width: 100%;
+  padding: 40px;
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.form-title {
+  color: #2d3748 !important;
+  margin: 0 !important;
+  font-size: 28px !important;
+  font-weight: 700 !important;
+}
+
+.form-subtitle {
+  color: #718096 !important;
+  font-size: 16px !important;
+  margin-top: 8px;
+}
+
+/* Form Styling */
+.register-form .ant-form-item-label > label {
+  font-weight: 600 !important;
+  color: #2d3748 !important;
+  font-size: 14px !important;
+}
+
+.register-input {
+  border-radius: 8px !important;
+  border: 2px solid #e8eaed !important;
+  padding: 12px 16px !important;
+  font-size: 16px !important;
+  transition: all 0.3s ease !important;
+  height: 48px !important;
+}
+
+.register-input:focus,
+.register-input:hover {
+  border-color: #1890ff !important;
+  box-shadow: 0 0 0 3px rgba(24, 144, 255, 0.1) !important;
+}
+
+.register-input .ant-input-prefix {
+  color: #718096 !important;
+  margin-right: 12px !important;
+}
+
+/* Password Strength */
+.password-strength {
+  margin-top: -16px;
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.password-strength .ant-progress {
+  margin: 0;
+}
+
+.password-strength .ant-progress-line {
+  height: 6px !important;
+}
+
+/* Terms Checkbox */
+.terms-checkbox {
+  margin: 24px 0 !important;
+}
+
+.terms-checkbox .ant-checkbox-wrapper {
+  line-height: 1.5;
+}
+
+.terms-checkbox a {
+  color: #1890ff !important;
+  font-weight: 500;
+}
+
+.terms-checkbox a:hover {
+  color: #722ed1 !important;
+  text-decoration: underline;
+}
+
+/* Submit Button */
+.register-submit-btn {
+  height: 48px !important;
+  font-size: 16px !important;
+  font-weight: 600 !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(24, 144, 255, 0.3) !important;
+  border: none !important;
+}
+
+/* Divider */
+.register-divider {
+  text-align: center;
+  padding-top: 24px;
+  border-top: 1px solid #e8eaed;
+  gap: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.login-link {
+  color: #1890ff !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+  margin-left: 8px;
+}
+
+.login-link:hover {
+  color: #722ed1 !important;
+  text-decoration: underline !important;
+}
+
+/* Alert Styling */
+.register-alert {
+  border-radius: 8px !important;
+  border: none !important;
+}
+
+/* Responsive Design */
+@media (min-width: 768px) {
+  .register-container {
+    padding: 0 48px;
+  }
+  
+  .register-header {
+    padding: 32px 0;
+    margin-bottom: 60px;
+  }
+  
+  .brand-title {
+    font-size: 28px !important;
+  }
+  
+  .info-title {
+    font-size: 42px !important;
+  }
+  
+  .info-subtitle {
+    font-size: 20px !important;
+  }
+  
+  .register-form-container {
+    padding: 48px;
+  }
+  
+  .form-title {
+    font-size: 32px !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .register-content {
+    min-height: calc(100vh - 140px);
+    align-items: center;
+  }
+  
+  .register-info {
+    padding: 60px 40px 60px 0;
+  }
+  
+  .trust-indicators {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .trust-item {
+    flex-direction: row;
+  }
+}
+
+@media (max-width: 576px) {
+  .register-container {
+    padding: 0 16px;
+  }
+  
+  .register-header {
+    padding: 16px 0;
+    margin-bottom: 24px;
+  }
+  
+  .back-button {
+    padding: 6px 8px !important;
+    font-size: 14px !important;
+  }
+  
+  .brand-title {
+    font-size: 20px !important;
+  }
+  
+  .register-content {
+    padding: 0;
+    min-height: auto;
+    align-items: flex-start;
+  }
+  
+  .register-info {
+    padding: 24px 0;
+    order: 2;
+  }
+  
+  .info-title {
+    font-size: 28px !important;
+  }
+  
+  .info-subtitle {
+    font-size: 16px !important;
+  }
+  
+  .register-benefits {
+    margin-top: 24px;
+  }
+  
+  .benefits-list {
+    gap: 12px;
+  }
+  
+  .benefit-item {
+    padding: 12px;
+  }
+  
+  .trust-indicators {
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  
+  .trust-item {
+    padding: 16px;
+  }
+  
+  .trust-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+  }
+  
+  .register-form-container {
+    padding: 24px;
+  }
+  
+  .form-title {
+    font-size: 24px !important;
+  }
+  
+  .register-divider {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .login-link {
+    margin-left: 0;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.register-card {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.register-info {
+  animation: slideInLeft 0.5s ease-out 0.1s both;
+}
+
+/* Form validation and interaction states */
+.register-form .ant-form-item-has-error .register-input {
+  border-color: #ff4d4f !important;
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.1) !important;
+}
+
+.register-form .ant-form-item-has-success .register-input {
+  border-color: #52c41a !important;
+  box-shadow: 0 0 0 3px rgba(82, 196, 26, 0.1) !important;
+}
+
+.register-form .ant-btn:focus,
+.register-form .ant-btn:active {
+  transform: translateY(1px);
+}
+
+/* Loading state */
+.register-form .ant-btn-loading {
+  cursor: not-allowed;
+}
+
+.register-form .ant-input[disabled] {
+  background-color: #f5f5f5 !important;
+  border-color: #d9d9d9 !important;
+  color: #bfbfbf !important;
+  cursor: not-allowed;
+}
+
+/* Progress bar custom styling */
+.password-strength .ant-progress-bg {
+  border-radius: 3px !important;
+}
+
+/* Checkbox custom styling */
+.terms-checkbox .ant-checkbox {
+  border-radius: 4px !important;
+}
+
+.terms-checkbox .ant-checkbox-checked .ant-checkbox-inner {
+  background-color: #1890ff !important;
+  border-color: #1890ff !important;
+} 

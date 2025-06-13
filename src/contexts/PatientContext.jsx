@@ -1,8 +1,9 @@
-import { createContext, useContext, useReducer, useEffect } from 'react'
+import { createContext, useContext, useReducer, useEffect, useMemo } from 'react'
 import { patientService } from '../services/patientService'
 import { medicationService } from '../services/medicationService'
 import { measurementService } from '../services/measurementService'
 import { dailyLogService } from '../services/dailyLogService'
+import { supabase } from '../lib/supabase'
 
 const PatientContext = createContext()
 
@@ -97,10 +98,23 @@ const initialState = {
 export const PatientProvider = ({ children }) => {
   const [state, dispatch] = useReducer(patientReducer, initialState)
 
-  // Load initial data
+  // Load initial data (only when authenticated)
   useEffect(() => {
+    let mounted = true
+    let authSubscription = null
+
     const loadData = async () => {
       try {
+        // Check if user is authenticated before loading data
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user || !mounted) {
+          // User not authenticated or component unmounted, don't load data
+          if (mounted) {
+            dispatch({ type: 'SET_LOADING', payload: false })
+          }
+          return
+        }
+
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'CLEAR_ERROR' })
         
@@ -108,6 +122,7 @@ export const PatientProvider = ({ children }) => {
         const { data: patients, error: patientsError } = await patientService.getPatients()
         if (patientsError) throw new Error(`Failed to load patients: ${patientsError}`)
         
+        if (!mounted) return
         dispatch({ type: 'SET_PATIENTS', payload: patients || [] })
         
         // If we have patients, load data for all patients
@@ -121,6 +136,7 @@ export const PatientProvider = ({ children }) => {
             .filter(result => result.status === 'fulfilled' && result.value.data)
             .flatMap(result => result.value.data)
           
+          if (!mounted) return
           dispatch({ type: 'SET_MEDICATIONS', payload: allMedications })
           
           // Load measurements for all patients
@@ -132,6 +148,7 @@ export const PatientProvider = ({ children }) => {
             .filter(result => result.status === 'fulfilled' && result.value.data)
             .flatMap(result => result.value.data)
           
+          if (!mounted) return
           dispatch({ type: 'SET_MEASUREMENTS', payload: allMeasurements })
           
           // Load daily logs for all patients
@@ -143,17 +160,50 @@ export const PatientProvider = ({ children }) => {
             .filter(result => result.status === 'fulfilled' && result.value.data)
             .flatMap(result => result.value.data)
           
+          if (!mounted) return
           dispatch({ type: 'SET_DAILY_LOGS', payload: allDailyLogs })
         }
         
-        dispatch({ type: 'SET_LOADING', payload: false })
       } catch (error) {
         console.error('Error loading initial data:', error)
-        dispatch({ type: 'SET_ERROR', payload: error.message })
+        if (mounted) {
+          dispatch({ type: 'SET_ERROR', payload: error.message })
+        }
+      } finally {
+        if (mounted) {
+          dispatch({ type: 'SET_LOADING', payload: false })
+        }
       }
     }
 
     loadData()
+
+    // Listen for auth state changes to reload data when user logs in/out
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return
+
+      if (event === 'SIGNED_IN') {
+        loadData()
+      } else if (event === 'SIGNED_OUT') {
+        // Clear all data when user logs out
+        dispatch({ type: 'SET_PATIENTS', payload: [] })
+        dispatch({ type: 'SET_MEDICATIONS', payload: [] })
+        dispatch({ type: 'SET_MEASUREMENTS', payload: [] })
+        dispatch({ type: 'SET_DAILY_LOGS', payload: [] })
+        dispatch({ type: 'SET_SELECTED_PATIENT', payload: null })
+        dispatch({ type: 'SET_LOADING', payload: false })
+        dispatch({ type: 'CLEAR_ERROR' })
+      }
+    })
+
+    authSubscription = subscription
+
+    return () => {
+      mounted = false
+      if (authSubscription) {
+        authSubscription.unsubscribe()
+      }
+    }
   }, [])
 
   const selectPatient = (patientId) => {
@@ -327,7 +377,8 @@ export const PatientProvider = ({ children }) => {
     return state.dailyLogs.filter(l => l.patient_id === patientId || l.patientId === patientId)
   }
 
-  const value = {
+  // Memoize the context value to prevent unnecessary re-renders
+  const value = useMemo(() => ({
     ...state,
     selectPatient,
     addPatient,
@@ -343,7 +394,7 @@ export const PatientProvider = ({ children }) => {
     getPatientMeasurements,
     getPatientLogs,
     clearError: () => dispatch({ type: 'CLEAR_ERROR' })
-  }
+  }), [state])
 
   return (
     <PatientContext.Provider value={value}>

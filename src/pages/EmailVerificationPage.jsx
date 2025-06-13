@@ -5,7 +5,7 @@ import { HeartOutlined, LoadingOutlined } from '@ant-design/icons'
 import EmailVerificationPending from '../components/auth/EmailVerificationPending'
 import EmailVerificationSuccess from '../components/auth/EmailVerificationSuccess'
 import { useAuth } from '../hooks/useAuth'
-import './AuthPage.css'
+import './VerificationPages.css'
 
 const { Title, Text } = Typography
 
@@ -62,7 +62,7 @@ const EmailVerificationPage = () => {
   }
 
   const handleBackToLogin = () => {
-    navigate('/auth', { replace: true })
+    navigate('/login', { replace: true })
   }
 
   const handleContinueToDashboard = () => {
