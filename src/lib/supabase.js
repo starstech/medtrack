@@ -28,6 +28,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     detectSessionInUrl: true,
     flowType: 'pkce'
   },
+  db: {
+    schema: 'api'
+  },
   realtime: {
     params: {
       eventsPerSecond: 10

@@ -13,6 +13,8 @@ CREATE VIEW public.files AS SELECT * FROM api.files;
 CREATE VIEW public.notifications AS SELECT * FROM api.notifications;
 CREATE VIEW public.user_devices AS SELECT * FROM api.user_devices;
 CREATE VIEW public.notification_preferences AS SELECT * FROM api.notification_preferences;
+CREATE VIEW public.appointments AS SELECT * FROM api.appointments;
+CREATE VIEW public.appointment_reminders AS SELECT * FROM api.appointment_reminders;
 
 -- Enable RLS on views (inherits from underlying tables)
 ALTER VIEW public.profiles SET (security_invoker = true);
@@ -26,6 +28,8 @@ ALTER VIEW public.files SET (security_invoker = true);
 ALTER VIEW public.notifications SET (security_invoker = true);
 ALTER VIEW public.user_devices SET (security_invoker = true);
 ALTER VIEW public.notification_preferences SET (security_invoker = true);
+ALTER VIEW public.appointments SET (security_invoker = true);
+ALTER VIEW public.appointment_reminders SET (security_invoker = true);
 
 -- Grant permissions to authenticated and anon roles
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.profiles TO authenticated;
@@ -39,6 +43,8 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON public.files TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.notifications TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.user_devices TO authenticated;
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.notification_preferences TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.appointments TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.appointment_reminders TO authenticated;
 
 -- Grant limited permissions to anon role (for signup/login flows)
 GRANT SELECT ON public.profiles TO anon;

@@ -152,6 +152,38 @@ CREATE TABLE api.notification_preferences (
   reminder_minutes INTEGER[] DEFAULT '{15,30,60}'
 );
 
+-- 12. Appointments table
+CREATE TABLE api.appointments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  patient_id UUID REFERENCES api.patients(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES api.profiles(id) ON DELETE SET NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  type TEXT NOT NULL DEFAULT 'general',
+  provider_name TEXT,
+  location TEXT,
+  appointment_date TIMESTAMP WITH TIME ZONE NOT NULL,
+  duration_minutes INTEGER DEFAULT 60,
+  status TEXT DEFAULT 'scheduled' CHECK (status IN ('scheduled', 'completed', 'missed', 'cancelled', 'rescheduled')),
+  is_recurring BOOLEAN DEFAULT FALSE,
+  recurrence_rule TEXT,
+  notes TEXT,
+  reminder_sent BOOLEAN DEFAULT FALSE,
+  created_by UUID REFERENCES api.profiles(id) ON DELETE SET NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- 13. Appointment reminders table
+CREATE TABLE api.appointment_reminders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  appointment_id UUID REFERENCES api.appointments(id) ON DELETE CASCADE,
+  reminder_time TIMESTAMP WITH TIME ZONE NOT NULL,
+  type TEXT DEFAULT 'push' CHECK (type IN ('push', 'email', 'sms')),
+  sent BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION api.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -165,6 +197,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_profiles_updated_at BEFORE UPDATE ON api.profiles FOR EACH ROW EXECUTE FUNCTION api.update_updated_at_column();
 CREATE TRIGGER update_patients_updated_at BEFORE UPDATE ON api.patients FOR EACH ROW EXECUTE FUNCTION api.update_updated_at_column();
 CREATE TRIGGER update_medications_updated_at BEFORE UPDATE ON api.medications FOR EACH ROW EXECUTE FUNCTION api.update_updated_at_column();
+CREATE TRIGGER update_appointments_updated_at BEFORE UPDATE ON api.appointments FOR EACH ROW EXECUTE FUNCTION api.update_updated_at_column();
 
 -- Enable Row Level Security on all tables
 ALTER TABLE api.profiles ENABLE ROW LEVEL SECURITY;
@@ -178,6 +211,8 @@ ALTER TABLE api.files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.notifications ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.user_devices ENABLE ROW LEVEL SECURITY;
 ALTER TABLE api.notification_preferences ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api.appointments ENABLE ROW LEVEL SECURITY;
+ALTER TABLE api.appointment_reminders ENABLE ROW LEVEL SECURITY;
 
 -- Create indexes for better performance
 CREATE INDEX idx_patient_caregivers_patient_id ON api.patient_caregivers(patient_id);
@@ -190,6 +225,12 @@ CREATE INDEX idx_measurements_type ON api.measurements(type);
 CREATE INDEX idx_daily_logs_patient_id ON api.daily_logs(patient_id);
 CREATE INDEX idx_notifications_user_id ON api.notifications(user_id);
 CREATE INDEX idx_notifications_read ON api.notifications(read);
+CREATE INDEX idx_appointments_patient_id ON api.appointments(patient_id);
+CREATE INDEX idx_appointments_user_id ON api.appointments(user_id);
+CREATE INDEX idx_appointments_date ON api.appointments(appointment_date);
+CREATE INDEX idx_appointments_status ON api.appointments(status);
+CREATE INDEX idx_appointment_reminders_appointment_id ON api.appointment_reminders(appointment_id);
+CREATE INDEX idx_appointment_reminders_time ON api.appointment_reminders(reminder_time);
 
 -- Insert default notification preferences for new users
 CREATE OR REPLACE FUNCTION api.create_profile_and_preferences()
