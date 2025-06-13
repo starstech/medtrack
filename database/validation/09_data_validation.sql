@@ -20,8 +20,11 @@ $$ LANGUAGE plpgsql IMMUTABLE;
 CREATE OR REPLACE FUNCTION api.is_valid_phone(phone TEXT)
 RETURNS BOOLEAN AS $$
 BEGIN
-  -- Supports various formats: +1-555-123-4567, (555) 123-4567, 555.123.4567, etc.
-  RETURN phone ~* '^\+?[1-9]\d{0,3}[-.\s]?\(?[1-9]\d{2}\)?[-.\s]?\d{3}[-.\s]?\d{4}$';
+  -- More flexible international phone number validation
+  -- Supports various formats: +1-555-123-4567, (555) 123-4567, 555.123.4567, +44 20 7946 0958, etc.
+  -- Minimum 7 digits, maximum 15 digits (E.164 standard)
+  RETURN phone ~* '^\+?[\d\s\-\(\)\.]{7,20}$' 
+    AND LENGTH(REGEXP_REPLACE(phone, '[^\d]', '', 'g')) BETWEEN 7 AND 15;
 END;
 $$ LANGUAGE plpgsql IMMUTABLE;
 

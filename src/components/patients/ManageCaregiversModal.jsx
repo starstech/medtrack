@@ -329,9 +329,9 @@ const ManageCaregiversModal = ({ visible, onClose, patient }) => {
 
                 <Form.Item
                   name="phone"
-                  label="Phone Number"
+                  label="Phone Number (Optional)"
                   rules={[
-                    { pattern: /^[\+]?[\d\s\-\(\)]{10,}$/, message: 'Please enter a valid phone number' }
+                    { pattern: /^[\+]?[\d\s\-\(\)\.]{7,20}$/, message: 'Please enter a valid phone number' }
                   ]}
                 >
                   <Input

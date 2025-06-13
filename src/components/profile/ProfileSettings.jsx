@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { 
   Card, 
   Form, 
@@ -29,35 +29,54 @@ import {
   DeleteOutlined
 } from '@ant-design/icons'
 import { useAuth } from '../../hooks/useAuth'
+import PhoneInput from '../common/PhoneInput'
+import { createPhoneValidationRulesSync, formatPhoneForStorage, parsePhoneFromStorage } from '../../utils/phoneValidation'
 import './ProfileSettings.css'
 
 const { Title, Text } = Typography
 
 const ProfileSettings = ({ user }) => {
-  const { logout } = useAuth()
+  const { logout, updateProfile } = useAuth()
   const [form] = Form.useForm()
   const [passwordForm] = Form.useForm()
   const [loading, setLoading] = useState(false)
-  const [editMode, setEditMode] = useState(false)
+  const [editing, setEditing] = useState(false)
   const [changePasswordVisible, setChangePasswordVisible] = useState(false)
   const [deleteAccountVisible, setDeleteAccountVisible] = useState(false)
 
-  const handleSaveProfile = async (values) => {
+  useEffect(() => {
+    if (user) {
+      form.setFieldsValue({
+        name: user.name,
+        email: user.email,
+        phone: parsePhoneFromStorage(user.phone) || ''
+      })
+    }
+  }, [user, form])
+
+  const handleSubmit = async (values) => {
     setLoading(true)
     
     try {
-      // TODO: Implement profile update API
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      const profileData = {
+        ...values,
+        phone: formatPhoneForStorage(values.phone)
+      }
       
+      await updateProfile(profileData)
       message.success('Profile updated successfully!')
-      setEditMode(false)
-      
+      setEditing(false)
     } catch (error) {
-      message.error('Failed to update profile. Please try again.')
+      message.error(error.message || 'Failed to update profile')
       console.error('Error updating profile:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleCancel = () => {
+    form.resetFields()
+    setEditing(false)
   }
 
   const handleChangePassword = async (values) => {
@@ -95,6 +114,8 @@ const ProfileSettings = ({ user }) => {
     }
   }
 
+  if (!user) return null
+
   return (
     <div className="profile-settings-section">
       <Space direction="vertical" size="large" style={{ width: '100%' }}>
@@ -107,11 +128,11 @@ const ProfileSettings = ({ user }) => {
                 <span>Profile Information</span>
               </Space>
             </div>
-            {!editMode && (
+            {!editing && (
               <Button 
                 type="primary" 
                 icon={<EditOutlined />}
-                onClick={() => setEditMode(true)}
+                onClick={() => setEditing(true)}
                 size="small"
               >
                 Edit Profile
@@ -131,14 +152,14 @@ const ProfileSettings = ({ user }) => {
                       showUploadList={false}
                       beforeUpload={beforeUpload}
                       onChange={handleAvatarUpload}
-                      disabled={!editMode}
+                      disabled={!editing}
                     >
                       <Avatar 
                         size={80} 
                         icon={<UserOutlined />}
                         src={user?.avatar}
                       />
-                      {editMode && (
+                      {editing && (
                         <div className="avatar-overlay">
                           <CameraOutlined />
                         </div>
@@ -157,14 +178,7 @@ const ProfileSettings = ({ user }) => {
                 <Form
                   form={form}
                   layout="vertical"
-                  onFinish={handleSaveProfile}
-                  initialValues={{
-                    name: user?.name,
-                    email: user?.email,
-                    phone: user?.phone || '',
-                    bio: user?.bio || ''
-                  }}
-                  disabled={!editMode}
+                  onFinish={handleSubmit}
                   className="profile-form"
                 >
                   <Row gutter={16}>
@@ -177,7 +191,11 @@ const ProfileSettings = ({ user }) => {
                           { min: 2, message: 'Name must be at least 2 characters' }
                         ]}
                       >
-                        <Input prefix={<UserOutlined />} />
+                        <Input 
+                          placeholder="Enter your full name"
+                          prefix={<UserOutlined />}
+                          disabled={!editing}
+                        />
                       </Form.Item>
                     </Col>
                     
@@ -190,19 +208,24 @@ const ProfileSettings = ({ user }) => {
                           { type: 'email', message: 'Please enter a valid email' }
                         ]}
                       >
-                        <Input prefix={<MailOutlined />} />
+                        <Input 
+                          placeholder="Enter your email address"
+                          prefix={<MailOutlined />}
+                          disabled={!editing}
+                        />
                       </Form.Item>
                     </Col>
                   </Row>
 
                   <Form.Item
                     name="phone"
-                    label="Phone Number"
-                    rules={[
-                      { pattern: /^[\+]?[1-9][\d]{0,15}$/, message: 'Please enter a valid phone number' }
-                    ]}
+                    label="Phone Number (Optional)"
+                    rules={createPhoneValidationRulesSync(null, false)}
                   >
-                    <Input prefix={<PhoneOutlined />} placeholder="+1 (555) 123-4567" />
+                    <PhoneInput 
+                      placeholder="Enter your phone number"
+                      disabled={!editing}
+                    />
                   </Form.Item>
 
                   <Form.Item
@@ -217,28 +240,22 @@ const ProfileSettings = ({ user }) => {
                     />
                   </Form.Item>
 
-                  {editMode && (
-                    <div className="profile-actions">
+                  {editing && (
+                    <Form.Item>
                       <Space>
                         <Button 
-                          onClick={() => {
-                            setEditMode(false)
-                            form.resetFields()
-                          }}
-                          disabled={loading}
-                        >
-                          <CloseOutlined /> Cancel
-                        </Button>
-                        <Button 
                           type="primary" 
-                          htmlType="submit"
+                          htmlType="submit" 
                           loading={loading}
                           icon={<SaveOutlined />}
                         >
                           Save Changes
                         </Button>
+                        <Button onClick={handleCancel} disabled={loading}>
+                          Cancel
+                        </Button>
                       </Space>
-                    </div>
+                    </Form.Item>
                   )}
                 </Form>
               </Col>

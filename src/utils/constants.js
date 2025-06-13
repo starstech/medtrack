@@ -248,13 +248,43 @@ export const VALIDATION_RULES = {
     MESSAGE: 'Password must be at least 6 characters long'
   },
   PHONE: {
-    PATTERN: /^[\+]?[1-9][\d]{0,15}$/,
+    // Basic pattern for fallback validation (antd-phone-input handles main validation)
+    PATTERN: /^[\+]?[\d\s\-\(\)\.]{7,}$/,
     MESSAGE: 'Please enter a valid phone number'
   },
   NAME: {
     MIN_LENGTH: 2,
     MESSAGE: 'Name must be at least 2 characters long'
   }
+}
+
+// Emergency Contact Configuration
+export const EMERGENCY_CONTACT_CONFIG = {
+  REQUIRED_BY_DEFAULT: false, // Can be made optional
+  RELATIONSHIPS: [
+    { value: 'parent', label: 'Parent' },
+    { value: 'guardian', label: 'Guardian' },
+    { value: 'spouse', label: 'Spouse/Partner' },
+    { value: 'sibling', label: 'Sibling' },
+    { value: 'child', label: 'Adult Child' },
+    { value: 'friend', label: 'Friend' },
+    { value: 'neighbor', label: 'Neighbor' },
+    { value: 'caregiver', label: 'Professional Caregiver' },
+    { value: 'other', label: 'Other' }
+  ],
+  // Note: DEFAULT_COUNTRY is now auto-detected, but we keep 'ca' as fallback
+  DEFAULT_COUNTRY: null, // Will be auto-detected, fallback to 'ca'
+  ALLOW_MULTIPLE: false // Future feature to allow multiple emergency contacts
+}
+
+// Phone number formatting preferences
+export const PHONE_FORMAT_PREFERENCES = {
+  DISPLAY_FORMAT: 'international', // 'international', 'national', or 'e164'
+  SHOW_COUNTRY_CODE: true,
+  AUTO_DETECT_COUNTRY: true,
+  // Note: DEFAULT_COUNTRY is now auto-detected, but we keep 'ca' as fallback
+  DEFAULT_COUNTRY: null, // Will be auto-detected, fallback to 'ca'
+  FALLBACK_COUNTRY: 'ca' // Used when auto-detection fails
 }
 
 // Default Values
@@ -394,5 +424,7 @@ export default {
   DATE_TIME,
   NOTIFICATIONS,
   FEATURE_FLAGS,
-  CHART_COLORS
+  CHART_COLORS,
+  EMERGENCY_CONTACT_CONFIG,
+  PHONE_FORMAT_PREFERENCES
 }

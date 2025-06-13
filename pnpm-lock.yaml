@@ -20,6 +20,9 @@ importers:
       antd:
         specifier: ^5.25.4
         version: 5.25.4(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      antd-phone-input:
+        specifier: ^0.3.14
+        version: 0.3.14(antd@5.25.4(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0)
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
@@ -687,6 +690,12 @@ packages:
   ansi-styles@4.3.0:
     resolution: {integrity: sha512-zbB9rCJAT1rbjiVDb2hqKFHNYLxgtk8NURxZ3IZwD3F6NtxbXZQCnnSi1Lkx+IDohdPlFp222wVALIheZJQSEg==}
     engines: {node: '>=8'}
+
+  antd-phone-input@0.3.14:
+    resolution: {integrity: sha512-vMfiLmqI2cqT5DD8Jg1/leGcYVrmFMR+8lUFn1K6o8j7hgo0DkI9CIEphDQ3LO7RcJXp3sNzvaSfvF6FGaEdpA==}
+    peerDependencies:
+      antd: '>=4'
+      react: '>=16'
 
   antd@5.25.4:
     resolution: {integrity: sha512-yXdWqq1NJSZnD1HoPZWnWuQJGVYYnB3h0Ufsz4sbt3T0N9SdJ4G9GPpLMk8Gn9zWtwBekfR4THPVZ9uzAyhBHQ==}
@@ -1592,6 +1601,11 @@ packages:
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
 
+  react-phone-hooks@0.1.14:
+    resolution: {integrity: sha512-rIYvqD8U8fdJmGH/Poi5fPnmX+x9aNK2GZ94hmpDi7W8RjSsTIYkWCk6FLXovRXDcbT9c6kMOja06LYfEMEmBw==}
+    peerDependencies:
+      react: '>=16'
+
   react-refresh@0.17.0:
     resolution: {integrity: sha512-z6F7K9bV85EfseRCp2bzrpyQ0Gkw1uLoCel9XBVWPg/TjRj94SkJzUTGfOa4bs7iJvBWtQG0Wq7wnI0syw3EBQ==}
     engines: {node: '>=0.10.0'}
@@ -2479,6 +2493,12 @@ snapshots:
   ansi-styles@4.3.0:
     dependencies:
       color-convert: 2.0.1
+
+  antd-phone-input@0.3.14(antd@5.25.4(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0))(react@19.1.0):
+    dependencies:
+      antd: 5.25.4(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      react: 19.1.0
+      react-phone-hooks: 0.1.14(react@19.1.0)
 
   antd@5.25.4(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
@@ -3680,6 +3700,10 @@ snapshots:
   react-is@16.13.1: {}
 
   react-is@18.3.1: {}
+
+  react-phone-hooks@0.1.14(react@19.1.0):
+    dependencies:
+      react: 19.1.0
 
   react-refresh@0.17.0: {}
 

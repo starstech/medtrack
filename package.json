@@ -19,6 +19,7 @@
     "@ant-design/v5-patch-for-react-19": "^1.0.3",
     "@supabase/supabase-js": "^2.49.10",
     "antd": "^5.25.4",
+    "antd-phone-input": "^0.3.14",
     "date-fns": "^4.1.0",
     "dayjs": "^1.11.13",
     "react": "^19.1.0",

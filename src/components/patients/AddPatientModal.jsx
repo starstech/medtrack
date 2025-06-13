@@ -10,14 +10,21 @@ import {
   Typography,
   Row,
   Col,
-  message
+  message,
+  Alert,
+  Checkbox
 } from 'antd'
 import { 
   UserOutlined, 
   PlusOutlined, 
-  DeleteOutlined 
+  DeleteOutlined,
+  InfoCircleOutlined,
+  ExclamationCircleOutlined
 } from '@ant-design/icons'
 import { usePatients } from '../../hooks/usePatients'
+import PhoneInput from '../common/PhoneInput'
+import { EMERGENCY_CONTACT_CONFIG } from '../../utils/constants'
+import { createPhoneValidationRulesSync, validateEmergencyContact, formatPhoneForStorage } from '../../utils/phoneValidation'
 import dayjs from 'dayjs'
 import './AddPatientModal.css'
 
@@ -31,6 +38,8 @@ const AddPatientModal = ({ visible, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [allergies, setAllergies] = useState([''])
   const [conditions, setConditions] = useState([''])
+  const [includeEmergencyContact, setIncludeEmergencyContact] = useState(true)
+  const [emergencyContactWarning, setEmergencyContactWarning] = useState(false)
 
   const handleSubmit = async (values) => {
     setLoading(true)
@@ -40,30 +49,54 @@ const AddPatientModal = ({ visible, onClose }) => {
       const cleanAllergies = allergies.filter(allergy => allergy.trim() !== '')
       const cleanConditions = conditions.filter(condition => condition.trim() !== '')
       
+      let emergencyContact = null
+      
+      // Handle emergency contact
+      if (includeEmergencyContact) {
+        if (values.emergencyContactName || values.emergencyContactPhone || values.emergencyContactRelationship) {
+          emergencyContact = {
+            name: values.emergencyContactName || '',
+            relationship: values.emergencyContactRelationship || '',
+            phone: formatPhoneForStorage(values.emergencyContactPhone) || '',
+            email: values.emergencyContactEmail || ''
+          }
+          
+          // Validate emergency contact
+          const validation = validateEmergencyContact(emergencyContact)
+          if (!validation.isValid) {
+            const errorMessages = Object.values(validation.errors).join(', ')
+            throw new Error(`Emergency contact validation failed: ${errorMessages}`)
+          }
+        }
+      }
+      
       const patientData = {
         ...values,
         dateOfBirth: values.dateOfBirth.format('YYYY-MM-DD'),
         allergies: cleanAllergies,
         medicalConditions: cleanConditions,
-        emergencyContact: {
-          name: values.emergencyContactName,
-          relationship: values.emergencyContactRelationship,
-          phone: values.emergencyContactPhone
-        }
+        emergencyContact
       }
 
       // Remove emergency contact fields from top level
       delete patientData.emergencyContactName
       delete patientData.emergencyContactRelationship
       delete patientData.emergencyContactPhone
+      delete patientData.emergencyContactEmail
 
       await addPatient(patientData)
       
       message.success(`${values.name} has been added successfully!`)
+      
+      // Show warning if no emergency contact was provided
+      if (!emergencyContact) {
+        message.warning('Consider adding emergency contact information for safety purposes', 5)
+      }
+      
       handleClose()
       
     } catch (error) {
-      message.error('Failed to add patient. Please try again.')
+      message.error(error.message || 'Failed to add patient. Please try again.')
       console.error('Error adding patient:', error)
     } finally {
       setLoading(false)
@@ -74,6 +107,8 @@ const AddPatientModal = ({ visible, onClose }) => {
     form.resetFields()
     setAllergies([''])
     setConditions([''])
+    setIncludeEmergencyContact(true)
+    setEmergencyContactWarning(false)
     onClose()
   }
 
@@ -107,9 +142,20 @@ const AddPatientModal = ({ visible, onClose }) => {
     setConditions(newConditions)
   }
 
-  const disabledDate = (current) => {
-    // Disable future dates
-    return current && current > dayjs().endOf('day')
+  const handleEmergencyContactToggle = (checked) => {
+    setIncludeEmergencyContact(checked)
+    if (!checked) {
+      setEmergencyContactWarning(true)
+      // Clear emergency contact fields
+      form.setFieldsValue({
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        emergencyContactRelationship: '',
+        emergencyContactEmail: ''
+      })
+    } else {
+      setEmergencyContactWarning(false)
+    }
   }
 
   return (
@@ -117,44 +163,33 @@ const AddPatientModal = ({ visible, onClose }) => {
       title={
         <Space>
           <UserOutlined />
-          <Title level={4} style={{ margin: 0 }}>
-            Add New Patient
-          </Title>
+          <span>Add New Patient</span>
         </Space>
       }
       open={visible}
       onCancel={handleClose}
       footer={[
-        <Button
-          key="cancel"
-          onClick={handleClose}
-          size="large"
-          disabled={loading}
-        >
+        <Button key="cancel" onClick={handleClose} disabled={loading}>
           Cancel
         </Button>,
-        <Button
-          key="submit"
-          type="primary"
-          htmlType="submit"
+        <Button 
+          key="submit" 
+          type="primary" 
+          onClick={() => form.submit()}
           loading={loading}
-          size="large"
-          form="add-patient-form"
+          icon={<PlusOutlined />}
         >
-          {loading ? 'Adding Patient...' : 'Add Patient'}
+          Add Patient
         </Button>
       ]}
       width={800}
       destroyOnHidden
       className="add-patient-modal"
-      centered
     >
       <Form
-        id="add-patient-form"
         form={form}
         layout="vertical"
         onFinish={handleSubmit}
-        size="large"
         className="add-patient-form"
       >
         {/* Basic Information */}
@@ -167,14 +202,11 @@ const AddPatientModal = ({ visible, onClose }) => {
                 name="name"
                 label="Full Name"
                 rules={[
-                  { required: true, message: 'Please enter the patient name' },
+                  { required: true, message: 'Please enter patient name' },
                   { min: 2, message: 'Name must be at least 2 characters' }
                 ]}
               >
-                <Input
-                  placeholder="Enter full name"
-                  prefix={<UserOutlined />}
-                />
+                <Input placeholder="Enter full name" />
               </Form.Item>
             </Col>
             
@@ -186,11 +218,10 @@ const AddPatientModal = ({ visible, onClose }) => {
                   { required: true, message: 'Please select date of birth' }
                 ]}
               >
-                <DatePicker
+                <DatePicker 
                   placeholder="Select date of birth"
                   style={{ width: '100%' }}
-                  disabledDate={disabledDate}
-                  showToday={false}
+                  disabledDate={(current) => current && current > dayjs().endOf('day')}
                 />
               </Form.Item>
             </Col>
@@ -207,6 +238,7 @@ const AddPatientModal = ({ visible, onClose }) => {
               <Option value="male">Male</Option>
               <Option value="female">Female</Option>
               <Option value="other">Other</Option>
+              <Option value="prefer_not_to_say">Prefer not to say</Option>
             </Select>
           </Form.Item>
         </div>
@@ -215,7 +247,6 @@ const AddPatientModal = ({ visible, onClose }) => {
         <div className="form-section">
           <Title level={5}>Medical Information</Title>
           
-          {/* Allergies */}
           <div className="dynamic-field-section">
             <Text strong>Allergies</Text>
             <Text type="secondary" size="small"> (Optional)</Text>
@@ -251,7 +282,6 @@ const AddPatientModal = ({ visible, onClose }) => {
             </Button>
           </div>
 
-          {/* Medical Conditions */}
           <div className="dynamic-field-section">
             <Text strong>Medical Conditions</Text>
             <Text type="secondary" size="small"> (Optional)</Text>
@@ -290,52 +320,80 @@ const AddPatientModal = ({ visible, onClose }) => {
 
         {/* Emergency Contact */}
         <div className="form-section">
-          <Title level={5}>Emergency Contact</Title>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+            <Title level={5} style={{ margin: 0 }}>Emergency Contact</Title>
+            <Checkbox 
+              checked={includeEmergencyContact}
+              onChange={(e) => handleEmergencyContactToggle(e.target.checked)}
+            >
+              Include emergency contact
+            </Checkbox>
+          </div>
           
-          <Row gutter={16}>
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="emergencyContactName"
-                label="Contact Name"
-                rules={[
-                  { required: true, message: 'Please enter emergency contact name' }
-                ]}
-              >
-                <Input placeholder="Enter contact name" />
-              </Form.Item>
-            </Col>
-            
-            <Col xs={24} sm={12}>
-              <Form.Item
-                name="emergencyContactRelationship"
-                label="Relationship"
-                rules={[
-                  { required: true, message: 'Please enter relationship' }
-                ]}
-              >
-                <Select placeholder="Select relationship">
-                  <Option value="parent">Parent</Option>
-                  <Option value="spouse">Spouse</Option>
-                  <Option value="child">Child</Option>
-                  <Option value="sibling">Sibling</Option>
-                  <Option value="guardian">Guardian</Option>
-                  <Option value="friend">Friend</Option>
-                  <Option value="other">Other</Option>
-                </Select>
-              </Form.Item>
-            </Col>
-          </Row>
+          {!includeEmergencyContact && emergencyContactWarning && (
+            <Alert
+              message="No Emergency Contact"
+              description="While emergency contact information is optional, it's highly recommended for safety and care coordination purposes."
+              type="warning"
+              icon={<ExclamationCircleOutlined />}
+              showIcon
+              style={{ marginBottom: 16 }}
+            />
+          )}
+          
+          {includeEmergencyContact && (
+            <>
+              <Row gutter={16}>
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="emergencyContactName"
+                    label="Contact Name"
+                    rules={[
+                      { required: includeEmergencyContact, message: 'Please enter emergency contact name' }
+                    ]}
+                  >
+                    <Input placeholder="Enter contact name" />
+                  </Form.Item>
+                </Col>
+                
+                <Col xs={24} sm={12}>
+                  <Form.Item
+                    name="emergencyContactRelationship"
+                    label="Relationship"
+                    rules={[
+                      { required: includeEmergencyContact, message: 'Please enter relationship' }
+                    ]}
+                  >
+                    <Select placeholder="Select relationship">
+                      {EMERGENCY_CONTACT_CONFIG.RELATIONSHIPS.map(rel => (
+                        <Option key={rel.value} value={rel.value}>{rel.label}</Option>
+                      ))}
+                    </Select>
+                  </Form.Item>
+                </Col>
+              </Row>
 
-          <Form.Item
-            name="emergencyContactPhone"
-            label="Phone Number"
-            rules={[
-              { required: true, message: 'Please enter phone number' },
-              { pattern: /^[\+]?[1-9][\d]{0,15}$/, message: 'Please enter a valid phone number' }
-            ]}
-          >
-            <Input placeholder="Enter phone number (e.g., +1-555-0123)" />
-          </Form.Item>
+              <Form.Item
+                name="emergencyContactPhone"
+                label="Phone Number"
+                rules={createPhoneValidationRulesSync(null, includeEmergencyContact)}
+              >
+                <PhoneInput 
+                  placeholder="Enter phone number"
+                />
+              </Form.Item>
+
+              <Form.Item
+                name="emergencyContactEmail"
+                label="Email Address (Optional)"
+                rules={[
+                  { type: 'email', message: 'Please enter a valid email address' }
+                ]}
+              >
+                <Input placeholder="Enter email address (optional)" />
+              </Form.Item>
+            </>
+          )}
         </div>
       </Form>
     </Modal>
