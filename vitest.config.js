@@ -3,7 +3,9 @@ import react from '@vitejs/plugin-react'
 import { resolve } from 'path'
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react({
+    include: '**/*.{jsx,tsx,js,ts}'
+  })],
   test: {
     environment: 'jsdom',
     setupFiles: ['./tests/setup.js'],
@@ -29,6 +31,9 @@ export default defineConfig({
     testTimeout: 30000,
     hookTimeout: 30000,
     teardownTimeout: 30000
+  },
+  esbuild: {
+    jsx: 'automatic'
   },
   resolve: {
     alias: {

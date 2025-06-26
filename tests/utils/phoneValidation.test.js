@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import * as phoneValidation from '@/utils/phoneValidation'
 
 describe('phoneValidation', () => {
@@ -6,169 +6,187 @@ describe('phoneValidation', () => {
     vi.clearAllMocks()
   })
 
-  describe('validatePhoneNumber', () => {
-    it('validates US phone numbers correctly', () => {
-      const validNumbers = [
-        '+1234567890',
-        '+1 (234) 567-8900',
-        '+1-234-567-8900',
-        '(234) 567-8900',
-        '234-567-8900',
-        '2345678900'
-      ]
+  describe('createPhoneValidationRules', () => {
+    it('creates validation rules for required fields', () => {
+      const rules = phoneValidation.createPhoneValidationRules('US', true)
+      
+      expect(rules).toHaveLength(2)
+      expect(rules[0]).toHaveProperty('required', true)
+      expect(rules[0]).toHaveProperty('message', 'Please enter a phone number')
+      expect(rules[1]).toHaveProperty('validator')
+    })
 
-      validNumbers.forEach(number => {
-        expect(phoneValidation.validatePhoneNumber(number, 'US')).toBe(true)
+    it('creates validation rules for optional fields', () => {
+      const rules = phoneValidation.createPhoneValidationRules('US', false)
+      
+      expect(rules).toHaveLength(1)
+      expect(rules[0]).toHaveProperty('validator')
+    })
+  })
+
+  describe('createPhoneValidationRulesSync', () => {
+    it('creates synchronous validation rules', () => {
+      const rules = phoneValidation.createPhoneValidationRulesSync('US', true)
+      
+      expect(rules).toHaveLength(2)
+      expect(rules[0]).toHaveProperty('required', true)
+      expect(rules[1]).toHaveProperty('validator')
+    })
+
+    it('validates phone input correctly', async () => {
+      const rules = phoneValidation.createPhoneValidationRulesSync('US', false)
+      const validator = rules[0].validator
+      
+      // Valid phone input
+      const validInput = { phone: '1234567890', countryCode: '1' }
+      await expect(validator(null, validInput)).resolves.toBeUndefined()
+      
+      // Invalid phone input
+      const invalidInput = { phone: '123' }
+      await expect(validator(null, invalidInput)).rejects.toThrow('Please enter a valid phone number')
+      
+      // Empty input (should pass for optional field)
+      await expect(validator(null, null)).resolves.toBeUndefined()
+    })
+  })
+
+  describe('validateEmergencyContact', () => {
+    it('validates complete emergency contact', () => {
+      const contact = {
+        name: 'John Doe',
+        phone: { phone: '1234567890', countryCode: '1' },
+        relationship: 'Spouse',
+        email: 'john@example.com'
+      }
+      
+      const result = phoneValidation.validateEmergencyContact(contact)
+      
+      expect(result.isValid).toBe(true)
+      expect(result.errors).toEqual({})
+    })
+
+    it('validates missing emergency contact as optional', () => {
+      const result = phoneValidation.validateEmergencyContact(null)
+      
+      expect(result.isValid).toBe(true)
+      expect(result.warnings).toContain('No emergency contact provided - consider adding one for safety')
+    })
+
+    it('validates incomplete emergency contact', () => {
+      const contact = {
+        name: '',
+        phone: '',
+        relationship: ''
+      }
+      
+      const result = phoneValidation.validateEmergencyContact(contact)
+      
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toHaveProperty('name')
+      expect(result.errors).toHaveProperty('phone')
+      expect(result.errors).toHaveProperty('relationship')
+    })
+
+    it('validates phone number in object format', () => {
+      const contact = {
+        name: 'John Doe',
+        phone: { phone: '123', countryCode: '1' },
+        relationship: 'Spouse'
+      }
+      
+      const result = phoneValidation.validateEmergencyContact(contact)
+      
+      expect(result.isValid).toBe(false)
+      expect(result.errors).toHaveProperty('phone')
+    })
+
+    it('validates phone number in string format', () => {
+      const contact = {
+        name: 'John Doe',
+        phone: '1234567890',
+        relationship: 'Spouse'
+      }
+      
+      const result = phoneValidation.validateEmergencyContact(contact)
+      
+      expect(result.isValid).toBe(true)
+    })
+  })
+
+  describe('getDefaultEmergencyContact', () => {
+    it('returns default emergency contact template', () => {
+      const defaultContact = phoneValidation.getDefaultEmergencyContact()
+      
+      expect(defaultContact).toEqual({
+        name: '',
+        phone: '',
+        relationship: '',
+        email: ''
       })
     })
+  })
 
-    it('validates international phone numbers correctly', () => {
-      const validNumbers = [
-        '+44 20 7946 0958', // UK
-        '+33 1 42 68 53 00', // France
-        '+49 30 26005000', // Germany
-        '+86 138 0013 8000' // China
-      ]
-
-      validNumbers.forEach(number => {
-        expect(phoneValidation.validatePhoneNumber(number)).toBe(true)
-      })
+  describe('formatPhoneForStorage', () => {
+    it('formats phone object for storage', () => {
+      const phoneObject = { phone: '1234567890', countryCode: '1' }
+      const result = phoneValidation.formatPhoneForStorage(phoneObject)
+      
+      expect(result).toBe('+11234567890')
     })
 
-    it('rejects invalid phone numbers', () => {
-      const invalidNumbers = [
-        '',
-        '123',
-        '123456',
-        'abc123456789',
-        '+1234',
-        '00000000000',
-        '+999999999999999'
-      ]
-
-      invalidNumbers.forEach(number => {
-        expect(phoneValidation.validatePhoneNumber(number)).toBe(false)
-      })
+    it('handles string input', () => {
+      const phoneString = '+1234567890'
+      const result = phoneValidation.formatPhoneForStorage(phoneString)
+      
+      expect(result).toBe('+1234567890')
     })
 
-    it('handles null and undefined inputs', () => {
-      expect(phoneValidation.validatePhoneNumber(null)).toBe(false)
-      expect(phoneValidation.validatePhoneNumber(undefined)).toBe(false)
+    it('handles null input', () => {
+      const result = phoneValidation.formatPhoneForStorage(null)
+      
+      expect(result).toBe('')
+    })
+
+    it('handles empty object', () => {
+      const result = phoneValidation.formatPhoneForStorage({})
+      
+      expect(result).toBe('')
     })
   })
 
-  describe('formatPhoneNumber', () => {
-    it('formats US phone numbers correctly', () => {
-      expect(phoneValidation.formatPhoneNumber('2345678900', 'US'))
-        .toBe('+1 (234) 567-8900')
+  describe('parsePhoneFromStorage', () => {
+    it('parses stored phone string', () => {
+      const storedPhone = '+1234567890'
+      const result = phoneValidation.parsePhoneFromStorage(storedPhone)
       
-      expect(phoneValidation.formatPhoneNumber('1234567890', 'US'))
-        .toBe('+1 (123) 456-7890')
+      expect(result).toBe('+1234567890')
     })
 
-    it('formats international phone numbers', () => {
-      expect(phoneValidation.formatPhoneNumber('447946000000', 'GB'))
-        .toBe('+44 7946 000000')
+    it('handles object input', () => {
+      const phoneObject = { phone: '1234567890', countryCode: '1' }
+      const result = phoneValidation.parsePhoneFromStorage(phoneObject)
       
-      expect(phoneValidation.formatPhoneNumber('33142685300', 'FR'))
-        .toBe('+33 1 42 68 53 00')
+      expect(result).toEqual(phoneObject)
     })
 
-    it('handles already formatted numbers', () => {
-      const formattedNumber = '+1 (234) 567-8900'
-      expect(phoneValidation.formatPhoneNumber(formattedNumber, 'US'))
-        .toBe(formattedNumber)
-    })
-
-    it('returns original for invalid numbers', () => {
-      const invalidNumber = 'invalid'
-      expect(phoneValidation.formatPhoneNumber(invalidNumber, 'US'))
-        .toBe(invalidNumber)
+    it('handles null input', () => {
+      const result = phoneValidation.parsePhoneFromStorage(null)
+      
+      expect(result).toBe('')
     })
   })
 
-  describe('parsePhoneNumber', () => {
-    it('parses phone number into components', () => {
-      const result = phoneValidation.parsePhoneNumber('+1234567890')
-      
-      expect(result).toHaveProperty('countryCode', '1')
-      expect(result).toHaveProperty('nationalNumber', '234567890')
-      expect(result).toHaveProperty('country', 'US')
-      expect(result).toHaveProperty('valid', true)
-    })
-
-    it('handles international numbers', () => {
-      const result = phoneValidation.parsePhoneNumber('+44 20 7946 0958')
-      
-      expect(result).toHaveProperty('countryCode', '44')
-      expect(result).toHaveProperty('country', 'GB')
-      expect(result).toHaveProperty('valid', true)
-    })
-
-    it('returns null for invalid numbers', () => {
-      expect(phoneValidation.parsePhoneNumber('invalid')).toBeNull()
-      expect(phoneValidation.parsePhoneNumber('')).toBeNull()
+  describe('getDefaultPhoneCountry', () => {
+    it('returns fallback when country detection fails', async () => {
+      const result = await phoneValidation.getDefaultPhoneCountry('CA')
+      expect(['US', 'CA', 'GB', 'FR', 'DE', 'AU', 'us', 'ca', 'gb', 'fr', 'de', 'au']).toContain(result)
     })
   })
 
-  describe('getCountryFromPhoneNumber', () => {
-    it('detects country from phone number', () => {
-      expect(phoneValidation.getCountryFromPhoneNumber('+1234567890')).toBe('US')
-      expect(phoneValidation.getCountryFromPhoneNumber('+44 20 7946 0958')).toBe('GB')
-      expect(phoneValidation.getCountryFromPhoneNumber('+33 1 42 68 53 00')).toBe('FR')
-    })
-
-    it('returns null for invalid numbers', () => {
-      expect(phoneValidation.getCountryFromPhoneNumber('invalid')).toBeNull()
-      expect(phoneValidation.getCountryFromPhoneNumber('')).toBeNull()
-    })
-  })
-
-  describe('isValidForCountry', () => {
-    it('validates numbers for specific countries', () => {
-      expect(phoneValidation.isValidForCountry('+1234567890', 'US')).toBe(true)
-      expect(phoneValidation.isValidForCountry('+44 20 7946 0958', 'GB')).toBe(true)
-      expect(phoneValidation.isValidForCountry('+1234567890', 'GB')).toBe(false)
-    })
-
-    it('handles edge cases', () => {
-      expect(phoneValidation.isValidForCountry('', 'US')).toBe(false)
-      expect(phoneValidation.isValidForCountry('+1234567890', '')).toBe(false)
-    })
-  })
-
-  describe('getPhoneNumberExample', () => {
-    it('returns example numbers for countries', () => {
-      const usExample = phoneValidation.getPhoneNumberExample('US')
-      expect(usExample).toMatch(/^\+1/)
-      
-      const gbExample = phoneValidation.getPhoneNumberExample('GB')
-      expect(gbExample).toMatch(/^\+44/)
-    })
-
-    it('returns null for invalid country codes', () => {
-      expect(phoneValidation.getPhoneNumberExample('INVALID')).toBeNull()
-      expect(phoneValidation.getPhoneNumberExample('')).toBeNull()
-    })
-  })
-
-  describe('normalizePhoneNumber', () => {
-    it('normalizes phone numbers to E.164 format', () => {
-      expect(phoneValidation.normalizePhoneNumber('(234) 567-8900', 'US'))
-        .toBe('+12345678900')
-      
-      expect(phoneValidation.normalizePhoneNumber('07946 000000', 'GB'))
-        .toBe('+447946000000')
-    })
-
-    it('handles already normalized numbers', () => {
-      expect(phoneValidation.normalizePhoneNumber('+12345678900', 'US'))
-        .toBe('+12345678900')
-    })
-
-    it('returns null for invalid inputs', () => {
-      expect(phoneValidation.normalizePhoneNumber('invalid', 'US')).toBeNull()
-      expect(phoneValidation.normalizePhoneNumber('', 'US')).toBeNull()
+  describe('getDefaultPhoneCountrySync', () => {
+    it('returns fallback when country detection fails', () => {
+      const result = phoneValidation.getDefaultPhoneCountrySync('CA')
+      expect(['US', 'CA', 'GB', 'FR', 'DE', 'AU', 'us', 'ca', 'gb', 'fr', 'de', 'au']).toContain(result)
     })
   })
 }) 

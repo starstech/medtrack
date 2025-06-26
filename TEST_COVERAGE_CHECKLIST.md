@@ -231,3 +231,35 @@ pnpm test:coverage --reporter=html
 
 *Last Updated: 2024 - Current Status: 85% Coverage Achieved*
 *Target: 100% Coverage (15% remaining - primarily component tests)*
+
+# See all available test commands
+pnpm run
+
+# These are the key testing commands:
+pnpm test              # Run tests in watch mode
+pnpm test:run          # Run all tests once
+pnpm test:coverage     # Run tests with coverage report
+pnpm test:e2e          # Run end-to-end tests
+pnpm test:e2e:ui       # Run E2E tests with UI
+
+# Test specific files (easier to debug)
+pnpm test tests/utils/phoneValidation.test.js
+pnpm test tests/services/medicationService.test.js
+pnpm test tests/components/common/FileUpload.test.js
+
+# Run tests matching a pattern
+pnpm test --run --reporter=verbose FileUpload
+
+# Check if Playwright works
+pnpm test:e2e:headed   # Run with browser visible
+pnpm test:e2e:ui       # Run with Playwright UI
+
+# Test specific E2E scenarios
+pnpm test:e2e tests/e2e/auth.spec.js
+```
+
+# Create detailed coverage report
+pnpm test:coverage
+
+# View the report
+open coverage/index.html
