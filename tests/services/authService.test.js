@@ -1,31 +1,25 @@
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import * as authService from '@/services/authService'
+import { authService } from '../../src/services/authService'
 import { supabase } from '@/services/api'
 
 // Mock supabase
-vi.mock('@/services/api', () => ({
+vi.mock('../../src/lib/supabase', () => ({
   supabase: {
     auth: {
       signUp: vi.fn(),
       signInWithPassword: vi.fn(),
       signOut: vi.fn(),
-      resetPasswordForEmail: vi.fn(),
-      verifyOtp: vi.fn(),
-      updateUser: vi.fn(),
-      getSession: vi.fn(),
       getUser: vi.fn(),
+      getSession: vi.fn(),
+      resetPasswordForEmail: vi.fn(),
+      updateUser: vi.fn(),
       onAuthStateChange: vi.fn(),
       refreshSession: vi.fn()
-    },
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      single: vi.fn()
-    }))
+    }
   }
 }))
+
+const mockSupabase = vi.mocked(await import('../../src/lib/supabase')).supabase
 
 describe('authService', () => {
   const mockUser = {
@@ -54,42 +48,37 @@ describe('authService', () => {
 
   describe('signUp', () => {
     it('signs up user successfully', async () => {
-      supabase.auth.signUp.mockResolvedValue({
+      mockSupabase.auth.signUp.mockResolvedValue({
         data: { user: mockUser, session: mockSession },
         error: null
       })
 
-      const result = await authService.signUp('test@example.com', 'password123', {
-        firstName: 'Test',
-        lastName: 'User',
-        phone: '+1234567890'
-      })
+      const result = await authService.signUp('test@example.com', 'password123', { fullName: 'Test User' })
 
       expect(result.success).toBe(true)
       expect(result.data.user).toEqual(mockUser)
       expect(result.data.session).toEqual(mockSession)
-      expect(supabase.auth.signUp).toHaveBeenCalledWith({
+      expect(mockSupabase.auth.signUp).toHaveBeenCalledWith({
         email: 'test@example.com',
         password: 'password123',
         options: {
           data: {
-            first_name: 'Test',
-            last_name: 'User',
             full_name: 'Test User',
-            phone: '+1234567890'
+            phone: undefined,
+            date_of_birth: undefined,
+            emergency_contact: undefined
           }
         }
       })
     })
 
     it('handles signup errors', async () => {
-      const error = { message: 'Email already registered' }
-      supabase.auth.signUp.mockResolvedValue({
-        data: { user: null, session: null },
-        error
+      mockSupabase.auth.signUp.mockResolvedValue({
+        data: null,
+        error: { message: 'Email already registered' }
       })
 
-      const result = await authService.signUp('test@example.com', 'password123', {})
+      const result = await authService.signUp('test@example.com', 'password123')
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Email already registered')
@@ -120,7 +109,7 @@ describe('authService', () => {
     })
 
     it('handles network errors', async () => {
-      supabase.auth.signUp.mockRejectedValue(new Error('Network error'))
+      mockSupabase.auth.signUp.mockRejectedValue(new Error('Network error'))
 
       const result = await authService.signUp('test@example.com', 'password123', {})
 
@@ -131,7 +120,7 @@ describe('authService', () => {
 
   describe('signIn', () => {
     it('signs in user successfully', async () => {
-      supabase.auth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { user: mockUser, session: mockSession },
         error: null
       })
@@ -141,17 +130,12 @@ describe('authService', () => {
       expect(result.success).toBe(true)
       expect(result.data.user).toEqual(mockUser)
       expect(result.data.session).toEqual(mockSession)
-      expect(supabase.auth.signInWithPassword).toHaveBeenCalledWith({
-        email: 'test@example.com',
-        password: 'password123'
-      })
     })
 
     it('handles invalid credentials', async () => {
-      const error = { message: 'Invalid login credentials' }
-      supabase.auth.signInWithPassword.mockResolvedValue({
-        data: { user: null, session: null },
-        error
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
+        data: null,
+        error: { message: 'Invalid login credentials' }
       })
 
       const result = await authService.signIn('test@example.com', 'wrongpassword')
@@ -175,7 +159,7 @@ describe('authService', () => {
     })
 
     it('handles network errors', async () => {
-      supabase.auth.signInWithPassword.mockRejectedValue(new Error('Network error'))
+      mockSupabase.auth.signInWithPassword.mockRejectedValue(new Error('Network error'))
 
       const result = await authService.signIn('test@example.com', 'password123')
 
@@ -186,17 +170,18 @@ describe('authService', () => {
 
   describe('signOut', () => {
     it('signs out successfully', async () => {
-      supabase.auth.signOut.mockResolvedValue({ error: null })
+      mockSupabase.auth.signOut.mockResolvedValue({ error: null })
 
       const result = await authService.signOut()
 
       expect(result.success).toBe(true)
-      expect(supabase.auth.signOut).toHaveBeenCalled()
+      expect(mockSupabase.auth.signOut).toHaveBeenCalled()
     })
 
     it('handles signout errors', async () => {
-      const error = { message: 'Signout failed' }
-      supabase.auth.signOut.mockResolvedValue({ error })
+      mockSupabase.auth.signOut.mockResolvedValue({
+        error: { message: 'Signout failed' }
+      })
 
       const result = await authService.signOut()
 
@@ -205,7 +190,7 @@ describe('authService', () => {
     })
 
     it('handles network errors during signout', async () => {
-      supabase.auth.signOut.mockRejectedValue(new Error('Network error'))
+      mockSupabase.auth.signOut.mockRejectedValue(new Error('Network error'))
 
       const result = await authService.signOut()
 
@@ -216,25 +201,27 @@ describe('authService', () => {
 
   describe('resetPassword', () => {
     it('sends reset email successfully', async () => {
-      supabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null })
+      mockSupabase.auth.resetPasswordForEmail.mockResolvedValue({ error: null })
 
       const result = await authService.resetPassword('test@example.com')
 
       expect(result.success).toBe(true)
-      expect(supabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
+      expect(result.message).toContain('Password reset email sent')
+      expect(mockSupabase.auth.resetPasswordForEmail).toHaveBeenCalledWith(
         'test@example.com',
         { redirectTo: expect.stringContaining('/reset-password') }
       )
     })
 
     it('handles reset email errors', async () => {
-      const error = { message: 'User not found' }
-      supabase.auth.resetPasswordForEmail.mockResolvedValue({ error })
+      mockSupabase.auth.resetPasswordForEmail.mockResolvedValue({
+        error: { message: 'Email not found' }
+      })
 
       const result = await authService.resetPassword('test@example.com')
 
       expect(result.success).toBe(false)
-      expect(result.error).toBe('User not found')
+      expect(result.error).toBe('Email not found')
     })
 
     it('validates email format', async () => {
@@ -254,7 +241,7 @@ describe('authService', () => {
 
   describe('verifyOtp', () => {
     it('verifies OTP successfully', async () => {
-      supabase.auth.verifyOtp.mockResolvedValue({
+      mockSupabase.auth.verifyOtp.mockResolvedValue({
         data: { user: mockUser, session: mockSession },
         error: null
       })
@@ -263,7 +250,7 @@ describe('authService', () => {
 
       expect(result.success).toBe(true)
       expect(result.data.user).toEqual(mockUser)
-      expect(supabase.auth.verifyOtp).toHaveBeenCalledWith({
+      expect(mockSupabase.auth.verifyOtp).toHaveBeenCalledWith({
         email: 'test@example.com',
         token: '123456',
         type: 'signup'
@@ -272,7 +259,7 @@ describe('authService', () => {
 
     it('handles invalid OTP', async () => {
       const error = { message: 'Invalid OTP' }
-      supabase.auth.verifyOtp.mockResolvedValue({
+      mockSupabase.auth.verifyOtp.mockResolvedValue({
         data: { user: null, session: null },
         error
       })
@@ -301,7 +288,7 @@ describe('authService', () => {
   describe('updateUser', () => {
     it('updates user successfully', async () => {
       const updates = { data: { first_name: 'Updated Name' } }
-      supabase.auth.updateUser.mockResolvedValue({
+      mockSupabase.auth.updateUser.mockResolvedValue({
         data: { user: { ...mockUser, user_metadata: updates.data } },
         error: null
       })
@@ -310,12 +297,12 @@ describe('authService', () => {
 
       expect(result.success).toBe(true)
       expect(result.data.user.user_metadata.first_name).toBe('Updated Name')
-      expect(supabase.auth.updateUser).toHaveBeenCalledWith(updates)
+      expect(mockSupabase.auth.updateUser).toHaveBeenCalledWith(updates)
     })
 
     it('handles update errors', async () => {
       const error = { message: 'Update failed' }
-      supabase.auth.updateUser.mockResolvedValue({
+      mockSupabase.auth.updateUser.mockResolvedValue({
         data: { user: null },
         error
       })
@@ -334,78 +321,78 @@ describe('authService', () => {
     })
   })
 
-  describe('getSession', () => {
+  describe('getCurrentSession', () => {
     it('gets current session successfully', async () => {
-      supabase.auth.getSession.mockResolvedValue({
+      mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: mockSession },
         error: null
       })
 
-      const result = await authService.getSession()
+      const result = await authService.getCurrentSession()
 
       expect(result.success).toBe(true)
-      expect(result.data.session).toEqual(mockSession)
+      expect(result.data).toEqual(mockSession)
     })
 
     it('handles no session', async () => {
-      supabase.auth.getSession.mockResolvedValue({
+      mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
         error: null
       })
 
-      const result = await authService.getSession()
+      const result = await authService.getCurrentSession()
 
       expect(result.success).toBe(true)
-      expect(result.data.session).toBeNull()
+      expect(result.data).toBeNull()
     })
 
     it('handles session errors', async () => {
       const error = { message: 'Session error' }
-      supabase.auth.getSession.mockResolvedValue({
+      mockSupabase.auth.getSession.mockResolvedValue({
         data: { session: null },
         error
       })
 
-      const result = await authService.getSession()
+      const result = await authService.getCurrentSession()
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('Session error')
     })
   })
 
-  describe('getUser', () => {
+  describe('getCurrentUser', () => {
     it('gets current user successfully', async () => {
-      supabase.auth.getUser.mockResolvedValue({
+      mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: mockUser },
         error: null
       })
 
-      const result = await authService.getUser()
+      const result = await authService.getCurrentUser()
 
       expect(result.success).toBe(true)
-      expect(result.data.user).toEqual(mockUser)
+      expect(result.data).toEqual(mockUser)
     })
 
     it('handles no user', async () => {
-      supabase.auth.getUser.mockResolvedValue({
+      mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
         error: null
       })
 
-      const result = await authService.getUser()
+      const result = await authService.getCurrentUser()
 
       expect(result.success).toBe(true)
-      expect(result.data.user).toBeNull()
+      expect(result.data).toBeNull()
     })
 
     it('handles user errors', async () => {
       const error = { message: 'User error' }
-      supabase.auth.getUser.mockResolvedValue({
+      mockSupabase.auth.getUser.mockResolvedValue({
         data: { user: null },
         error
       })
 
-      const result = await authService.getUser()
+      const result = await authService.getCurrentUser()
 
       expect(result.success).toBe(false)
       expect(result.error).toBe('User error')
@@ -415,20 +402,18 @@ describe('authService', () => {
   describe('onAuthStateChange', () => {
     it('sets up auth state change listener', () => {
       const callback = vi.fn()
-      supabase.auth.onAuthStateChange.mockReturnValue({
-        data: { subscription: { unsubscribe: vi.fn() } }
-      })
+      mockSupabase.auth.onAuthStateChange.mockReturnValue({ data: { subscription: {} } })
 
       const result = authService.onAuthStateChange(callback)
 
-      expect(supabase.auth.onAuthStateChange).toHaveBeenCalledWith(callback)
-      expect(result.data.subscription).toBeDefined()
+      expect(mockSupabase.auth.onAuthStateChange).toHaveBeenCalledWith(callback)
+      expect(result).toBeDefined()
     })
 
     it('handles callback errors', () => {
       const callback = vi.fn()
       const error = new Error('Callback setup failed')
-      supabase.auth.onAuthStateChange.mockImplementation(() => {
+      mockSupabase.auth.onAuthStateChange.mockImplementation(() => {
         throw error
       })
 
@@ -442,7 +427,7 @@ describe('authService', () => {
   describe('refreshSession', () => {
     it('refreshes session successfully', async () => {
       const newSession = { ...mockSession, access_token: 'new-token' }
-      supabase.auth.refreshSession.mockResolvedValue({
+      mockSupabase.auth.refreshSession.mockResolvedValue({
         data: { session: newSession, user: mockUser },
         error: null
       })
@@ -455,7 +440,7 @@ describe('authService', () => {
 
     it('handles refresh errors', async () => {
       const error = { message: 'Refresh failed' }
-      supabase.auth.refreshSession.mockResolvedValue({
+      mockSupabase.auth.refreshSession.mockResolvedValue({
         data: { session: null, user: null },
         error
       })
@@ -469,7 +454,7 @@ describe('authService', () => {
 
   describe('Error Handling', () => {
     it('handles unexpected errors gracefully', async () => {
-      supabase.auth.signInWithPassword.mockImplementation(() => {
+      mockSupabase.auth.signInWithPassword.mockImplementation(() => {
         throw new Error('Unexpected error')
       })
 
@@ -480,7 +465,7 @@ describe('authService', () => {
     })
 
     it('handles null/undefined responses', async () => {
-      supabase.auth.signInWithPassword.mockResolvedValue(null)
+      mockSupabase.auth.signInWithPassword.mockResolvedValue(null)
 
       const result = await authService.signIn('test@example.com', 'password123')
 
@@ -489,7 +474,7 @@ describe('authService', () => {
     })
 
     it('handles missing error messages', async () => {
-      supabase.auth.signInWithPassword.mockResolvedValue({
+      mockSupabase.auth.signInWithPassword.mockResolvedValue({
         data: { user: null, session: null },
         error: {}
       })

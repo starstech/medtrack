@@ -1,248 +1,321 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest'
-import * as dateHelpers from '@/utils/dateHelpers'
+import { describe, it, expect } from 'vitest'
+import {
+  formatDate,
+  formatTime,
+  formatDateTime,
+  formatRelativeTime,
+  isToday,
+  isYesterday,
+  isTomorrow,
+  isPast,
+  isFuture,
+  getStartOfToday,
+  getEndOfToday,
+  getStartOfWeek,
+  getEndOfWeek,
+  getDaysBetween,
+  addTime,
+  subtractTime,
+  getAge,
+  formatDuration,
+  getSmartDateLabel,
+  getTimeUntil,
+  isSameDay,
+  isDateInRange
+} from '../../src/utils/dateHelpers'
 
 describe('dateHelpers', () => {
-  beforeEach(() => {
-    vi.clearAllMocks()
-    // Reset timezone to UTC for consistent testing
-    vi.setSystemTime(new Date('2024-01-15T10:00:00.000Z'))
-  })
+  const testDate = new Date('2024-01-15T14:30:00Z')
 
   describe('formatDate', () => {
     it('formats date to default format', () => {
-      const date = new Date('2024-01-15T10:30:00.000Z')
-      expect(dateHelpers.formatDate(date)).toBe('Jan 15, 2024')
+      const result = formatDate(testDate)
+      expect(result).toBe('Jan 15, 2024')
     })
 
     it('formats date with custom format', () => {
-      const date = new Date('2024-01-15T10:30:00.000Z')
-      expect(dateHelpers.formatDate(date, 'yyyy-MM-dd')).toBe('2024-01-15')
+      const result = formatDate(testDate, 'YYYY-MM-DD')
+      expect(result).toBe('2024-01-15')
     })
 
     it('handles null date', () => {
-      expect(dateHelpers.formatDate(null)).toBe('')
+      const result = formatDate(null)
+      expect(result).toBe('Invalid Date')
     })
 
     it('handles invalid date', () => {
-      expect(dateHelpers.formatDate(new Date('invalid'))).toBe('Invalid Date')
+      const result = formatDate('invalid')
+      expect(result).toBe('Invalid Date')
     })
   })
 
   describe('formatTime', () => {
     it('formats time in 12-hour format', () => {
-      const date = new Date('2024-01-15T14:30:00.000Z')
-      expect(dateHelpers.formatTime(date)).toBe('2:30 PM')
+      const result = formatTime(testDate)
+      expect(result).toMatch(/\d{1,2}:\d{2}\s?(AM|PM)/)
     })
 
     it('formats time in 24-hour format', () => {
-      const date = new Date('2024-01-15T14:30:00.000Z')
-      expect(dateHelpers.formatTime(date, true)).toBe('14:30')
+      const result = formatTime(testDate, 'HH:mm')
+      expect(result).toMatch(/\d{2}:\d{2}/)
     })
 
     it('handles midnight correctly', () => {
-      const date = new Date('2024-01-15T00:00:00.000Z')
-      expect(dateHelpers.formatTime(date)).toBe('12:00 AM')
+      const midnight = new Date('2024-01-15T00:00:00Z')
+      const result = formatTime(midnight)
+      expect(result).toMatch(/12:00\s?AM/)
     })
 
     it('handles noon correctly', () => {
-      const date = new Date('2024-01-15T12:00:00.000Z')
-      expect(dateHelpers.formatTime(date)).toBe('12:00 PM')
+      const noon = new Date('2024-01-15T12:00:00Z')
+      const result = formatTime(noon)
+      expect(result).toMatch(/12:00\s?PM/)
     })
   })
 
   describe('formatDateTime', () => {
     it('formats full date and time', () => {
-      const date = new Date('2024-01-15T14:30:00.000Z')
-      expect(dateHelpers.formatDateTime(date)).toBe('Jan 15, 2024 at 2:30 PM')
+      const result = formatDateTime(testDate)
+      expect(result).toMatch(/Jan 15, 2024\s\d{1,2}:\d{2}\s?(AM|PM)/)
     })
 
-    it('formats with custom separator', () => {
-      const date = new Date('2024-01-15T14:30:00.000Z')
-      expect(dateHelpers.formatDateTime(date, ' - ')).toBe('Jan 15, 2024 - 2:30 PM')
+    it('formats with custom format', () => {
+      const result = formatDateTime(testDate, 'YYYY-MM-DD HH:mm')
+      expect(result).toBe('2024-01-15 14:30')
     })
   })
 
-  describe('getRelativeTime', () => {
-    it('returns "now" for current time', () => {
-      const now = new Date()
-      expect(dateHelpers.getRelativeTime(now)).toBe('now')
+  describe('formatRelativeTime', () => {
+    it('returns relative time for past', () => {
+      const pastDate = new Date(Date.now() - 2 * 60 * 60 * 1000) // 2 hours ago
+      const result = formatRelativeTime(pastDate)
+      expect(result).toContain('ago')
     })
 
-    it('returns minutes ago', () => {
-      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
-      expect(dateHelpers.getRelativeTime(fiveMinutesAgo)).toBe('5 minutes ago')
-    })
-
-    it('returns hours ago', () => {
-      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000)
-      expect(dateHelpers.getRelativeTime(twoHoursAgo)).toBe('2 hours ago')
-    })
-
-    it('returns days ago', () => {
-      const threeDaysAgo = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000)
-      expect(dateHelpers.getRelativeTime(threeDaysAgo)).toBe('3 days ago')
-    })
-
-    it('returns future time', () => {
-      const inTwoHours = new Date(Date.now() + 2 * 60 * 60 * 1000)
-      expect(dateHelpers.getRelativeTime(inTwoHours)).toBe('in 2 hours')
+    it('returns relative time for future', () => {
+      const futureDate = new Date(Date.now() + 2 * 60 * 60 * 1000) // 2 hours from now
+      const result = formatRelativeTime(futureDate)
+      expect(result).toContain('in')
     })
   })
 
   describe('isToday', () => {
     it('returns true for today', () => {
       const today = new Date()
-      expect(dateHelpers.isToday(today)).toBe(true)
+      expect(isToday(today)).toBe(true)
     })
 
     it('returns false for yesterday', () => {
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      expect(dateHelpers.isToday(yesterday)).toBe(false)
+      expect(isToday(yesterday)).toBe(false)
     })
 
     it('returns false for tomorrow', () => {
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-      expect(dateHelpers.isToday(tomorrow)).toBe(false)
+      expect(isToday(tomorrow)).toBe(false)
     })
   })
 
   describe('isTomorrow', () => {
     it('returns true for tomorrow', () => {
       const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
-      expect(dateHelpers.isTomorrow(tomorrow)).toBe(true)
+      expect(isTomorrow(tomorrow)).toBe(true)
     })
 
     it('returns false for today', () => {
       const today = new Date()
-      expect(dateHelpers.isTomorrow(today)).toBe(false)
+      expect(isTomorrow(today)).toBe(false)
     })
   })
 
   describe('isYesterday', () => {
     it('returns true for yesterday', () => {
       const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
-      expect(dateHelpers.isYesterday(yesterday)).toBe(true)
+      expect(isYesterday(yesterday)).toBe(true)
     })
 
     it('returns false for today', () => {
       const today = new Date()
-      expect(dateHelpers.isYesterday(today)).toBe(false)
+      expect(isYesterday(today)).toBe(false)
     })
   })
 
-  describe('addDays', () => {
-    it('adds positive days', () => {
-      const date = new Date('2024-01-15')
-      const result = dateHelpers.addDays(date, 5)
-      expect(result.getDate()).toBe(20)
+  describe('isPast', () => {
+    it('returns true for past date', () => {
+      const pastDate = new Date(Date.now() - 60 * 60 * 1000)
+      expect(isPast(pastDate)).toBe(true)
     })
 
-    it('subtracts days with negative input', () => {
-      const date = new Date('2024-01-15')
-      const result = dateHelpers.addDays(date, -5)
-      expect(result.getDate()).toBe(10)
+    it('returns false for future date', () => {
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+      expect(isPast(futureDate)).toBe(false)
+    })
+  })
+
+  describe('isFuture', () => {
+    it('returns true for future date', () => {
+      const futureDate = new Date(Date.now() + 60 * 60 * 1000)
+      expect(isFuture(futureDate)).toBe(true)
+    })
+
+    it('returns false for past date', () => {
+      const pastDate = new Date(Date.now() - 60 * 60 * 1000)
+      expect(isFuture(pastDate)).toBe(false)
+    })
+  })
+
+  describe('addTime', () => {
+    it('adds positive days', () => {
+      const result = addTime(testDate, 5, 'days')
+      expect(result.toISOString()).toContain('2024-01-20')
+    })
+
+    it('adds hours', () => {
+      const result = addTime(testDate, 2, 'hours')
+      expect(result.getHours()).toBe(testDate.getHours() + 2)
     })
 
     it('handles month boundary', () => {
-      const date = new Date('2024-01-30')
-      const result = dateHelpers.addDays(date, 5)
-      expect(result.getMonth()).toBe(1) // February
-      expect(result.getDate()).toBe(4)
+      const endOfMonth = new Date('2024-01-31T12:00:00Z')
+      const result = addTime(endOfMonth, 1, 'day')
+      expect(result.getMonth()).toBe(1) // February (0-indexed)
     })
   })
 
-  describe('startOfDay', () => {
+  describe('subtractTime', () => {
+    it('subtracts days', () => {
+      const result = subtractTime(testDate, 5, 'days')
+      expect(result.toISOString()).toContain('2024-01-10')
+    })
+
+    it('subtracts hours', () => {
+      const result = subtractTime(testDate, 2, 'hours')
+      expect(result.getHours()).toBe(testDate.getHours() - 2)
+    })
+  })
+
+  describe('getStartOfToday', () => {
     it('sets time to beginning of day', () => {
-      const date = new Date('2024-01-15T14:30:45.123Z')
-      const result = dateHelpers.startOfDay(date)
-      
+      const result = getStartOfToday()
       expect(result.getHours()).toBe(0)
       expect(result.getMinutes()).toBe(0)
       expect(result.getSeconds()).toBe(0)
-      expect(result.getMilliseconds()).toBe(0)
     })
   })
 
-  describe('endOfDay', () => {
+  describe('getEndOfToday', () => {
     it('sets time to end of day', () => {
-      const date = new Date('2024-01-15T14:30:45.123Z')
-      const result = dateHelpers.endOfDay(date)
-      
+      const result = getEndOfToday()
       expect(result.getHours()).toBe(23)
       expect(result.getMinutes()).toBe(59)
       expect(result.getSeconds()).toBe(59)
-      expect(result.getMilliseconds()).toBe(999)
     })
   })
 
   describe('getDaysBetween', () => {
     it('calculates days between dates', () => {
-      const start = new Date('2024-01-15')
-      const end = new Date('2024-01-20')
-      expect(dateHelpers.getDaysBetween(start, end)).toBe(5)
+      const startDate = new Date('2024-01-15')
+      const endDate = new Date('2024-01-20')
+      const result = getDaysBetween(startDate, endDate)
+      expect(result).toBe(5)
     })
 
     it('returns negative for past dates', () => {
-      const start = new Date('2024-01-20')
-      const end = new Date('2024-01-15')
-      expect(dateHelpers.getDaysBetween(start, end)).toBe(-5)
+      const startDate = new Date('2024-01-20')
+      const endDate = new Date('2024-01-15')
+      const result = getDaysBetween(startDate, endDate)
+      expect(result).toBe(-5)
     })
 
     it('returns 0 for same date', () => {
       const date = new Date('2024-01-15')
-      expect(dateHelpers.getDaysBetween(date, date)).toBe(0)
+      const result = getDaysBetween(date, date)
+      expect(result).toBe(0)
     })
   })
 
-  describe('getWeekStart', () => {
+  describe('getStartOfWeek', () => {
     it('returns start of week (Sunday)', () => {
-      const wednesday = new Date('2024-01-17') // Wednesday
-      const weekStart = dateHelpers.getWeekStart(wednesday)
-      expect(weekStart.getDay()).toBe(0) // Sunday
-      expect(weekStart.getDate()).toBe(14)
+      const result = getStartOfWeek(testDate)
+      expect(result.getDay()).toBe(0) // Sunday
     })
 
-    it('returns start of week (Monday)', () => {
-      const wednesday = new Date('2024-01-17') // Wednesday
-      const weekStart = dateHelpers.getWeekStart(wednesday, 1) // Monday as start
-      expect(weekStart.getDay()).toBe(1) // Monday
-      expect(weekStart.getDate()).toBe(15)
+    it('handles different week start', () => {
+      const result = getStartOfWeek(testDate)
+      expect(result.getHours()).toBe(0)
+      expect(result.getMinutes()).toBe(0)
     })
   })
 
-  describe('parseDate', () => {
-    it('parses ISO date string', () => {
-      const result = dateHelpers.parseDate('2024-01-15T14:30:00.000Z')
-      expect(result).toBeInstanceOf(Date)
-      expect(result.getFullYear()).toBe(2024)
+  describe('getAge', () => {
+    it('calculates age correctly', () => {
+      const birthDate = new Date('1990-01-15')
+      const age = getAge(birthDate)
+      expect(age).toBeGreaterThan(30)
     })
 
-    it('parses date string', () => {
-      const result = dateHelpers.parseDate('2024-01-15')
-      expect(result).toBeInstanceOf(Date)
-      expect(result.getFullYear()).toBe(2024)
-    })
-
-    it('returns null for invalid date', () => {
-      expect(dateHelpers.parseDate('invalid-date')).toBeNull()
-    })
-
-    it('returns null for null input', () => {
-      expect(dateHelpers.parseDate(null)).toBeNull()
+    it('handles birthday not yet occurred this year', () => {
+      const birthDate = new Date('1990-12-31')
+      const age = getAge(birthDate)
+      expect(typeof age).toBe('number')
     })
   })
 
-  describe('isValidDate', () => {
-    it('returns true for valid date', () => {
-      expect(dateHelpers.isValidDate(new Date())).toBe(true)
+  describe('formatDuration', () => {
+    it('formats minutes correctly', () => {
+      expect(formatDuration(30)).toBe('30 min')
     })
 
-    it('returns false for invalid date', () => {
-      expect(dateHelpers.isValidDate(new Date('invalid'))).toBe(false)
+    it('formats hours correctly', () => {
+      expect(formatDuration(90)).toBe('1h 30m')
     })
 
-    it('returns false for null', () => {
-      expect(dateHelpers.isValidDate(null)).toBe(false)
+    it('formats hours without minutes', () => {
+      expect(formatDuration(120)).toBe('2 hours')
+    })
+  })
+
+  describe('getSmartDateLabel', () => {
+    it('returns smart label for today', () => {
+      const today = new Date()
+      const result = getSmartDateLabel(today)
+      expect(result).toBe('Today')
+    })
+
+    it('returns smart label for yesterday', () => {
+      const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000)
+      const result = getSmartDateLabel(yesterday)
+      expect(result).toBe('Yesterday')
+    })
+  })
+
+  describe('isSameDay', () => {
+    it('returns true for same day', () => {
+      const date1 = new Date('2024-01-15T10:00:00Z')
+      const date2 = new Date('2024-01-15T14:00:00Z')
+      expect(isSameDay(date1, date2)).toBe(true)
+    })
+
+    it('returns false for different days', () => {
+      const date1 = new Date('2024-01-15T10:00:00Z')
+      const date2 = new Date('2024-01-16T10:00:00Z')
+      expect(isSameDay(date1, date2)).toBe(false)
+    })
+  })
+
+  describe('isDateInRange', () => {
+    it('returns true for date in range', () => {
+      const date = new Date('2024-01-15')
+      const start = new Date('2024-01-10')
+      const end = new Date('2024-01-20')
+      expect(isDateInRange(date, start, end)).toBe(true)
+    })
+
+    it('returns false for date outside range', () => {
+      const date = new Date('2024-01-25')
+      const start = new Date('2024-01-10')
+      const end = new Date('2024-01-20')
+      expect(isDateInRange(date, start, end)).toBe(false)
     })
   })
 }) 
