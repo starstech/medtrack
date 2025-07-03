@@ -1,142 +1,177 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import PatientCard from '../../../src/components/patients/PatientCard'
+
+// Mock the usePatients hook
+vi.mock('../../../src/hooks/usePatients', () => ({
+  usePatients: vi.fn(() => ({
+    selectPatient: vi.fn()
+  }))
+}))
+
+// Mock react-router-dom navigate
+const mockNavigate = vi.fn()
+vi.mock('react-router-dom', async () => {
+  const actual = await vi.importActual('react-router-dom')
+  return {
+    ...actual,
+    useNavigate: () => mockNavigate
+  }
+})
 
 const mockPatient = {
   id: 'patient-1',
-  first_name: 'John',
-  last_name: 'Doe',
-  date_of_birth: '1990-01-15',
+  name: 'John Doe',
+  dateOfBirth: '1990-01-15',
+  gender: 'male',
   phone: '+1234567890',
   email: 'john.doe@example.com',
-  emergency_contact: 'Jane Doe +1234567891',
-  medical_conditions: ['Diabetes', 'Hypertension'],
+  emergencyContact: 'Jane Doe +1234567891',
+  medicalConditions: ['Diabetes', 'Hypertension'],
   allergies: ['Penicillin'],
-  notes: 'Test patient notes'
+  createdAt: '2024-01-01T00:00:00Z'
+}
+
+const renderWithRouter = (component) => {
+  return render(
+    <MemoryRouter>
+      {component}
+    </MemoryRouter>
+  )
 }
 
 describe('PatientCard', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('renders patient information correctly', () => {
-    render(<PatientCard patient={mockPatient} />)
+    renderWithRouter(<PatientCard patient={mockPatient} />)
     
     expect(screen.getByText('John Doe')).toBeInTheDocument()
-    expect(screen.getByText('john.doe@example.com')).toBeInTheDocument()
-    expect(screen.getByText('+1234567890')).toBeInTheDocument()
+    expect(screen.getByText(/34 years old/)).toBeInTheDocument() // Age calculated from 1990
+    expect(screen.getByText(/♂/)).toBeInTheDocument() // Gender symbol
   })
 
-  it('displays age calculated from date of birth', () => {
-    render(<PatientCard patient={mockPatient} />)
-    
-    // Should show age (calculated from 1990-01-15)
-    const ageText = screen.getByText(/\d+ years old/)
-    expect(ageText).toBeInTheDocument()
-  })
-
-  it('shows medical conditions', () => {
-    render(<PatientCard patient={mockPatient} />)
+  it('displays medical conditions', () => {
+    renderWithRouter(<PatientCard patient={mockPatient} />)
     
     expect(screen.getByText('Diabetes')).toBeInTheDocument()
     expect(screen.getByText('Hypertension')).toBeInTheDocument()
+    expect(screen.getByText(/2 conditions/)).toBeInTheDocument()
   })
 
-  it('shows allergies', () => {
-    render(<PatientCard patient={mockPatient} />)
+  it('displays allergies', () => {
+    renderWithRouter(<PatientCard patient={mockPatient} />)
     
     expect(screen.getByText('Penicillin')).toBeInTheDocument()
+    expect(screen.getByText(/1 allergy/)).toBeInTheDocument()
   })
 
-  it('handles click events', () => {
-    const onClickMock = vi.fn()
-    render(<PatientCard patient={mockPatient} onClick={onClickMock} />)
+  it('handles click events', async () => {
+    renderWithRouter(<PatientCard patient={mockPatient} />)
     
-    const card = screen.getByTestId('patient-card')
+    const card = document.querySelector('.patient-card')
     fireEvent.click(card)
     
-    expect(onClickMock).toHaveBeenCalledWith(mockPatient)
+    expect(mockNavigate).toHaveBeenCalledWith('/patients/patient-1')
   })
 
-  it('shows edit and delete buttons when showActions is true', () => {
-    const onEditMock = vi.fn()
-    const onDeleteMock = vi.fn()
+  it('shows critical badge for critical conditions', () => {
+    const criticalPatient = {
+      ...mockPatient,
+      medicalConditions: ['Diabetes Type 2', 'Severe Hypertension']
+    }
     
-    render(
-      <PatientCard 
-        patient={mockPatient} 
-        showActions 
-        onEdit={onEditMock}
-        onDelete={onDeleteMock}
-      />
-    )
+    renderWithRouter(<PatientCard patient={criticalPatient} />)
     
-    expect(screen.getByLabelText('Edit patient')).toBeInTheDocument()
-    expect(screen.getByLabelText('Delete patient')).toBeInTheDocument()
+    const criticalBadge = screen.getByText('Critical')
+    expect(criticalBadge).toBeInTheDocument()
   })
 
-  it('calls onEdit when edit button is clicked', () => {
-    const onEditMock = vi.fn()
+  it('handles view dashboard button click', () => {
+    const { usePatients } = require('../../../src/hooks/usePatients')
+    const mockSelectPatient = vi.fn()
+    usePatients.mockReturnValue({ selectPatient: mockSelectPatient })
     
-    render(
-      <PatientCard 
-        patient={mockPatient} 
-        showActions 
-        onEdit={onEditMock}
-      />
-    )
+    renderWithRouter(<PatientCard patient={mockPatient} />)
     
-    const editButton = screen.getByLabelText('Edit patient')
-    fireEvent.click(editButton)
+    const dashboardButton = screen.getByText('View Dashboard')
+    fireEvent.click(dashboardButton)
     
-    expect(onEditMock).toHaveBeenCalledWith(mockPatient)
-  })
-
-  it('calls onDelete when delete button is clicked', () => {
-    const onDeleteMock = vi.fn()
-    
-    render(
-      <PatientCard 
-        patient={mockPatient} 
-        showActions 
-        onDelete={onDeleteMock}
-      />
-    )
-    
-    const deleteButton = screen.getByLabelText('Delete patient')
-    fireEvent.click(deleteButton)
-    
-    expect(onDeleteMock).toHaveBeenCalledWith(mockPatient)
-  })
-
-  it('displays inactive status when patient is not active', () => {
-    const inactivePatient = { ...mockPatient, is_active: false }
-    render(<PatientCard patient={inactivePatient} />)
-    
-    expect(screen.getByText('Inactive')).toBeInTheDocument()
+    expect(mockSelectPatient).toHaveBeenCalledWith('patient-1')
+    expect(mockNavigate).toHaveBeenCalledWith('/')
   })
 
   it('handles missing optional fields gracefully', () => {
     const minimalPatient = {
       id: 'patient-2',
-      first_name: 'Jane',
-      last_name: 'Smith',
-      date_of_birth: '1985-06-20'
+      name: 'Jane Smith',
+      dateOfBirth: '1985-05-20',
+      gender: 'female',
+      createdAt: '2024-01-01T00:00:00Z'
     }
     
-    render(<PatientCard patient={minimalPatient} />)
+    renderWithRouter(<PatientCard patient={minimalPatient} />)
     
     expect(screen.getByText('Jane Smith')).toBeInTheDocument()
-    expect(screen.queryByText('@')).not.toBeInTheDocument() // No email
+    expect(screen.getByText('No medical conditions recorded')).toBeInTheDocument()
+    expect(screen.queryByText(/Allergies:/)).not.toBeInTheDocument()
   })
 
-  it('shows loading state when loading prop is true', () => {
-    render(<PatientCard loading />)
+  it('displays correct age calculation', () => {
+    const youngPatient = {
+      ...mockPatient,
+      dateOfBirth: '2020-01-01'
+    }
     
-    expect(screen.getByTestId('patient-card-skeleton')).toBeInTheDocument()
+    renderWithRouter(<PatientCard patient={youngPatient} />)
+    
+    expect(screen.getByText(/4 years old/)).toBeInTheDocument()
   })
 
-  it('applies selected styling when selected prop is true', () => {
-    render(<PatientCard patient={mockPatient} selected />)
+  it('shows gender symbol correctly', () => {
+    const femalePatient = {
+      ...mockPatient,
+      gender: 'female'
+    }
     
-    const card = screen.getByTestId('patient-card')
-    expect(card).toHaveClass('patient-card-selected')
+    renderWithRouter(<PatientCard patient={femalePatient} />)
+    
+    expect(screen.getByText(/♀/)).toBeInTheDocument()
+  })
+
+  it('displays relative time for creation date', () => {
+    renderWithRouter(<PatientCard patient={mockPatient} />)
+    
+    // Should show some relative time text
+    expect(screen.getByText(/Added/)).toBeInTheDocument()
+  })
+
+  it('limits displayed conditions and shows count', () => {
+    const patientWithManyConditions = {
+      ...mockPatient,
+      medicalConditions: ['Diabetes', 'Hypertension', 'Asthma', 'Arthritis']
+    }
+    
+    renderWithRouter(<PatientCard patient={patientWithManyConditions} />)
+    
+    expect(screen.getByText('Diabetes')).toBeInTheDocument()
+    expect(screen.getByText('Hypertension')).toBeInTheDocument()
+    expect(screen.getByText('+2')).toBeInTheDocument() // Shows remaining count
+  })
+
+  it('limits displayed allergies and shows count', () => {
+    const patientWithManyAllergies = {
+      ...mockPatient,
+      allergies: ['Penicillin', 'Nuts', 'Shellfish', 'Latex']
+    }
+    
+    renderWithRouter(<PatientCard patient={patientWithManyAllergies} />)
+    
+    expect(screen.getByText('Penicillin')).toBeInTheDocument()
+    expect(screen.getByText('Nuts')).toBeInTheDocument()
+    expect(screen.getByText('+2')).toBeInTheDocument() // Shows remaining count
   })
 }) 

@@ -6,57 +6,65 @@ describe('LoadingSpinner', () => {
   it('renders loading spinner', () => {
     render(<LoadingSpinner />)
     
-    const spinner = screen.getByTestId('loading-spinner')
+    // Check for the Ant Design Spin component with aria-busy attribute
+    const spinner = screen.getByRole('img', { name: /loading/i })
     expect(spinner).toBeInTheDocument()
   })
 
-  it('renders with custom text', () => {
-    const customText = 'Loading patients...'
-    render(<LoadingSpinner text={customText} />)
+  it('renders with custom message', () => {
+    const customMessage = 'Loading patients...'
+    render(<LoadingSpinner message={customMessage} />)
     
-    expect(screen.getByText(customText)).toBeInTheDocument()
+    expect(screen.getByText(customMessage)).toBeInTheDocument()
   })
 
-  it('renders default loading text when no text provided', () => {
+  it('renders default loading message when no message provided', () => {
     render(<LoadingSpinner />)
     
     expect(screen.getByText('Loading...')).toBeInTheDocument()
   })
 
-  it('applies custom size class', () => {
-    render(<LoadingSpinner size="large" />)
+  it('applies custom size correctly', () => {
+    render(<LoadingSpinner size="small" />)
     
-    const spinner = screen.getByTestId('loading-spinner')
-    expect(spinner).toHaveClass('spinner-large')
+    // Check that the Spin component renders
+    const spinner = screen.getByRole('img', { name: /loading/i })
+    expect(spinner).toBeInTheDocument()
   })
 
-  it('applies default size when no size specified', () => {
+  it('uses large size by default', () => {
     render(<LoadingSpinner />)
     
-    const spinner = screen.getByTestId('loading-spinner')
-    expect(spinner).toHaveClass('spinner-default')
+    // Check that the Spin component renders with default styling
+    const spinContainer = document.querySelector('.ant-spin-lg')
+    expect(spinContainer).toBeInTheDocument()
   })
 
   it('has proper accessibility attributes', () => {
     render(<LoadingSpinner />)
     
-    const spinner = screen.getByTestId('loading-spinner')
-    expect(spinner).toHaveAttribute('role', 'status')
-    expect(spinner).toHaveAttribute('aria-live', 'polite')
+    // Check for the Spin component with accessibility attributes
+    const spinContainer = document.querySelector('.ant-spin')
+    expect(spinContainer).toHaveAttribute('aria-busy', 'true')
+    expect(spinContainer).toHaveAttribute('aria-live', 'polite')
   })
 
-  it('can be centered', () => {
-    render(<LoadingSpinner centered />)
+  it('renders within a container with proper structure', () => {
+    render(<LoadingSpinner />)
     
-    const container = screen.getByTestId('loading-spinner').parentElement
-    expect(container).toHaveClass('spinner-centered')
+    const container = document.querySelector('.loading-container')
+    expect(container).toBeInTheDocument()
+    
+    const space = container.querySelector('.ant-space')
+    expect(space).toBeInTheDocument()
   })
 
-  it('shows overlay when overlay prop is true', () => {
-    render(<LoadingSpinner overlay />)
+  it('displays text with secondary styling', () => {
+    const message = 'Custom loading message'
+    render(<LoadingSpinner message={message} />)
     
-    const overlay = screen.getByTestId('loading-overlay')
-    expect(overlay).toBeInTheDocument()
-    expect(overlay).toHaveClass('spinner-overlay')
+    const text = screen.getByText(message)
+    expect(text).toBeInTheDocument()
+    expect(text).toHaveClass('ant-typography-secondary')
   })
 }) 

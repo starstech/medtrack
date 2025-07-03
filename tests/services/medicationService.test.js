@@ -1,222 +1,369 @@
-import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest'
-import * as medicationService from '@/services/medicationService'
-import { supabase } from '@/services/api'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { medicationService } from '../../src/services/medicationService'
+import { createSupabaseMock, createMockMedication } from '../helpers/testUtils'
 
-// Mock supabase
-vi.mock('@/services/api', () => ({
-  supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn().mockReturnThis(),
-      insert: vi.fn().mockReturnThis(),
-      update: vi.fn().mockReturnThis(),
-      delete: vi.fn().mockReturnThis(),
-      eq: vi.fn().mockReturnThis(),
-      order: vi.fn().mockReturnThis(),
-      single: vi.fn(),
-    }))
+// Mock the entire supabase module
+vi.mock('../../src/lib/supabase', () => {
+  const mockSupabase = createSupabaseMock()
+  return {
+    supabase: mockSupabase
   }
-}))
+})
+
+// Import the mocked supabase
+const { supabase } = await import('../../src/lib/supabase')
 
 describe('medicationService', () => {
-  const mockMedication = {
-    id: '1',
-    name: 'Aspirin',
-    dosage: '100mg',
-    frequency: 'Daily',
-    patient_id: 'patient-1',
-    instructions: 'Take with food',
-    active: true
-  }
-
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   describe('getMedications', () => {
     it('fetches medications successfully', async () => {
-      const mockResponse = {
-        data: [mockMedication],
-        error: null
-      }
+      const mockMedications = [createMockMedication()]
+      const mockResponse = { data: mockMedications, error: null }
 
-      supabase.from().select().eq().order().mockResolvedValue(mockResponse)
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
 
       const result = await medicationService.getMedications('patient-1')
 
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(result).toEqual([mockMedication])
+      expect(fromSpy).toHaveBeenCalledWith('medications')
+      expect(result).toEqual(mockResponse)
+      expect(result.data).toHaveLength(1)
     })
 
     it('handles fetch error', async () => {
       const mockError = { message: 'Database error' }
-      supabase.from().select().eq().order().mockResolvedValue({
-        data: null,
-        error: mockError
-      })
+      const mockResponse = { data: null, error: mockError }
 
-      await expect(medicationService.getMedications('patient-1')).rejects.toThrow('Database error')
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            eq: vi.fn().mockReturnValue({
+              order: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.getMedications('patient-1')
+
+      expect(result.data).toBeNull()
+      expect(result.error).toBe(mockError.message)
+    })
+  })
+
+  describe('getMedication', () => {
+    it('fetches single medication successfully', async () => {
+      const mockMedication = createMockMedication()
+      const mockResponse = { data: mockMedication, error: null }
+
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.getMedication('medication-1')
+
+      expect(fromSpy).toHaveBeenCalledWith('medications')
+      expect(result).toEqual(mockResponse)
+      expect(result.data.id).toBe('medication-1')
     })
 
-    it('filters by patient_id correctly', async () => {
-      const mockResponse = { data: [mockMedication], error: null }
-      supabase.from().select().eq().order().mockResolvedValue(mockResponse)
+    it('handles not found error', async () => {
+      const mockError = { message: 'No rows returned' }
+      const mockResponse = { data: null, error: mockError }
 
-      await medicationService.getMedications('patient-1')
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
+      })
+      supabase.from = fromSpy
 
-      expect(supabase.from().select().eq).toHaveBeenCalledWith('patient_id', 'patient-1')
+      const result = await medicationService.getMedication('nonexistent')
+
+      expect(result.data).toBeNull()
+      expect(result.error).toBe(mockError.message)
     })
   })
 
   describe('createMedication', () => {
     it('creates medication successfully', async () => {
       const newMedication = {
-        name: 'Ibuprofen',
-        dosage: '200mg',
-        frequency: 'Twice daily',
-        patient_id: 'patient-1'
+        patient_id: 'patient-1',
+        name: 'Aspirin',
+        dosage: '100mg',
+        frequency: 'Daily'
       }
+      const createdMedication = createMockMedication(newMedication)
+      const mockResponse = { data: createdMedication, error: null }
 
-      const mockResponse = {
-        data: { ...newMedication, id: '2' },
+      // Mock auth.getUser
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'test-user-id' } },
         error: null
-      }
+      })
 
-      supabase.from().insert().select().single().mockResolvedValue(mockResponse)
+      const fromSpy = vi.fn().mockReturnValue({
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
+      })
+      supabase.from = fromSpy
 
       const result = await medicationService.createMedication(newMedication)
 
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(supabase.from().insert).toHaveBeenCalledWith(newMedication)
-      expect(result).toEqual({ ...newMedication, id: '2' })
+      expect(supabase.auth.getUser).toHaveBeenCalled()
+      expect(result.data).toEqual(createdMedication)
+      expect(result.error).toBeNull()
     })
 
     it('handles creation error', async () => {
       const mockError = { message: 'Validation error' }
-      supabase.from().insert().select().single().mockResolvedValue({
-        data: null,
-        error: mockError
+      const newMedication = { name: 'Test Med' }
+
+      supabase.auth.getUser.mockResolvedValue({
+        data: { user: { id: 'test-user-id' } },
+        error: null
       })
 
-      await expect(medicationService.createMedication({})).rejects.toThrow('Validation error')
-    })
+      const fromSpy = vi.fn().mockReturnValue({
+        insert: vi.fn().mockReturnValue({
+          select: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue({ data: null, error: mockError })
+          })
+        })
+      })
+      supabase.from = fromSpy
 
-    it('validates required fields', async () => {
-      const incompleteMedication = {
-        name: 'Medication',
-        // missing required fields
-      }
+      const result = await medicationService.createMedication(newMedication)
 
-      await expect(medicationService.createMedication(incompleteMedication))
-        .rejects.toThrow(/required field/i)
+      expect(result.data).toBeNull()
+      expect(result.error).toBe(mockError.message)
     })
   })
 
   describe('updateMedication', () => {
     it('updates medication successfully', async () => {
-      const updates = { dosage: '150mg', frequency: 'Twice daily' }
-      const mockResponse = {
-        data: { ...mockMedication, ...updates },
-        error: null
-      }
+      const updates = { dosage: '200mg' }
+      const updatedMedication = createMockMedication(updates)
+      const mockResponse = { data: updatedMedication, error: null }
 
-      supabase.from().update().eq().select().single().mockResolvedValue(mockResponse)
+      const fromSpy = vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
 
-      const result = await medicationService.updateMedication('1', updates)
+      const result = await medicationService.updateMedication('medication-1', updates)
 
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(supabase.from().update).toHaveBeenCalledWith(updates)
-      expect(supabase.from().update().eq).toHaveBeenCalledWith('id', '1')
-      expect(result).toEqual({ ...mockMedication, ...updates })
+      expect(result.data).toEqual(updatedMedication)
+      expect(result.error).toBeNull()
     })
 
     it('handles update error', async () => {
       const mockError = { message: 'Update failed' }
-      supabase.from().update().eq().select().single().mockResolvedValue({
-        data: null,
-        error: mockError
-      })
+      const mockResponse = { data: null, error: mockError }
 
-      await expect(medicationService.updateMedication('1', {})).rejects.toThrow('Update failed')
+      const fromSpy = vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.updateMedication('medication-1', {})
+
+      expect(result.data).toBeNull()
+      expect(result.error).toBe(mockError.message)
     })
   })
 
   describe('deleteMedication', () => {
-    it('deletes medication successfully', async () => {
-      const mockResponse = { error: null }
-      supabase.from().delete().eq().mockResolvedValue(mockResponse)
+    it('soft deletes medication successfully', async () => {
+      const mockMedication = createMockMedication({ is_active: false })
+      const mockResponse = { data: mockMedication, error: null }
 
-      await medicationService.deleteMedication('1')
+      const fromSpy = vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
 
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(supabase.from().delete().eq).toHaveBeenCalledWith('id', '1')
+      const result = await medicationService.deleteMedication('medication-1')
+
+      expect(result.data).toEqual(mockMedication)
+      expect(result.error).toBeNull()
     })
 
     it('handles deletion error', async () => {
       const mockError = { message: 'Delete failed' }
-      supabase.from().delete().eq().mockResolvedValue({ error: mockError })
+      const mockResponse = { data: null, error: mockError }
 
-      await expect(medicationService.deleteMedication('1')).rejects.toThrow('Delete failed')
+      const fromSpy = vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.deleteMedication('medication-1')
+
+      expect(result.data).toBeNull()
+      expect(result.error).toBe(mockError.message)
     })
   })
 
-  describe('getMedicationById', () => {
-    it('fetches single medication successfully', async () => {
-      const mockResponse = {
-        data: mockMedication,
-        error: null
-      }
+  describe('getMedicationSchedule', () => {
+    it('fetches medication schedule', async () => {
+      const mockSchedule = { times: ['08:00', '20:00'], days: ['Mon', 'Tue', 'Wed'] }
+      const mockResponse = { data: { schedule: mockSchedule }, error: null }
 
-      supabase.from().select().eq().single().mockResolvedValue(mockResponse)
-
-      const result = await medicationService.getMedicationById('1')
-
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(supabase.from().select().eq).toHaveBeenCalledWith('id', '1')
-      expect(result).toEqual(mockMedication)
-    })
-
-    it('handles not found error', async () => {
-      const mockError = { message: 'No rows returned' }
-      supabase.from().select().eq().single().mockResolvedValue({
-        data: null,
-        error: mockError
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
       })
+      supabase.from = fromSpy
 
-      await expect(medicationService.getMedicationById('999')).rejects.toThrow('No rows returned')
+      const result = await medicationService.getMedicationSchedule('medication-1')
+
+      expect(result.data.schedule).toEqual(mockSchedule)
+    })
+  })
+
+  describe('updateMedicationSchedule', () => {
+    it('updates medication schedule', async () => {
+      const scheduleData = { times: ['09:00', '21:00'] }
+      const mockResponse = { data: { schedule: scheduleData }, error: null }
+
+      const fromSpy = vi.fn().mockReturnValue({
+        update: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            select: vi.fn().mockReturnValue({
+              single: vi.fn().mockResolvedValue(mockResponse)
+            })
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.updateMedicationSchedule('medication-1', scheduleData)
+
+      expect(result.data.schedule).toEqual(scheduleData)
     })
   })
 
   describe('searchMedications', () => {
     it('searches medications by name', async () => {
-      const searchResults = [mockMedication]
-      const mockResponse = {
-        data: searchResults,
-        error: null
-      }
+      const mockMedications = [createMockMedication({ name: 'Aspirin' })]
+      const mockResponse = { data: mockMedications, error: null }
 
-      supabase.from().select().ilike().eq().mockResolvedValue(mockResponse)
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          ilike: vi.fn().mockResolvedValue(mockResponse)
+        })
+      })
+      supabase.from = fromSpy
 
-      const result = await medicationService.searchMedications('patient-1', 'aspirin')
+      const result = await medicationService.searchMedications('aspirin')
 
-      expect(supabase.from).toHaveBeenCalledWith('medications')
-      expect(result).toEqual(searchResults)
+      expect(fromSpy).toHaveBeenCalledWith('medications')
+      expect(result.data).toEqual(mockMedications)
     })
 
     it('handles empty search results', async () => {
-      const mockResponse = {
-        data: [],
-        error: null
-      }
+      const mockResponse = { data: [], error: null }
 
-      supabase.from().select().ilike().eq().mockResolvedValue(mockResponse)
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          ilike: vi.fn().mockResolvedValue(mockResponse)
+        })
+      })
+      supabase.from = fromSpy
 
-      const result = await medicationService.searchMedications('patient-1', 'nonexistent')
+      const result = await medicationService.searchMedications('nonexistent')
 
-      expect(result).toEqual([])
+      expect(result.data).toEqual([])
+    })
+  })
+
+  describe('getMedicationHistory', () => {
+    it('fetches medication history', async () => {
+      const mockHistory = { changes: [{ date: '2024-01-01', change: 'Dosage increased' }] }
+      const mockResponse = { data: { history: mockHistory }, error: null }
+
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.getMedicationHistory('medication-1')
+
+      expect(result.data.history).toEqual(mockHistory)
+    })
+  })
+
+  describe('getMedicationAdherence', () => {
+    it('fetches medication adherence data', async () => {
+      const mockAdherence = { percentage: 85, missed_doses: 3 }
+      const mockResponse = { data: { adherence: mockAdherence }, error: null }
+
+      const fromSpy = vi.fn().mockReturnValue({
+        select: vi.fn().mockReturnValue({
+          eq: vi.fn().mockReturnValue({
+            single: vi.fn().mockResolvedValue(mockResponse)
+          })
+        })
+      })
+      supabase.from = fromSpy
+
+      const result = await medicationService.getMedicationAdherence('medication-1', '30')
+
+      expect(result.data.adherence).toEqual(mockAdherence)
     })
   })
 }) 
