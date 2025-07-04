@@ -5,6 +5,7 @@ import { HeartOutlined, LoadingOutlined } from '@ant-design/icons'
 import EmailVerificationPending from '../components/auth/EmailVerificationPending'
 import EmailVerificationSuccess from '../components/auth/EmailVerificationSuccess'
 import { useAuth } from '../hooks/useAuth'
+import { supabase } from '../lib/supabase'
 import './VerificationPages.css'
 
 const { Title, Text } = Typography
@@ -12,50 +13,53 @@ const { Title, Text } = Typography
 const EmailVerificationPage = () => {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const { user, verifyEmail, resendVerificationEmail } = useAuth()
+  const { user, resendVerificationEmail } = useAuth()
   
   const [verificationState, setVerificationState] = useState('loading') // loading, pending, success, error
   const [verificationError, setVerificationError] = useState(null)
   const [pendingEmail, setPendingEmail] = useState(null)
 
-  const token = searchParams.get('token')
+  // For Supabase, verification happens automatically via URL parameters
+  // The URL will have a hash fragment that Supabase client will process
   const email = searchParams.get('email')
   const mode = searchParams.get('mode') // 'verify' or 'pending'
 
   useEffect(() => {
     const handleVerification = async () => {
-      // If we have a token, attempt verification
-      if (token && mode === 'verify') {
-        try {
-          const result = await verifyEmail(token)
-          if (result.success) {
-            setVerificationState('success')
-          } else {
-            setVerificationState('error')
-            setVerificationError(result.error || 'Verification failed')
-          }
-        } catch (error) {
-          setVerificationState('error')
-          setVerificationError('Network error occurred during verification')
-        }
+      // Check if this is a Supabase auth callback URL
+      const { data, error } = await supabase.auth.getSession()
+      
+      // If we have a session, verification was successful
+      if (data?.session) {
+        setVerificationState('success')
+        return
       }
+      
       // If mode is pending, show pending state
-      else if (mode === 'pending' && email) {
+      if (mode === 'pending' && email) {
         setVerificationState('pending')
         setPendingEmail(email)
+        return
       }
-      // No valid parameters
-      else {
+      
+      // Check for error in URL
+      const errorParam = searchParams.get('error')
+      if (errorParam) {
         setVerificationState('error')
-        setVerificationError('Invalid verification link')
+        setVerificationError(errorParam || 'Verification failed')
+        return
       }
+      
+      // No valid parameters
+      setVerificationState('error')
+      setVerificationError('Invalid verification link')
     }
 
     // Simulate loading delay
     const timer = setTimeout(handleVerification, 1500)
     
     return () => clearTimeout(timer)
-  }, [token, email, mode, verifyEmail])
+  }, [email, mode, searchParams])
 
   const handleResendVerification = async (emailAddress) => {
     return await resendVerificationEmail(emailAddress)
@@ -104,7 +108,7 @@ const EmailVerificationPage = () => {
       case 'success':
         return (
           <EmailVerificationSuccess
-            userName={user?.name}
+            userName={user?.name || user?.user_metadata?.name}
             onContinue={handleContinueToDashboard}
           />
         )

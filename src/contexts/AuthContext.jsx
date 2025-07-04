@@ -1,5 +1,6 @@
 import { createContext, useContext, useReducer, useEffect, useCallback, useMemo } from 'react'
 import { authService } from '../services/authService'
+import { supabase } from '../lib/supabase'
 
 const AuthContext = createContext()
 
@@ -51,38 +52,20 @@ export const AuthProvider = ({ children }) => {
   // Check for existing session on app load
   useEffect(() => {
     let mounted = true
+    let authListener = null
 
     const checkAuthStatus = async () => {
-      // If no JWT in localStorage, skip API call
-      const storedToken = localStorage.getItem('auth_token')
-      if (!storedToken) {
-        dispatch({ type: 'SET_LOADING', payload: false })
-        return
-      }
-
       try {
-        // Add a timeout to prevent infinite loading
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth check timeout')), 8000)
-        )
-        
-        const authPromise = authService.getCurrentUser()
-        
-        const { success, data: userData, error } = await Promise.race([authPromise, timeoutPromise])
+        // Get current session from Supabase
+        const { data: { session } } = await supabase.auth.getSession()
         
         if (!mounted) return
-
-        if (error) {
-          console.warn('No active session:', error)
-          // Clear any invalid token
-          localStorage.removeItem('auth_token')
-          dispatch({ type: 'SET_LOADING', payload: false })
-          return
-        }
-
-        if (success && userData) {
-          dispatch({ type: 'LOGIN_SUCCESS', payload: userData })
+        
+        if (session?.user) {
+          // We have a valid session
+          dispatch({ type: 'LOGIN_SUCCESS', payload: session.user })
         } else {
+          // No active session
           dispatch({ type: 'SET_LOADING', payload: false })
         }
       } catch (error) {
@@ -93,11 +76,29 @@ export const AuthProvider = ({ children }) => {
       }
     }
 
-    checkAuthStatus()
+    // Set up auth state change listener
+    const setupAuthListener = () => {
+      authListener = supabase.auth.onAuthStateChange((event, session) => {
+        if (!mounted) return
+        
+        if (event === 'SIGNED_IN' && session?.user) {
+          dispatch({ type: 'LOGIN_SUCCESS', payload: session.user })
+        } else if (event === 'SIGNED_OUT') {
+          dispatch({ type: 'LOGOUT' })
+        } else if (event === 'USER_UPDATED' && session?.user) {
+          dispatch({ type: 'LOGIN_SUCCESS', payload: session.user })
+        }
+      })
+    }
 
-    // No realtime subscription needed with JWT flow
+    checkAuthStatus()
+    setupAuthListener()
+
     return () => {
       mounted = false
+      if (authListener) {
+        authListener.subscription.unsubscribe()
+      }
     }
   }, [])
 
@@ -107,7 +108,7 @@ export const AuthProvider = ({ children }) => {
     const result = await authService.signIn(email, password)
 
     if (result.success) {
-      dispatch({ type: 'LOGIN_SUCCESS', payload: result.data.user || result.data })
+      dispatch({ type: 'LOGIN_SUCCESS', payload: result.data.user })
       return { success: true }
     } else {
       dispatch({ type: 'LOGIN_ERROR', payload: result.error })
@@ -118,60 +119,57 @@ export const AuthProvider = ({ children }) => {
   const register = useCallback(async (email, password, name) => {
     dispatch({ type: 'SET_LOADING', payload: true })
 
-    const result = await authService.signUp(email, password, { name })
+    try {
+      console.log('Registering with:', { email, name }) // For debugging
+      const result = await authService.signUp(email, password, { name })
 
-    dispatch({ type: 'SET_LOADING', payload: false })
+      dispatch({ type: 'SET_LOADING', payload: false })
 
-    if (!result.success) {
-      dispatch({ type: 'LOGIN_ERROR', payload: result.error })
-      return { success: false, error: result.error }
-    }
-
-    if (result.data?.user?.email_confirmed_at) {
-      return { 
-        success: true, 
-        requiresVerification: false,
-        email: email,
-        message: 'Registration successful. Please check your email to verify your account.'
+      if (!result.success) {
+        dispatch({ type: 'LOGIN_ERROR', payload: result.error })
+        return { success: false, error: result.error }
       }
-    } else {
-      return { success: true, requiresVerification: true }
+
+      // Since email confirmation is not required, we should have a session right away
+      if (result.data.session) {
+        // User is automatically logged in
+        dispatch({ type: 'LOGIN_SUCCESS', payload: result.data.user })
+        return { 
+          success: true, 
+          requiresVerification: false,
+          message: 'Registration successful!'
+        }
+      } else if (result.data.requiresVerification) {
+        // This case should not happen if email confirmation is disabled,
+        // but keeping it for robustness
+        return { 
+          success: true, 
+          requiresVerification: true,
+          email: email,
+          message: 'Registration successful. Please check your email to verify your account.'
+        }
+      } else {
+        // Default success case
+        return { success: true, requiresVerification: false }
+      }
+    } catch (error) {
+      console.error('Registration error in context:', error)
+      dispatch({ type: 'SET_LOADING', payload: false })
+      dispatch({ type: 'LOGIN_ERROR', payload: error.message || 'Registration failed' })
+      return { success: false, error: error.message || 'Registration failed' }
     }
   }, [])
 
   const verifyEmail = useCallback(async (token) => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-    
-    try {
-      const { data, error } = await authService.verifyOtp({
-        token_hash: token,
-        type: 'signup'
-      })
-      
-      if (error) {
-        dispatch({ type: 'LOGIN_ERROR', payload: error.message })
-        return { success: false, error: error.message }
-      }
-
-      // Get user profile after verification
-      if (data.user) {
-        const { data: profile, error: profileError } = await authService.getUserProfile()
-
-        if (!profileError && profile) {
-          dispatch({ type: 'LOGIN_SUCCESS', payload: profile })
-        }
-      }
-      
-      return { success: true }
-    } catch (error) {
-      dispatch({ type: 'LOGIN_ERROR', payload: error.message })
-      return { success: false, error: error.message }
-    }
+    // With Supabase, email verification is handled via URL parameters
+    // This function is kept for API compatibility
+    return { success: true }
   }, [])
 
   const resendVerificationEmail = useCallback(async (email) => {
     try {
-      const { error } = await authService.resend({
+      // Use Supabase to resend verification email
+      const { error } = await supabase.auth.resend({
         type: 'signup',
         email: email
       })

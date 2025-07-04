@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo } from 'react'
-import { Form, Input, Button, Alert, Typography, Space, Card, Row, Col, Progress, Checkbox } from 'antd'
+import { Form, Input, Button, Alert, Typography, Space, Card, Row, Col, Progress, Checkbox, message } from 'antd'
 import { MailOutlined, LockOutlined, UserOutlined, LoadingOutlined, ArrowLeftOutlined, MedicineBoxOutlined, HeartOutlined, CheckCircleOutlined } from '@ant-design/icons'
 import { useAuth } from '../hooks/useAuth'
 import { useNavigate, Link } from 'react-router-dom'
@@ -18,18 +18,32 @@ const RegisterPage = () => {
     setLocalLoading(true)
     clearError()
     
-    const result = await register(values.email, values.password, values.name)
-    
-    if (result.success && result.requiresVerification) {
-      // Redirect to verification pending page
-      navigate(`/verify-email?mode=pending&email=${encodeURIComponent(values.email)}`, { 
-        replace: true 
-      })
-    } else if (!result.success) {
-      // Error is handled by the context
+    try {
+      console.log('Form values:', values) // For debugging
+      const result = await register(values.email, values.password, values.name)
+      
+      if (result.success) {
+        if (result.requiresVerification) {
+          // Redirect to verification pending page (should not happen if email confirmation is disabled)
+          navigate(`/verify-email?mode=pending&email=${encodeURIComponent(values.email)}`, { 
+            replace: true 
+          })
+          message.success('Registration successful! Please check your email to verify your account.')
+        } else {
+          // If no verification required, redirect to dashboard
+          navigate('/dashboard', { replace: true })
+          message.success('Registration successful! Welcome to MedTrack.')
+        }
+      } else {
+        // Display error from the registration attempt
+        message.error(result.error || 'Registration failed. Please try again.')
+      }
+    } catch (error) {
+      console.error('Registration submission error:', error)
+      message.error(error.message || 'Registration failed. Please try again.')
+    } finally {
+      setLocalLoading(false)
     }
-    
-    setLocalLoading(false)
   }, [register, clearError, navigate])
 
   const handlePasswordChange = useCallback((e) => {

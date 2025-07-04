@@ -1,5 +1,6 @@
 // Base API configuration and utilities
 import { message } from 'antd'
+import { supabase } from '../lib/supabase'
 
 // Base URL for Express backend (defaults to localhost:4000) – can be overridden in env variables
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
@@ -11,6 +12,8 @@ class ApiClient {
   constructor() {
     // Construct base URL gracefully, avoiding double slashes when API_VERSION is empty
     this.baseURL = API_VERSION ? `${API_BASE_URL}/${API_VERSION}` : API_BASE_URL
+    
+    // Get token from localStorage (populated by Supabase)
     this.token = localStorage.getItem('auth_token')
 
     // Refresh lock & offline flag
@@ -24,6 +27,17 @@ class ApiClient {
     })
     window.addEventListener('offline', () => {
       this.isOffline = true
+    })
+
+    // Listen to Supabase auth changes to update token
+    supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' && session) {
+        this.setToken(session.access_token)
+      } else if (event === 'SIGNED_OUT') {
+        this.setToken(null)
+      } else if (event === 'TOKEN_REFRESHED' && session) {
+        this.setToken(session.access_token)
+      }
     })
   }
 
@@ -60,6 +74,8 @@ class ApiClient {
         const contentType = response.headers.get('content-type')
         if (contentType && contentType.includes('application/json')) {
           error = await response.json()
+          // Log the full error response for debugging
+          console.log('API error response:', error)
         } else {
           // If it's not JSON (like HTML 404 page), use status-specific message
           error = { 
@@ -73,8 +89,17 @@ class ApiClient {
         }
       }
       
+      // Extract the most useful error message
+      const errorMessage = error.message || 
+                          error.error || 
+                          error.details || 
+                          (typeof error === 'string' ? error : `HTTP ${response.status}`);
+      
       // Handle specific HTTP status codes (but don't show messages for API unavailable)
       switch (response.status) {
+        case 400:
+          console.error(`Bad request (400): ${errorMessage}`, error)
+          break
         case 401:
           this.setToken(null)
           message.error('Session expired. Please login again.')
@@ -92,10 +117,10 @@ class ApiClient {
           break
         default:
           // Don't show generic errors - let the service handle them
-          console.warn(`API error ${response.status}:`, error.message)
+          console.warn(`API error ${response.status}:`, errorMessage)
       }
       
-      throw new Error(error.message || `HTTP ${response.status}`)
+      throw new Error(errorMessage)
     }
 
     // Parse successful response
@@ -231,42 +256,22 @@ class ApiClient {
     }
   }
 
-  // Attempt to refresh JWT token using stored refresh_token. Returns true if successful.
-  async refreshTokenIfNeeded() {
-    const refreshToken = localStorage.getItem('refresh_token')
-    if (!refreshToken) return false
-
-    if (this.isRefreshing) {
-      // Wait for ongoing refresh attempt
-      try {
-        await this.refreshPromise
-        return !!this.token // token should be set by handleToken inside authService
-      } catch {
-        return false
-      }
-    }
-
-    this.isRefreshing = true
-    const { default: authService } = await import('./authService.js')
-    this.refreshPromise = authService.refreshSession(refreshToken)
-
-    try {
-      const { success } = await this.refreshPromise
-      return success
-    } finally {
-      this.isRefreshing = false
-      this.refreshPromise = null
-    }
-  }
-
   // Helper to perform fetch with automatic 401 refresh retry (once)
   async fetchWithAuth(url, options, retry = false) {
     try {
       const response = await fetch(url, options)
       if (response.status === 401 && !retry) {
-        const refreshed = await this.refreshTokenIfNeeded()
-        if (refreshed) {
+        // Try to refresh the token using Supabase
+        const { data: { session }, error } = await supabase.auth.refreshSession()
+        
+        if (error) {
+          throw new Error('Session expired')
+        }
+        
+        if (session) {
           // Update Authorization header with new token and retry once
+          this.setToken(session.access_token)
+          
           const newOptions = {
             ...options,
             headers: {

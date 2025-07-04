@@ -21,16 +21,23 @@ const LoginPage = () => {
     setLocalLoading(true)
     clearError()
     
-    const result = await login(values.email, values.password)
-    
-    if (result.success) {
-      // Redirect to dashboard on successful login
-      navigate('/dashboard', { replace: true })
-    } else {
-      // Error is handled by the context
+    try {
+      const result = await login(values.email, values.password)
+      
+      if (result.success) {
+        // Redirect to dashboard on successful login
+        navigate('/dashboard', { replace: true })
+        message.success('Welcome back to MedTrack!')
+      } else {
+        // Error is handled by the context, but we can also show a message
+        message.error(result.error || 'Login failed. Please check your credentials.')
+      }
+    } catch (error) {
+      console.error('Login error:', error)
+      message.error('Login failed. Please try again.')
+    } finally {
+      setLocalLoading(false)
     }
-    
-    setLocalLoading(false)
   }, [login, clearError, navigate])
 
   const handleForgotPassword = useCallback(async (values) => {
