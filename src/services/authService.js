@@ -1,12 +1,16 @@
 // Authentication service
 import apiClient, { setAuthToken, clearAuthToken } from './api'
 
-// Helper to persist and propagate JWT token
-const handleToken = (token) => {
+// Helper to persist and propagate JWT & refresh tokens
+const handleToken = (token, refreshToken = null) => {
   if (token) {
     setAuthToken(token)
+    if (refreshToken) {
+      localStorage.setItem('refresh_token', refreshToken)
+    }
   } else {
     clearAuthToken()
+    localStorage.removeItem('refresh_token')
   }
 }
 
@@ -24,7 +28,7 @@ export const authService = {
 
       // Backend may return token immediately or require verification
       if (response.token) {
-        handleToken(response.token)
+        handleToken(response.token, response.refreshToken)
       }
 
       return {
@@ -49,7 +53,7 @@ export const authService = {
       const response = await apiClient.post('/auth/login', { email, password })
 
       if (response.token) {
-        handleToken(response.token)
+        handleToken(response.token, response.refreshToken)
       }
 
       return {
@@ -133,7 +137,7 @@ export const authService = {
   async refreshSession(refreshToken) {
     try {
       const data = await apiClient.post('/auth/refresh', { refreshToken })
-      if (data.token) handleToken(data.token)
+      if (data.token) handleToken(data.token, data.refreshToken)
       return { success: true, data }
     } catch (error) {
       return { success: false, error: error.message || error }

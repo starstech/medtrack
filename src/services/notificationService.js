@@ -24,8 +24,13 @@ export const notificationService = {
 
   // Create a new notification (for system use)
   async createNotification(notificationData) {
-    console.warn('createNotification: not implemented for client')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { notification } = await apiClient.post('/notifications', notificationData)
+      return { data: notification, error: null }
+    } catch (error) {
+      console.error('Error creating notification:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Mark notification as read
@@ -137,21 +142,35 @@ export const notificationService = {
 
   // Send bulk push notifications
   async sendBulkPushNotifications(notifications) {
-    // Assuming backend endpoint not exposed yet; keep stub
-    console.warn('sendBulkPushNotifications: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.post('/push/bulk', { notifications })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error sending bulk push notifications:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Schedule notification
   async scheduleNotification(notificationData) {
-    console.warn('scheduleNotification: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.post('/notifications/schedule', notificationData)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error scheduling notification:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Cancel scheduled notification
   async cancelScheduledNotification(notificationId) {
-    console.warn('cancelScheduledNotification: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.post(`/notifications/${notificationId}/cancel`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error cancelling scheduled notification:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Test notification

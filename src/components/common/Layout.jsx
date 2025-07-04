@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, Badge } from 'antd'
+import { Layout, Menu, Button, Avatar, Dropdown, Space, Typography, Badge, Alert } from 'antd'
 import { 
   MenuUnfoldOutlined, 
   MenuFoldOutlined,
@@ -23,11 +23,25 @@ const { Text } = Typography
 
 const AppLayout = ({ children }) => {
   const [collapsed, setCollapsed] = useState(false)
+  const [offline, setOffline] = useState(!navigator.onLine)
   const location = useLocation()
   const navigate = useNavigate()
   const { user, logout } = useAuth()
   const { getUnreadCount } = useNotifications()
   const { selectedPatient, patients } = usePatients()
+
+  useEffect(() => {
+    const handleOnline = () => setOffline(false)
+    const handleOffline = () => setOffline(true)
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    return () => {
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
+    }
+  }, [])
 
   const menuItems = [
     {
@@ -96,6 +110,14 @@ const AppLayout = ({ children }) => {
 
   return (
     <Layout style={{ minHeight: '100vh' }}>
+      {offline && (
+        <Alert
+          message="You are offline. Any changes will sync automatically once connection is restored."
+          type="warning"
+          banner
+          style={{ textAlign: 'center' }}
+        />
+      )}
       <Sider 
         collapsible 
         collapsed={collapsed} 

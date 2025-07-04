@@ -12,6 +12,19 @@ class ApiClient {
     // Construct base URL gracefully, avoiding double slashes when API_VERSION is empty
     this.baseURL = API_VERSION ? `${API_BASE_URL}/${API_VERSION}` : API_BASE_URL
     this.token = localStorage.getItem('auth_token')
+
+    // Refresh lock & offline flag
+    this.isRefreshing = false
+    this.refreshPromise = null
+    this.isOffline = !navigator.onLine
+
+    // Listen to browser online/offline events
+    window.addEventListener('online', () => {
+      this.isOffline = false
+    })
+    window.addEventListener('offline', () => {
+      this.isOffline = true
+    })
   }
 
   // Set auth token
@@ -109,7 +122,7 @@ class ApiClient {
     })
 
     try {
-      const response = await fetch(url, {
+      const response = await this.fetchWithAuth(url, {
         method: 'GET',
         headers: this.getHeaders(),
       })
@@ -123,7 +136,7 @@ class ApiClient {
   // POST request
   async post(endpoint, data = {}) {
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this.fetchWithAuth(`${this.baseURL}${endpoint}`, {
         method: 'POST',
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -138,7 +151,7 @@ class ApiClient {
   // PUT request
   async put(endpoint, data = {}) {
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this.fetchWithAuth(`${this.baseURL}${endpoint}`, {
         method: 'PUT',
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -153,7 +166,7 @@ class ApiClient {
   // PATCH request
   async patch(endpoint, data = {}) {
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this.fetchWithAuth(`${this.baseURL}${endpoint}`, {
         method: 'PATCH',
         headers: this.getHeaders(),
         body: JSON.stringify(data),
@@ -168,7 +181,7 @@ class ApiClient {
   // DELETE request
   async delete(endpoint) {
     try {
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this.fetchWithAuth(`${this.baseURL}${endpoint}`, {
         method: 'DELETE',
         headers: this.getHeaders(),
       })
@@ -180,7 +193,7 @@ class ApiClient {
   }
 
   // File upload
-  async uploadFile(endpoint, file, additionalData = {}) {
+  async uploadFile(endpoint, file, additionalData = {}, attempts = 0) {
     const formData = new FormData()
     formData.append('file', file)
     
@@ -194,7 +207,7 @@ class ApiClient {
         headers.Authorization = `Bearer ${this.token}`
       }
 
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const response = await this.fetchWithAuth(`${this.baseURL}${endpoint}`, {
         method: 'POST',
         headers,
         body: formData,
@@ -202,6 +215,74 @@ class ApiClient {
       return this.handleResponse(response)
     } catch (error) {
       console.error(`File upload to ${endpoint} failed:`, error)
+
+      // Retry logic for file uploads (up to 2 retries)
+      if (!navigator.onLine) this.isOffline = true
+
+      if (attempts < 2) {
+        const nextAttempt = attempts + 1
+        const delay = 2000 * nextAttempt // exponential backoff
+        await new Promise(res => setTimeout(res, delay))
+        console.warn(`Retrying upload (${nextAttempt})...`)
+        return this.uploadFile(endpoint, file, additionalData, nextAttempt)
+      }
+
+      throw error
+    }
+  }
+
+  // Attempt to refresh JWT token using stored refresh_token. Returns true if successful.
+  async refreshTokenIfNeeded() {
+    const refreshToken = localStorage.getItem('refresh_token')
+    if (!refreshToken) return false
+
+    if (this.isRefreshing) {
+      // Wait for ongoing refresh attempt
+      try {
+        await this.refreshPromise
+        return !!this.token // token should be set by handleToken inside authService
+      } catch {
+        return false
+      }
+    }
+
+    this.isRefreshing = true
+    const { default: authService } = await import('./authService.js')
+    this.refreshPromise = authService.refreshSession(refreshToken)
+
+    try {
+      const { success } = await this.refreshPromise
+      return success
+    } finally {
+      this.isRefreshing = false
+      this.refreshPromise = null
+    }
+  }
+
+  // Helper to perform fetch with automatic 401 refresh retry (once)
+  async fetchWithAuth(url, options, retry = false) {
+    try {
+      const response = await fetch(url, options)
+      if (response.status === 401 && !retry) {
+        const refreshed = await this.refreshTokenIfNeeded()
+        if (refreshed) {
+          // Update Authorization header with new token and retry once
+          const newOptions = {
+            ...options,
+            headers: {
+              ...options.headers,
+              Authorization: `Bearer ${this.token}`
+            }
+          }
+          return await this.fetchWithAuth(url, newOptions, true)
+        }
+      }
+      return response
+    } catch (error) {
+      // Detect offline state
+      if (!navigator.onLine) {
+        this.isOffline = true
+      }
       throw error
     }
   }

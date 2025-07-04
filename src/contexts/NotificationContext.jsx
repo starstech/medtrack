@@ -1,7 +1,7 @@
 import { createContext, useContext, useReducer, useEffect, useRef, useMemo } from 'react'
 import { notification } from 'antd'
 import { notificationService } from '../services/notificationService'
-import { supabase } from '../lib/supabase'
+import { useAuthContext } from './AuthContext'
 
 const NotificationContext = createContext()
 
@@ -74,27 +74,25 @@ const initialState = {
 
 export const NotificationProvider = ({ children }) => {
   const [state, dispatch] = useReducer(notificationReducer, initialState)
+  const { user } = useAuthContext()
   
   // Use ref to store latest state values to avoid closure issues
   const stateRef = useRef(state)
   stateRef.current = state
 
-  // Load notifications and preferences from backend (only when authenticated)
+  // Load notifications and preferences whenever authenticated user changes
   useEffect(() => {
     let mounted = true
 
     const loadNotifications = async () => {
       try {
-        // Check if user is authenticated before loading data
-        const { data: { user } } = await supabase.auth.getUser()
         if (!user || !mounted) {
-          // User not authenticated or component unmounted, don't load data
-          if (mounted) {
-            dispatch({ type: 'SET_LOADING', payload: false })
-          }
+          // User not authenticated or component unmounted, clear notifications and stop
+          dispatch({ type: 'SET_NOTIFICATIONS', payload: [] })
+          dispatch({ type: 'SET_LOADING', payload: false })
           return
         }
-
+        
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'CLEAR_ERROR' })
 
@@ -144,103 +142,10 @@ export const NotificationProvider = ({ children }) => {
 
     loadNotifications()
 
-    // Listen for auth state changes to reload data when user logs in/out
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-
-      if (event === 'SIGNED_IN') {
-        loadNotifications()
-      } else if (event === 'SIGNED_OUT') {
-        // Clear notifications when user logs out
-        dispatch({ type: 'SET_NOTIFICATIONS', payload: [] })
-        dispatch({ type: 'SET_LOADING', payload: false })
-        dispatch({ type: 'CLEAR_ERROR' })
-      }
-    })
-
     return () => {
       mounted = false
-      subscription.unsubscribe()
     }
-  }, [])
-
-  // Set up real-time notifications subscription
-  useEffect(() => {
-    let mounted = true
-    let subscription = null
-
-    const setupRealtimeSubscription = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user || !mounted) return
-
-        // Subscribe to notifications table changes for the current user
-        subscription = supabase
-          .channel('notifications')
-          .on(
-            'postgres_changes',
-            {
-              event: 'INSERT',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              if (!mounted) return
-              const newNotification = payload.new
-              dispatch({ type: 'ADD_NOTIFICATION', payload: newNotification })
-              
-              // Show in-app notification if enabled (use ref to get current state)
-              if (stateRef.current.preferences?.pushNotifications) {
-                showNotification('info', newNotification.title, newNotification.message)
-              }
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'UPDATE',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              if (!mounted) return
-              const updatedNotification = payload.new
-              dispatch({ type: 'UPDATE_NOTIFICATION', payload: updatedNotification })
-            }
-          )
-          .on(
-            'postgres_changes',
-            {
-              event: 'DELETE',
-              schema: 'public',
-              table: 'notifications',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              if (!mounted) return
-              const deletedNotification = payload.old
-              dispatch({ type: 'DELETE_NOTIFICATION', payload: deletedNotification.id })
-            }
-          )
-          .subscribe()
-
-      } catch (error) {
-        console.error('Error setting up realtime subscription:', error)
-      }
-    }
-
-    setupRealtimeSubscription()
-
-    // Cleanup subscription on unmount
-    return () => {
-      mounted = false
-      if (subscription) {
-        supabase.removeChannel(subscription)
-      }
-    }
-  }, [])
+  }, [user])
 
   const showNotification = (type, message, description = '', duration = 4.5) => {
     notification[type]({
@@ -362,16 +267,10 @@ export const NotificationProvider = ({ children }) => {
 
   const markAllAsRead = async () => {
     try {
-      dispatch({ type: 'CLEAR_ERROR' })
-      
-      const { error } = await notificationService.markAllAsRead()
-      if (error) throw new Error(error)
-      
+      await notificationService.markAllAsRead()
       dispatch({ type: 'MARK_ALL_READ' })
     } catch (error) {
-      console.error('Error marking all notifications as read:', error)
-      dispatch({ type: 'SET_ERROR', payload: error.message })
-      throw error
+      console.error('Error marking all notifications read:', error)
     }
   }
 
@@ -411,9 +310,18 @@ export const NotificationProvider = ({ children }) => {
     }
   }
 
-  const getUnreadCount = () => {
-    return state.notifications.filter(notif => !notif.read).length
-  }
+  const getUnreadCount = () => state.notifications.filter(n => !n.read).length
+
+  // Sync unread count periodically (optional)
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const { data: count } = await notificationService.getUnreadCount()
+        // We don't store count separately; can be used to trigger refresh if mismatch
+      } catch {}
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   // Memoize the context value to prevent unnecessary re-renders
   const value = useMemo(() => ({

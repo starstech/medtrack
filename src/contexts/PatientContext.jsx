@@ -3,7 +3,7 @@ import { patientService } from '../services/patientService'
 import { medicationService } from '../services/medicationService'
 import { measurementService } from '../services/measurementService'
 import { dailyLogService } from '../services/dailyLogService'
-import { supabase } from '../lib/supabase'
+import { useAuthContext } from './AuthContext'
 
 const PatientContext = createContext()
 
@@ -97,21 +97,17 @@ const initialState = {
 
 export const PatientProvider = ({ children }) => {
   const [state, dispatch] = useReducer(patientReducer, initialState)
+  const { user } = useAuthContext()
 
-  // Load initial data (only when authenticated)
+  // Load data whenever authenticated user changes
   useEffect(() => {
     let mounted = true
-    let authSubscription = null
 
     const loadData = async () => {
       try {
-        // Check if user is authenticated before loading data
-        const { data: { user } } = await supabase.auth.getUser()
         if (!user || !mounted) {
-          // User not authenticated or component unmounted, don't load data
-          if (mounted) {
-            dispatch({ type: 'SET_LOADING', payload: false })
-          }
+          // User not authenticated or component unmounted
+          dispatch({ type: 'SET_LOADING', payload: false })
           return
         }
 
@@ -178,33 +174,11 @@ export const PatientProvider = ({ children }) => {
 
     loadData()
 
-    // Listen for auth state changes to reload data when user logs in/out
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (!mounted) return
-
-      if (event === 'SIGNED_IN') {
-        loadData()
-      } else if (event === 'SIGNED_OUT') {
-        // Clear all data when user logs out
-        dispatch({ type: 'SET_PATIENTS', payload: [] })
-        dispatch({ type: 'SET_MEDICATIONS', payload: [] })
-        dispatch({ type: 'SET_MEASUREMENTS', payload: [] })
-        dispatch({ type: 'SET_DAILY_LOGS', payload: [] })
-        dispatch({ type: 'SET_SELECTED_PATIENT', payload: null })
-        dispatch({ type: 'SET_LOADING', payload: false })
-        dispatch({ type: 'CLEAR_ERROR' })
-      }
-    })
-
-    authSubscription = subscription
-
     return () => {
       mounted = false
-      if (authSubscription) {
-        authSubscription.unsubscribe()
-      }
+      // nothing to cleanup
     }
-  }, [])
+  }, [user])
 
   const selectPatient = (patientId) => {
     const patient = state.patients.find(p => p.id === patientId)
