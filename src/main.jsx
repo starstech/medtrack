@@ -2,7 +2,7 @@ import '@ant-design/v5-patch-for-react-19'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter } from 'react-router-dom'
-import { ConfigProvider } from 'antd'
+import { ConfigProvider, App as AntdApp } from 'antd'
 import 'antd/dist/reset.css'
 import App from './App.jsx'
 
@@ -162,7 +162,9 @@ const theme = {
 ReactDOM.createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <ConfigProvider theme={theme}>
-      <App />
+      <AntdApp>
+        <App />
+      </AntdApp>
     </ConfigProvider>
   </BrowserRouter>
 )

@@ -110,7 +110,14 @@ export const notificationService = {
   // Subscribe to push notifications
   async subscribeToPush(subscription) {
     try {
-      const data = await apiClient.post('/push/subscribe', { subscription })
+      // Extract the token from the subscription object
+      const deviceToken = subscription.token || subscription;
+      
+      const data = await apiClient.post('/push/subscribe', { 
+        deviceToken,
+        deviceType: 'web' // Default to web for browser-based notifications
+      });
+      
       return { data, error: null }
     } catch (error) {
       console.error('Error subscribing to push:', error)

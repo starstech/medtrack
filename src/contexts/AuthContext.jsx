@@ -96,7 +96,7 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       mounted = false
-      if (authListener) {
+      if (authListener && authListener.subscription && typeof authListener.subscription.unsubscribe === 'function') {
         authListener.subscription.unsubscribe()
       }
     }

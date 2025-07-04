@@ -16,42 +16,42 @@ const notificationReducer = (state, action) => {
     case 'CLEAR_ERROR':
       return { ...state, error: null }
     case 'SET_NOTIFICATIONS':
-      return { ...state, notifications: action.payload, loading: false, error: null }
+      return { ...state, notifications: action.payload || [], loading: false, error: null }
     case 'ADD_NOTIFICATION':
       return {
         ...state,
-        notifications: [action.payload, ...state.notifications]
+        notifications: [action.payload, ...(state.notifications || [])]
       }
     case 'UPDATE_NOTIFICATION':
       return {
         ...state,
-        notifications: state.notifications.map(notif =>
+        notifications: (state.notifications || []).map(notif =>
           notif.id === action.payload.id ? action.payload : notif
         )
       }
     case 'MARK_READ':
       return {
         ...state,
-        notifications: state.notifications.map(notif =>
+        notifications: (state.notifications || []).map(notif =>
           notif.id === action.payload ? { ...notif, read: true } : notif
         )
       }
     case 'TOGGLE_READ':
       return {
         ...state,
-        notifications: state.notifications.map(notif =>
+        notifications: (state.notifications || []).map(notif =>
           notif.id === action.payload ? { ...notif, read: !notif.read } : notif
         )
       }
     case 'MARK_ALL_READ':
       return {
         ...state,
-        notifications: state.notifications.map(notif => ({ ...notif, read: true }))
+        notifications: (state.notifications || []).map(notif => ({ ...notif, read: true }))
       }
     case 'DELETE_NOTIFICATION':
       return {
         ...state,
-        notifications: state.notifications.filter(notif => notif.id !== action.payload)
+        notifications: (state.notifications || []).filter(notif => notif.id !== action.payload)
       }
     case 'SET_PREFERENCES':
       return { ...state, preferences: action.payload }
@@ -88,45 +88,54 @@ export const NotificationProvider = ({ children }) => {
 
     const loadNotifications = async () => {
       try {
-        if (!user || !mounted) {
+        if (!user) {
           // User not authenticated or component unmounted, clear notifications and stop
           dispatch({ type: 'SET_NOTIFICATIONS', payload: [] })
           dispatch({ type: 'SET_LOADING', payload: false })
           return
         }
         
+        if (!mounted) return
+        
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'CLEAR_ERROR' })
 
-        // Load notifications
-        const { data: notifications, error: notificationsError } = await notificationService.getNotifications({
-          limit: 50 // Get last 50 notifications
-        })
+        try {
+          // Load notifications
+          const { data: notifications, error: notificationsError } = await notificationService.getNotifications({
+            limit: 50 // Get last 50 notifications
+          })
 
-        if (notificationsError) {
-          throw new Error(`Failed to load notifications: ${notificationsError}`)
-        }
+          if (notificationsError) {
+            throw new Error(`Failed to load notifications: ${notificationsError}`)
+          }
 
-        if (!mounted) return
-        dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications || [] })
+          if (!mounted) return
+          dispatch({ type: 'SET_NOTIFICATIONS', payload: notifications || [] })
 
-        // Load preferences
-        const { data: savedPrefs, error: prefsError } = await notificationService.getNotificationPreferences()
-        
-        if (savedPrefs && !prefsError && mounted) {
-          // Merge with default preferences
-          const mergedPrefs = { ...initialState.preferences, ...savedPrefs }
-          dispatch({ type: 'SET_PREFERENCES', payload: mergedPrefs })
-        } else if (mounted) {
-          // Try to load from localStorage as fallback
-          const localStoragePrefs = localStorage.getItem('notificationPreferences')
-          if (localStoragePrefs) {
-            try {
-              const preferences = JSON.parse(localStoragePrefs)
-              dispatch({ type: 'SET_PREFERENCES', payload: preferences })
-            } catch (error) {
-              console.error('Error loading notification preferences from localStorage:', error)
+          // Load preferences
+          const { data: savedPrefs, error: prefsError } = await notificationService.getNotificationPreferences()
+          
+          if (savedPrefs && !prefsError && mounted) {
+            // Merge with default preferences
+            const mergedPrefs = { ...initialState.preferences, ...savedPrefs }
+            dispatch({ type: 'SET_PREFERENCES', payload: mergedPrefs })
+          } else if (mounted) {
+            // Try to load from localStorage as fallback
+            const localStoragePrefs = localStorage.getItem('notificationPreferences')
+            if (localStoragePrefs) {
+              try {
+                const preferences = JSON.parse(localStoragePrefs)
+                dispatch({ type: 'SET_PREFERENCES', payload: preferences })
+              } catch (error) {
+                console.error('Error loading notification preferences from localStorage:', error)
+              }
             }
+          }
+        } catch (error) {
+          console.error('Error loading notifications data:', error)
+          if (mounted) {
+            dispatch({ type: 'SET_ERROR', payload: error.message })
           }
         }
 
@@ -148,40 +157,61 @@ export const NotificationProvider = ({ children }) => {
     let unsubscribeOnMessage
     const initPushNotifications = async () => {
       try {
-        if (!user) return
+        if (!user) return null
+        
+        // Skip if not in a browser environment or notification API not available
+        if (typeof window === 'undefined' || !('Notification' in window)) {
+          return null
+        }
 
         // Request permission if not granted
         if (Notification.permission !== 'granted') {
           const granted = await pushNotificationUtils.requestPermission()
-          if (!granted) return
+          if (!granted) return null
         }
 
-        const messaging = await getFirebaseMessaging()
-        if (!messaging) return
+        try {
+          const messaging = await getFirebaseMessaging()
+          if (!messaging) return null
 
-        const token = await getToken(messaging, {
-          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
-        })
+          try {
+            const token = await getToken(messaging, {
+              vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+            })
 
-        if (token) {
-          // Send token to backend to subscribe
-          await notificationService.subscribeToPush({ token })
-        }
+            if (token) {
+              // Send token to backend to subscribe
+              try {
+                await notificationService.subscribeToPush(token)
+              } catch (subscribeError) {
+                console.error('Error subscribing to push notifications:', subscribeError)
+                // Continue execution even if subscription fails
+              }
+            }
 
-        // Listen to foreground messages
-        const unsubscribeOnMsg = onMessage(messaging, (payload) => {
-          // Refresh notifications list or append
-          loadNotifications()
+            // Listen to foreground messages
+            const unsubscribeOnMsg = onMessage(messaging, (payload) => {
+              // Refresh notifications list or append
+              loadNotifications()
 
-          // Optional: show system notification
-          if (payload?.notification?.title) {
-            showNotification('info', payload.notification.title, payload.notification.body)
+              // Optional: show system notification
+              if (payload?.notification?.title) {
+                showNotification('info', payload.notification.title, payload.notification.body)
+              }
+            })
+
+            return unsubscribeOnMsg
+          } catch (tokenError) {
+            console.error('Error getting FCM token:', tokenError)
+            return null
           }
-        })
-
-        return unsubscribeOnMsg
+        } catch (messagingError) {
+          console.error('Firebase messaging error:', messagingError)
+          return null
+        }
       } catch (error) {
         console.error('FCM initialization error:', error)
+        return null
       }
     }
 
@@ -356,7 +386,9 @@ export const NotificationProvider = ({ children }) => {
     }
   }
 
-  const getUnreadCount = () => state.notifications.filter(n => !n.read).length
+  const getUnreadCount = () => {
+    return Array.isArray(state.notifications) ? state.notifications.filter(n => !n.read).length : 0;
+  }
 
   // Sync unread count periodically (optional)
   useEffect(() => {

@@ -105,59 +105,71 @@ export const PatientProvider = ({ children }) => {
 
     const loadData = async () => {
       try {
-        if (!user || !mounted) {
+        if (!user) {
           // User not authenticated or component unmounted
           dispatch({ type: 'SET_LOADING', payload: false })
+          return
+        }
+
+        // Make sure we have a valid user with necessary properties
+        if (!mounted) {
           return
         }
 
         dispatch({ type: 'SET_LOADING', payload: true })
         dispatch({ type: 'CLEAR_ERROR' })
         
-        // Load patients first
-        const { data: patients, error: patientsError } = await patientService.getPatients()
-        if (patientsError) throw new Error(`Failed to load patients: ${patientsError}`)
-        
-        if (!mounted) return
-        dispatch({ type: 'SET_PATIENTS', payload: patients || [] })
-        
-        // If we have patients, load data for all patients
-        if (patients && patients.length > 0) {
-          // Load medications for all patients
-          const medicationsPromises = patients.map(patient => 
-            medicationService.getMedications(patient.id)
-          )
-          const medicationsResults = await Promise.allSettled(medicationsPromises)
-          const allMedications = medicationsResults
-            .filter(result => result.status === 'fulfilled' && result.value.data)
-            .flatMap(result => result.value.data)
+        try {
+          // Load patients first
+          const { data: patients, error: patientsError } = await patientService.getPatients()
+          if (patientsError) throw new Error(`Failed to load patients: ${patientsError}`)
           
           if (!mounted) return
-          dispatch({ type: 'SET_MEDICATIONS', payload: allMedications })
+          dispatch({ type: 'SET_PATIENTS', payload: patients || [] })
           
-          // Load measurements for all patients
-          const measurementsPromises = patients.map(patient => 
-            measurementService.getMeasurements(patient.id, { limit: 100 })
-          )
-          const measurementsResults = await Promise.allSettled(measurementsPromises)
-          const allMeasurements = measurementsResults
-            .filter(result => result.status === 'fulfilled' && result.value.data)
-            .flatMap(result => result.value.data)
-          
-          if (!mounted) return
-          dispatch({ type: 'SET_MEASUREMENTS', payload: allMeasurements })
-          
-          // Load daily logs for all patients
-          const dailyLogsPromises = patients.map(patient => 
-            dailyLogService.getPatientLogs(patient.id, { limit: 100 })
-          )
-          const dailyLogsResults = await Promise.allSettled(dailyLogsPromises)
-          const allDailyLogs = dailyLogsResults
-            .filter(result => result.status === 'fulfilled' && result.value.data)
-            .flatMap(result => result.value.data)
-          
-          if (!mounted) return
-          dispatch({ type: 'SET_DAILY_LOGS', payload: allDailyLogs })
+          // If we have patients, load data for all patients
+          if (patients && patients.length > 0) {
+            // Load medications for all patients
+            const medicationsPromises = patients.map(patient => 
+              medicationService.getMedications(patient.id)
+            )
+            const medicationsResults = await Promise.allSettled(medicationsPromises)
+            const allMedications = medicationsResults
+              .filter(result => result.status === 'fulfilled' && result.value.data)
+              .flatMap(result => result.value.data)
+            
+            if (!mounted) return
+            dispatch({ type: 'SET_MEDICATIONS', payload: allMedications })
+            
+            // Load measurements for all patients
+            const measurementsPromises = patients.map(patient => 
+              measurementService.getMeasurements(patient.id, { limit: 100 })
+            )
+            const measurementsResults = await Promise.allSettled(measurementsPromises)
+            const allMeasurements = measurementsResults
+              .filter(result => result.status === 'fulfilled' && result.value.data)
+              .flatMap(result => result.value.data)
+            
+            if (!mounted) return
+            dispatch({ type: 'SET_MEASUREMENTS', payload: allMeasurements })
+            
+            // Load daily logs for all patients
+            const dailyLogsPromises = patients.map(patient => 
+              dailyLogService.getPatientLogs(patient.id, { limit: 100 })
+            )
+            const dailyLogsResults = await Promise.allSettled(dailyLogsPromises)
+            const allDailyLogs = dailyLogsResults
+              .filter(result => result.status === 'fulfilled' && result.value.data)
+              .flatMap(result => result.value.data)
+            
+            if (!mounted) return
+            dispatch({ type: 'SET_DAILY_LOGS', payload: allDailyLogs })
+          }
+        } catch (error) {
+          console.error('Error loading data:', error)
+          if (mounted) {
+            dispatch({ type: 'SET_ERROR', payload: error.message })
+          }
         }
         
       } catch (error) {
