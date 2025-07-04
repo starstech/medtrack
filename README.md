@@ -106,4 +106,25 @@ Your approach is very reasonable and aligns well with your budget and scalabilit
 
 ---
 
+## Environment Variables
+
+Create a `.env` (or `.env.local`) file in the project root and define the variables below. Each variable is optional—sensible defaults are provided for local development—but **production builds must have real values**.
+
+| Variable | Purpose | Default |
+|----------|---------|---------|
+| `VITE_API_BASE_URL` | Base URL for the Node/Express REST API. | `http://localhost:4000/api` |
+| `VITE_SUPABASE_URL` | Supabase project URL (used only for authentication). | – |
+| `VITE_SUPABASE_ANON_KEY` | Supabase anon/public key. | – |
+| `VITE_WASABI_ENDPOINT` | Wasabi/MinIO S3-compatible endpoint for file uploads. | – |
+| `VITE_WASABI_BUCKET` | Default S3 bucket name for uploads. | – |
+| `VITE_WASABI_ACCESS_KEY` | S3 access key. | – |
+| `VITE_WASABI_SECRET_KEY` | S3 secret key. | – |
+| `VITE_FIREBASE_API_KEY`, `VITE_FIREBASE_AUTH_DOMAIN`, `VITE_FIREBASE_PROJECT_ID`, ... | Firebase config values for Cloud Messaging push notifications. | – |
+
+> Only variables prefixed with `VITE_` are exposed to the browser. Do **not** include secrets that should remain server-side.
+
+### Development Scripts
+
+---
+
 ### **Let me know if you want a detailed migration plan, code samples for any integration, or help with any specific part of this stack!**
