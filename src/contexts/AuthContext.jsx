@@ -53,10 +53,17 @@ export const AuthProvider = ({ children }) => {
     let mounted = true
 
     const checkAuthStatus = async () => {
+      // If no JWT in localStorage, skip API call
+      const storedToken = localStorage.getItem('auth_token')
+      if (!storedToken) {
+        dispatch({ type: 'SET_LOADING', payload: false })
+        return
+      }
+
       try {
         // Add a timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Auth check timeout')), 10000)
+          setTimeout(() => reject(new Error('Auth check timeout')), 8000)
         )
         
         const authPromise = authService.getCurrentUser()
@@ -66,7 +73,9 @@ export const AuthProvider = ({ children }) => {
         if (!mounted) return
 
         if (error) {
-          console.error('Error getting session:', error)
+          console.warn('No active session:', error)
+          // Clear any invalid token
+          localStorage.removeItem('auth_token')
           dispatch({ type: 'SET_LOADING', payload: false })
           return
         }
