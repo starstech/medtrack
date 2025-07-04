@@ -166,3 +166,12 @@ ReactDOM.createRoot(document.getElementById('root')).render(
     </ConfigProvider>
   </BrowserRouter>
 )
+
+// Register Firebase service worker for push notifications
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/firebase-messaging-sw.js')
+      .catch((err) => console.warn('Service worker registration failed:', err))
+  })
+}

@@ -2,6 +2,8 @@ import { createContext, useContext, useReducer, useEffect, useRef, useMemo } fro
 import { notification } from 'antd'
 import { notificationService } from '../services/notificationService'
 import { useAuthContext } from './AuthContext'
+import { getFirebaseMessaging, onMessage, getToken } from '../lib/firebase'
+import { pushNotificationUtils } from '../services/notificationService'
 
 const NotificationContext = createContext()
 
@@ -142,8 +144,52 @@ export const NotificationProvider = ({ children }) => {
 
     loadNotifications()
 
+    // Initialize push notifications (non-blocking)
+    let unsubscribeOnMessage
+    const initPushNotifications = async () => {
+      try {
+        if (!user) return
+
+        // Request permission if not granted
+        if (Notification.permission !== 'granted') {
+          const granted = await pushNotificationUtils.requestPermission()
+          if (!granted) return
+        }
+
+        const messaging = await getFirebaseMessaging()
+        if (!messaging) return
+
+        const token = await getToken(messaging, {
+          vapidKey: import.meta.env.VITE_FIREBASE_VAPID_KEY,
+        })
+
+        if (token) {
+          // Send token to backend to subscribe
+          await notificationService.subscribeToPush({ token })
+        }
+
+        // Listen to foreground messages
+        const unsubscribeOnMsg = onMessage(messaging, (payload) => {
+          // Refresh notifications list or append
+          loadNotifications()
+
+          // Optional: show system notification
+          if (payload?.notification?.title) {
+            showNotification('info', payload.notification.title, payload.notification.body)
+          }
+        })
+
+        return unsubscribeOnMsg
+      } catch (error) {
+        console.error('FCM initialization error:', error)
+      }
+    }
+
+    initPushNotifications().then(unsub => { unsubscribeOnMessage = unsub })
+
     return () => {
       mounted = false
+      if (unsubscribeOnMessage) unsubscribeOnMessage()
     }
   }, [user])
 
