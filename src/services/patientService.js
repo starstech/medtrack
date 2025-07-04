@@ -74,8 +74,13 @@ export const patientService = {
 
   // Update caregiver role/permissions
   async updateCaregiver(patientId, caregiverId, caregiverData) {
-    console.warn('updateCaregiver: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.put(`/patients/${patientId}/caregivers/${caregiverId}`, caregiverData)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating caregiver:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Remove caregiver from patient
@@ -85,14 +90,24 @@ export const patientService = {
 
   // Get patient statistics
   async getPatientStats(patientId) {
-    console.warn('getPatientStats: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { stats } = await apiClient.get(`/patients/${patientId}/stats`)
+      return { data: stats, error: null }
+    } catch (error) {
+      console.error('Error fetching patient stats:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get patient activity timeline
   async getPatientActivity(patientId, limit = 10) {
-    console.warn('getPatientActivity: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { activity } = await apiClient.get(`/patients/${patientId}/activity`, { limit })
+      return { data: activity, error: null }
+    } catch (error) {
+      console.error('Error fetching patient activity:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Upload patient profile image

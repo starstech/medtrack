@@ -99,26 +99,46 @@ export const appointmentService = {
 
   // Get appointment conflicts
   async checkAppointmentConflicts(appointmentData) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const { conflicts } = await apiClient.post('/appointments/conflicts', appointmentData)
+      return { data: conflicts, error: null }
+    } catch (error) {
+      console.error('Error checking appointment conflicts:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get appointment reminders
   async getAppointmentReminders(appointmentId) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const data = await apiClient.get(`/appointments/${appointmentId}/reminders`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching appointment reminders:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Set appointment reminder
   async setAppointmentReminder(appointmentId, reminderData) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const data = await apiClient.post(`/appointments/${appointmentId}/reminders`, reminderData)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error setting appointment reminder:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Cancel appointment reminder
   async cancelAppointmentReminder(appointmentId, reminderId) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      await apiClient.delete(`/appointments/${appointmentId}/reminders/${reminderId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error canceling reminder:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Mark appointment as completed
@@ -150,20 +170,35 @@ export const appointmentService = {
 
   // Get recurring appointment instances
   async getRecurringInstances(appointmentId) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const data = await apiClient.get(`/appointments/${appointmentId}/recurring`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching recurring instances:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Update recurring appointment series
   async updateRecurringSeries(appointmentId, appointmentData, updateType = 'series') {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const data = await apiClient.put(`/appointments/${appointmentId}/recurring`, { updateType, ...appointmentData })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating recurring series:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Cancel recurring appointment series
   async cancelRecurringSeries(appointmentId, cancelType = 'series') {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      await apiClient.delete(`/appointments/${appointmentId}/recurring`, { cancelType })
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error canceling recurring series:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get appointment statistics
@@ -181,20 +216,37 @@ export const appointmentService = {
 
   // Export appointments
   async exportAppointments(format = 'ical', filters = {}) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const params = { format, ...filters }
+      const data = await apiClient.get('/export/appointments', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error exporting appointments:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get available time slots
   async getAvailableTimeSlots(providerId, date, duration = 30) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const params = { providerId, date, duration }
+      const data = await apiClient.get('/appointments/availability', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching available time slots:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Send appointment invitation
   async sendAppointmentInvitation(appointmentId, emails) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    try {
+      const data = await apiClient.post(`/appointments/${appointmentId}/invitations`, { emails })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error sending appointment invitations:', error)
+      return { data: null, error: error.message }
+    }
   }
 }
 

@@ -84,50 +84,93 @@ export const dailyLogService = {
 
   // Add attachment to log (using Supabase Storage)
   async addLogAttachment(logId, file, description = '') {
-    console.warn('addLogAttachment: implement via /api/files/upload')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const formData = { type: 'log', logId, description }
+      const data = await apiClient.uploadFile(`/logs/${logId}/attachments`, file, formData)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error adding log attachment:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Delete log attachment
   async deleteLogAttachment(logId, attachmentId) {
-    console.warn('deleteLogAttachment: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.delete(`/logs/attachments/${attachmentId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error deleting log attachment:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get log attachments
   async getLogAttachments(logId) {
-    console.warn('getLogAttachments: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get(`/logs/${logId}/attachments`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error getting log attachments:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get log statistics
   async getLogStats(patientId, period = '30') {
-    console.warn('getLogStats: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { stats } = await apiClient.get(`/patients/${patientId}/logs/stats`, { period })
+      return { data: stats, error: null }
+    } catch (error) {
+      console.error('Error fetching log stats:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get log trends
   async getLogTrends(patientId, type, period = '30') {
-    console.warn('getLogTrends: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { trends } = await apiClient.get(`/patients/${patientId}/logs/trends`, { type, period })
+      return { data: trends, error: null }
+    } catch (error) {
+      console.error('Error fetching log trends:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Export logs
   async exportLogs(patientId, format = 'pdf', filters = {}) {
-    console.warn('exportLogs: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = { patientId, format, ...filters }
+      const data = await apiClient.get('/export/logs', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error exporting logs:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get log templates
   async getLogTemplates(type = null) {
-    console.warn('getLogTemplates: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const params = type ? { type } : {}
+      const data = await apiClient.get('/logs/templates', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching log templates:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Create log from template
   async createLogFromTemplate(patientId, templateId, data = {}) {
-    console.warn('createLogFromTemplate: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const { log } = await apiClient.post('/logs/from-template', { patientId, templateId, data })
+      return { data: log, error: null }
+    } catch (error) {
+      console.error('Error creating log from template:', error)
+      return { data: null, error: error.message }
+    }
   }
 }
 

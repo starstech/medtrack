@@ -15,14 +15,28 @@ export const dashboardService = {
 
   // Get recent activity (doses + measurements)
   async getRecentActivity(patientId = null, limit = 10) {
-    console.warn('getRecentActivity: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = { limit }
+      if (patientId) params.patientId = patientId
+      const data = await apiClient.get('/dashboard/recent-activity', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching recent activity:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get upcoming doses for today
   async getUpcomingDoses(patientId = null, limit = 5) {
-    console.warn('getUpcomingDoses: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = { days: 1, limit } // backend expects days param but limit too.
+      if (patientId) params.patientId = patientId
+      const data = await apiClient.get('/dashboard/upcoming-doses', params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching upcoming doses:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get medication overview

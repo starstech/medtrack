@@ -40,26 +40,46 @@ export const notificationService = {
 
   // Mark all notifications as read
   async markAllAsRead() {
-    console.warn('markAllAsRead: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.post('/notifications/read-all')
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Delete a notification
   async deleteNotification(notificationId) {
-    console.warn('deleteNotification: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.delete(`/notifications/${notificationId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error deleting notification:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Bulk delete notifications
   async bulkDeleteNotifications(notificationIds) {
-    console.warn('bulkDeleteNotifications: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.post('/notifications/bulk-delete', { ids: notificationIds })
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error bulk deleting notifications:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get unread notification count
   async getUnreadCount() {
-    console.warn('getUnreadCount: backend endpoint pending')
-    return { data: 0, error: 'Not implemented' }
+    try {
+      const { count } = await apiClient.get('/notifications/unread-count')
+      return { data: count, error: null }
+    } catch (error) {
+      console.error('Error fetching unread count:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get notification preferences
@@ -83,45 +103,66 @@ export const notificationService = {
   },
 
   // Subscribe to push notifications
-  async subscribeToPush() {
-    console.warn('subscribeToPush: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async subscribeToPush(subscription) {
+    try {
+      const data = await apiClient.post('/push/subscribe', { subscription })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error subscribing to push:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Unsubscribe from push notifications
-  async unsubscribeFromPush() {
-    console.warn('unsubscribeFromPush: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async unsubscribeFromPush(subscription) {
+    try {
+      const data = await apiClient.post('/push/unsubscribe', { subscription })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error unsubscribing from push:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Send push notification
-  async sendPushNotification() {
-    console.warn('sendPushNotification: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async sendPushNotification(notificationData) {
+    try {
+      const data = await apiClient.post('/push/test', notificationData)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error sending test push:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Send bulk push notifications
-  async sendBulkPushNotifications() {
+  async sendBulkPushNotifications(notifications) {
+    // Assuming backend endpoint not exposed yet; keep stub
     console.warn('sendBulkPushNotifications: not implemented')
     return { data: null, error: 'Not implemented' }
   },
 
   // Schedule notification
-  async scheduleNotification() {
+  async scheduleNotification(notificationData) {
     console.warn('scheduleNotification: not implemented')
     return { data: null, error: 'Not implemented' }
   },
 
   // Cancel scheduled notification
-  async cancelScheduledNotification() {
+  async cancelScheduledNotification(notificationId) {
     console.warn('cancelScheduledNotification: not implemented')
     return { data: null, error: 'Not implemented' }
   },
 
   // Test notification
-  async testNotification() {
-    console.warn('testNotification: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async testNotification(payload = {}) {
+    try {
+      const data = await apiClient.post('/push/test', payload)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error testing notification:', error)
+      return { data: null, error: error.message }
+    }
   }
 }
 

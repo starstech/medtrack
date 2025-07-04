@@ -23,8 +23,13 @@ export const fileService = {
 
   // Get file by ID
   async getFile(fileId) {
-    console.warn('getFile: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.get(`/files/${fileId}`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching file:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Download file => return signed URL and let browser fetch
@@ -42,28 +47,42 @@ export const fileService = {
     }
   },
 
-  // Delete file (not implemented)
+  // Delete file
   async deleteFile(fileId) {
-    console.warn('deleteFile: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.delete(`/files/${fileId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error deleting file:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get user files
   async getUserFiles(filters = {}) {
-    console.warn('getUserFiles: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/files/user', filters)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching user files:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get patient files
   async getPatientFiles(patientId, filters = {}) {
-    console.warn('getPatientFiles: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get(`/files/patient/${patientId}`, filters)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching patient files:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Upload patient file
   async uploadPatientFile(patientId, file, metadata = {}) {
-    console.warn('uploadPatientFile: use uploadFile with patientId')
-    return { data: null, error: 'Not implemented' }
+    return this.uploadFile(file, { patientId, ...metadata })
   },
 
   // Upload log attachment

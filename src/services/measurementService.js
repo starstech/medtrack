@@ -59,8 +59,13 @@ export const measurementService = {
 
   // Get measurement alerts
   async getMeasurementAlerts(patientId) {
-    console.warn('getMeasurementAlerts: endpoint not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/measurements/alerts', { patientId })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching measurement alerts:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get measurements by type
@@ -75,8 +80,14 @@ export const measurementService = {
 
   // Get measurement statistics
   async getMeasurementStats(patientId, type, period = '30') {
-    console.warn('getMeasurementStats: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = { patientId, type, period }
+      const { stats } = await apiClient.get('/measurements/stats', params)
+      return { data: stats, error: null }
+    } catch (error) {
+      console.error('Error fetching measurement stats:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Bulk create measurements
@@ -87,14 +98,24 @@ export const measurementService = {
 
   // Get measurement ranges for a patient
   async getMeasurementRanges(patientId, type) {
-    console.warn('getMeasurementRanges: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/measurements/ranges', { patientId, type })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching measurement ranges:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Update measurement ranges
   async updateMeasurementRanges(patientId, type, ranges) {
-    console.warn('updateMeasurementRanges: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.put('/measurements/ranges', { patientId, type, ranges })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating measurement ranges:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get measurement types for a patient

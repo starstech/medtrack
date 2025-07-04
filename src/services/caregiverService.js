@@ -54,62 +54,115 @@ export const caregiverService = {
 
   // Get pending invitations (sent by current user)
   async getPendingInvitations() {
-    console.warn('getPendingInvitations: backend endpoint pending')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/caregivers/invitations')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching pending invitations:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Accept caregiver invitation
-  async acceptInvitation(token) {
-    console.warn('acceptInvitation: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async acceptInvitation(invitationId) {
+    try {
+      await apiClient.post(`/caregivers/invitations/${invitationId}/accept`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error accepting invitation:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Decline caregiver invitation
-  async declineInvitation(token, reason = '') {
-    console.warn('declineInvitation: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async declineInvitation(invitationId, reason = '') {
+    try {
+      await apiClient.post(`/caregivers/invitations/${invitationId}/decline`, { reason })
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error declining invitation:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get received invitations (for current user)
   async getReceivedInvitations() {
-    console.warn('getReceivedInvitations: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/caregivers/invitations/received')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching received invitations:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Cancel invitation
   async cancelInvitation(invitationId) {
-    console.warn('cancelInvitation: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.delete(`/caregivers/invitations/${invitationId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error canceling invitation:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Resend invitation
   async resendInvitation(invitationId) {
-    console.warn('resendInvitation: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      await apiClient.post(`/caregivers/invitations/${invitationId}/resend`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error resending invitation:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get caregiver permissions
   async getCaregiverPermissions(caregiverId, patientId) {
-    console.warn('getCaregiverPermissions: not implemented')
-    return { data: {}, error: 'Not implemented' }
+    try {
+      const params = patientId ? { patientId } : {}
+      const data = await apiClient.get(`/caregivers/${caregiverId}/permissions`, params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching caregiver permissions:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Update caregiver permissions
   async updateCaregiverPermissions(caregiverId, patientId, permissions) {
-    console.warn('updateCaregiverPermissions: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.put(`/caregivers/${caregiverId}/permissions`, { patientId, permissions })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating caregiver permissions:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get caregiver activity
   async getCaregiverActivity(caregiverId, patientId = null, limit = 10) {
-    console.warn('getCaregiverActivity: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = { limit }
+      if (patientId) params.patientId = patientId
+      const data = await apiClient.get(`/caregivers/${caregiverId}/activity`, params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching caregiver activity:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get patients shared with caregiver
-  async getSharedPatients(caregiverId) {
-    console.warn('getSharedPatients: not implemented')
-    return { data: [], error: 'Not implemented' }
+  async getSharedPatients() {
+    try {
+      const data = await apiClient.get('/caregivers/shared-patients')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching shared patients:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Share patient with caregiver

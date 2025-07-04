@@ -4,8 +4,14 @@ import apiClient from './api'
 export const syncService = {
   // Get patient data for sync
   async getPatientDataForSync(patientId, lastSync = null) {
-    console.warn('getPatientDataForSync: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const params = lastSync ? { lastSync } : {}
+      const data = await apiClient.get(`/sync/patient/${patientId}`, params)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching patient sync data:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get all user data for sync
@@ -21,62 +27,112 @@ export const syncService = {
 
   // Bulk update data (placeholder)
   async bulkUpdateData(updates) {
-    console.warn('bulkUpdateData: backend endpoint pending')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.post('/sync/bulk', { updates })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error sending bulk sync data:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get sync status
   async getSyncStatus() {
-    console.warn('getSyncStatus: backend endpoint pending')
-    return { data: { lastSync: null, status: 'unknown' }, error: null }
+    try {
+      const data = await apiClient.get('/sync/status')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error getting sync status:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Force full sync
   async forceFullSync() {
-    console.warn('forceFullSync: not implemented')
-    return { data: null, error: 'Not implemented' }
+    try {
+      const data = await apiClient.post('/sync/force')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error forcing full sync:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get pending sync operations
   async getPendingSyncOperations() {
-    console.warn('getPendingSyncOperations: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/sync/pending')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching pending sync ops:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Mark sync operation as completed
-  async markSyncOperationCompleted() {
-    console.warn('markSyncOperationCompleted: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async markSyncOperationCompleted(operationId) {
+    try {
+      const data = await apiClient.patch(`/sync/pending/${operationId}`, { completed: true })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error marking sync op completed:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get conflict resolution data
   async getConflicts() {
-    console.warn('getConflicts: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/sync/conflicts')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error getting sync conflicts:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Resolve sync conflict
-  async resolveConflict() {
-    console.warn('resolveConflict: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async resolveConflict(conflictId, resolution) {
+    try {
+      const data = await apiClient.post(`/sync/conflicts/${conflictId}/resolve`, { resolution })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error resolving conflict:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Register device for sync
-  async registerDevice() {
-    console.warn('registerDevice: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async registerDevice(deviceInfo) {
+    try {
+      const data = await apiClient.post('/devices', deviceInfo)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error registering device:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Unregister device
-  async unregisterDevice() {
-    console.warn('unregisterDevice: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async unregisterDevice(deviceId) {
+    try {
+      await apiClient.delete(`/devices/${deviceId}`)
+      return { data: true, error: null }
+    } catch (error) {
+      console.error('Error unregistering device:', error)
+      return { data: null, error: error.message }
+    }
   },
 
   // Get device sync history
-  async getDeviceSyncHistory() {
-    console.warn('getDeviceSyncHistory: not implemented')
-    return { data: [], error: 'Not implemented' }
+  async getDeviceSyncHistory(deviceId, limit = 50) {
+    try {
+      const data = await apiClient.get(`/devices/${deviceId}/history`, { limit })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error fetching device sync history:', error)
+      return { data: null, error: error.message }
+    }
   }
 }
 
@@ -100,29 +156,47 @@ export const realTimeService = {
 
 // Device management for mobile apps
 export const deviceService = {
-  async registerDevice() {
-    console.warn('deviceService.registerDevice: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async registerDevice(deviceInfo) {
+    return syncService.registerDevice(deviceInfo)
   },
-  async updateDeviceToken() {
-    console.warn('deviceService.updateDeviceToken: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async updateDeviceToken(deviceId, pushToken) {
+    try {
+      const data = await apiClient.patch(`/devices/${deviceId}`, { pushToken })
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating device token:', error)
+      return { data: null, error: error.message }
+    }
   },
-  async unregisterDevice() {
-    console.warn('deviceService.unregisterDevice: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async unregisterDevice(deviceId) {
+    return syncService.unregisterDevice(deviceId)
   },
-  async getDeviceInfo() {
-    console.warn('deviceService.getDeviceInfo: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async getDeviceInfo(deviceId) {
+    try {
+      const data = await apiClient.get(`/devices/${deviceId}`)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error getting device info:', error)
+      return { data: null, error: error.message }
+    }
   },
   async getUserDevices() {
-    console.warn('deviceService.getUserDevices: not implemented')
-    return { data: [], error: 'Not implemented' }
+    try {
+      const data = await apiClient.get('/devices')
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error getting user devices:', error)
+      return { data: null, error: error.message }
+    }
   },
-  async updateDeviceSettings() {
-    console.warn('deviceService.updateDeviceSettings: not implemented')
-    return { data: null, error: 'Not implemented' }
+  async updateDeviceSettings(deviceId, settings) {
+    try {
+      const data = await apiClient.put(`/devices/${deviceId}`, settings)
+      return { data, error: null }
+    } catch (error) {
+      console.error('Error updating device settings:', error)
+      return { data: null, error: error.message }
+    }
   }
 }
 
