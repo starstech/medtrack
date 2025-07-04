@@ -1,272 +1,90 @@
 // File service for handling uploads, downloads, and attachment management
-import { supabase } from '../lib/supabase'
+import apiClient from './api'
 
 export const fileService = {
   // Upload file
   async uploadFile(file, metadata = {}) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const fileName = `${Date.now()}_${file.name}`
-      const filePath = `${user.id}/uploads/${fileName}`
-
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('medtrack-files')
-        .upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      // Save file metadata to database
-      const { data, error } = await supabase
-        .from('files')
-        .insert({
-          filename: file.name,
-          file_path: uploadData.path,
-          file_size: file.size,
-          mime_type: file.type,
-          uploaded_by: user.id,
-          metadata: metadata
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const response = await apiClient.uploadFile('/files/upload', file, metadata)
+      return { data: response, error: null }
     } catch (error) {
-      console.error('Error uploading file:', error)
       return { data: null, error: error.message }
     }
   },
 
   // Upload multiple files
   async uploadMultipleFiles(files, metadata = {}) {
-    try {
-      const uploads = files.map(file => this.uploadFile(file, metadata))
-      const results = await Promise.all(uploads)
-      
-      const data = results.map(result => result.data).filter(Boolean)
-      const errors = results.filter(result => result.error)
-      
-      return { 
-        data, 
-        error: errors.length > 0 ? errors.map(e => e.error).join(', ') : null 
-      }
-    } catch (error) {
-      console.error('Error uploading multiple files:', error)
-      return { data: null, error: error.message }
-    }
+    const uploads = files.map(f => this.uploadFile(f, metadata))
+    const results = await Promise.all(uploads)
+    const data = results.map(r => r.data).filter(Boolean)
+    const errors = results.filter(r => r.error)
+    return { data, error: errors.length ? errors.map(e => e.error).join(', ') : null }
   },
 
   // Get file by ID
   async getFile(fileId) {
-    try {
-      const { data, error } = await supabase
-        .from('files')
-        .select('*')
-        .eq('id', fileId)
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching file:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getFile: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
-  // Download file
+  // Download file => return signed URL and let browser fetch
   async downloadFile(fileId) {
-    try {
-      const { data: file, error: fileError } = await this.getFile(fileId)
-      if (fileError) throw new Error(fileError)
-
-      const { data, error } = await supabase.storage
-        .from('medtrack-files')
-        .download(file.file_path)
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error downloading file:', error)
-      return { data: null, error: error.message }
-    }
+    return this.getFileUrl(fileId).then(res => { if(res.data) window.open(res.data,'_blank'); return res })
   },
 
   // Get file URL
   async getFileUrl(fileId, expires = 3600) {
     try {
-      const { data: file, error: fileError } = await this.getFile(fileId)
-      if (fileError) throw new Error(fileError)
-
-      const { data, error } = await supabase.storage
-        .from('medtrack-files')
-        .createSignedUrl(file.file_path, expires)
-
-      if (error) throw error
-      return { data: data.signedUrl, error: null }
+      const { url } = await apiClient.get(`/files/${fileId}/url`, { expires })
+      return { data: url, error: null }
     } catch (error) {
-      console.error('Error getting file URL:', error)
       return { data: null, error: error.message }
     }
   },
 
-  // Delete file
+  // Delete file (not implemented)
   async deleteFile(fileId) {
-    try {
-      const { data: file, error: fileError } = await this.getFile(fileId)
-      if (fileError) throw new Error(fileError)
-
-      // Delete from storage
-      const { error: storageError } = await supabase.storage
-        .from('medtrack-files')
-        .remove([file.file_path])
-
-      if (storageError) throw storageError
-
-      // Delete from database
-      const { error } = await supabase
-        .from('files')
-        .delete()
-        .eq('id', fileId)
-
-      if (error) throw error
-      return { data: true, error: null }
-    } catch (error) {
-      console.error('Error deleting file:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('deleteFile: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get user files
   async getUserFiles(filters = {}) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      let query = supabase
-        .from('files')
-        .select('*')
-        .eq('uploaded_by', user.id)
-        .order('created_at', { ascending: false })
-
-      if (filters.type) {
-        query = query.eq('mime_type', filters.type)
-      }
-
-      if (filters.limit) {
-        query = query.limit(filters.limit)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching user files:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getUserFiles: not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Get patient files
   async getPatientFiles(patientId, filters = {}) {
-    try {
-      let query = supabase
-        .from('files')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('created_at', { ascending: false })
-
-      if (filters.type) {
-        query = query.eq('mime_type', filters.type)
-      }
-
-      if (filters.limit) {
-        query = query.limit(filters.limit)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching patient files:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getPatientFiles: not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Upload patient file
   async uploadPatientFile(patientId, file, metadata = {}) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const fileName = `${Date.now()}_${file.name}`
-      const filePath = `${user.id}/patients/${patientId}/${fileName}`
-
-      // Upload to Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('medtrack-files')
-        .upload(filePath, file)
-
-      if (uploadError) throw uploadError
-
-      // Save file metadata to database
-      const { data, error } = await supabase
-        .from('files')
-        .insert({
-          filename: file.name,
-          file_path: uploadData.path,
-          file_size: file.size,
-          mime_type: file.type,
-          uploaded_by: user.id,
-          patient_id: patientId,
-          metadata: metadata
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error uploading patient file:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('uploadPatientFile: use uploadFile with patientId')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Upload log attachment
   async uploadLogAttachment(logId, file, description = '') {
-    return supabase.storage
-      .from('medtrack-files')
-      .upload(`logs/${logId}/attachments`, file, {
-        customMetadata: { description }
-      })
+    return apiClient.uploadFile(`/logs/${logId}/attachments`, file, { customMetadata: { description } })
   },
 
   // Upload measurement image
   async uploadMeasurementImage(measurementId, file) {
-    return supabase.storage
-      .from('medtrack-files')
-      .upload(`measurements/${measurementId}/image`, file)
+    return apiClient.uploadFile(`/measurements/${measurementId}/image`, file)
   },
 
   // Upload medication image
   async uploadMedicationImage(medicationId, file) {
-    return supabase.storage
-      .from('medtrack-files')
-      .upload(`medications/${medicationId}/image`, file)
+    return apiClient.uploadFile(`/medications/${medicationId}/image`, file)
   },
 
   // Get file metadata
   async getFileMetadata(fileId) {
     try {
-      const { data, error } = await supabase
-        .from('files')
-        .select('metadata')
-        .eq('id', fileId)
-        .single()
-
+      const { data, error } = await apiClient.get(`/files/${fileId}/metadata`)
       if (error) throw error
       return { data: data.metadata || {}, error: null }
     } catch (error) {
@@ -278,13 +96,7 @@ export const fileService = {
   // Update file metadata
   async updateFileMetadata(fileId, metadata) {
     try {
-      const { data, error } = await supabase
-        .from('files')
-        .update({ metadata })
-        .eq('id', fileId)
-        .select()
-        .single()
-
+      const { data, error } = await apiClient.put(`/files/${fileId}/metadata`, { metadata })
       if (error) throw error
       return { data, error: null }
     } catch (error) {
@@ -295,71 +107,73 @@ export const fileService = {
 
   // Get file sharing settings
   async getFileSharing(fileId) {
-    return supabase.from('files').select('sharing').eq('id', fileId).single()
+    return apiClient.get(`/files/${fileId}/sharing`)
   },
 
   // Update file sharing
   async updateFileSharing(fileId, sharingSettings) {
-    return supabase.from('files').update({ sharing: sharingSettings }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/sharing`, { sharing: sharingSettings })
   },
 
   // Share file with caregiver
   async shareFileWithCaregiver(fileId, caregiverId, permissions = 'read') {
-    return supabase.from('files').update({ sharing: { ...sharingSettings, [caregiverId]: permissions } }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/sharing`, { sharing: { ...sharingSettings, [caregiverId]: permissions } })
   },
 
   // Unshare file
   async unshareFile(fileId, caregiverId) {
-    return supabase.from('files').update({ sharing: { ...sharingSettings, [caregiverId]: null } }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/sharing`, { sharing: { ...sharingSettings, [caregiverId]: null } })
   },
 
   // Get file versions
   async getFileVersions(fileId) {
-    return supabase.from('files').select('versions').eq('id', fileId).single()
+    return apiClient.get(`/files/${fileId}/versions`)
   },
 
   // Upload new file version
   async uploadFileVersion(fileId, file, versionNotes = '') {
-    return supabase.from('files').update({ versions: { ...versions, [versionNotes]: file } }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/versions`, { versions: { ...versions, [versionNotes]: file } })
   },
 
   // Restore file version
   async restoreFileVersion(fileId, versionId) {
-    return supabase.from('files').update({ versions: { ...versions, [versionId]: file } }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/versions`, { versions: { ...versions, [versionId]: file } })
   },
 
   // Get storage usage
   async getStorageUsage() {
-    return supabase.from('files').select('file_size').sum('file_size')
+    return apiClient.get('/files/storage-usage')
   },
 
   // Get file categories
   async getFileCategories() {
-    return supabase.from('files').select('mime_type').group('mime_type')
+    return apiClient.get('/files/categories')
   },
 
   // Search files
   async searchFiles(query, filters = {}) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await apiClient.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      let supabaseQuery = supabase
-        .from('files')
-        .select('*')
-        .eq('uploaded_by', user.id)
-        .ilike('filename', `%${query}%`)
-        .order('created_at', { ascending: false })
+      let apiClientQuery = apiClient.get('/files')
+        .query({
+          eq: {
+            uploaded_by: user.id,
+            filename: { ilike: `%${query}%` }
+          },
+          order: { created_at: { ascending: false } }
+        })
 
       if (filters.type) {
-        supabaseQuery = supabaseQuery.eq('mime_type', filters.type)
+        apiClientQuery = apiClientQuery.query({ eq: { mime_type: filters.type } })
       }
 
       if (filters.limit) {
-        supabaseQuery = supabaseQuery.limit(filters.limit)
+        apiClientQuery = apiClientQuery.query({ limit: filters.limit })
       }
 
-      const { data, error } = await supabaseQuery
+      const { data, error } = await apiClientQuery
 
       if (error) throw error
       return { data, error: null }
@@ -372,15 +186,18 @@ export const fileService = {
   // Get recent files
   async getRecentFiles(limit = 10) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
+      const { data: { user } } = await apiClient.getUser()
       if (!user) throw new Error('User not authenticated')
 
-      const { data, error } = await supabase
-        .from('files')
-        .select('*')
-        .eq('uploaded_by', user.id)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+      const { data, error } = await apiClient
+        .get('/files')
+        .query({
+          eq: {
+            uploaded_by: user.id,
+            created_at: { ascending: false }
+          },
+          limit: limit
+        })
 
       if (error) throw error
       return { data, error: null }
@@ -392,22 +209,27 @@ export const fileService = {
 
   // Create folder
   async createFolder(name, parentId = null) {
-    return supabase.from('files').insert({ name, parentId }).select().single()
+    return apiClient.post('/files', { name, parentId })
   },
 
   // Get folder contents
   async getFolderContents(folderId) {
-    return supabase.from('files').select('*').eq('parentId', folderId)
+    return apiClient.get('/files').query({ eq: { parentId: folderId } })
   },
 
   // Move file to folder
   async moveFileToFolder(fileId, folderId) {
-    return supabase.from('files').update({ parentId: folderId }).eq('id', fileId).select().single()
+    return apiClient.put(`/files/${fileId}/parent`, { parentId: folderId })
   },
 
   // Get file access logs
   async getFileAccessLogs(fileId, limit = 50) {
-    return supabase.from('files').select('access-logs').eq('id', fileId).limit(limit)
+    try {
+      const data = await apiClient.get(`/files/${fileId}/access-logs`, { limit })
+      return { data, error: null }
+    } catch (error) {
+      return { data: null, error: error.message }
+    }
   }
 }
 

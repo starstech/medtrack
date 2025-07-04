@@ -1,21 +1,13 @@
 // Medication service
-import { supabase } from '../lib/supabase'
+import apiClient from './api'
 
 export const medicationService = {
   // Get all medications for a patient
-  async getMedications(patientId) {
+  async getMedications(patientId, filters = {}) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .select('*')
-        .eq('patient_id', patientId)
-        .eq('is_active', true)
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
+      const data = await apiClient.get(`/patients/${patientId}/medications`, filters)
       return { data, error: null }
     } catch (error) {
-      console.error('Error fetching medications:', error)
       return { data: null, error: error.message }
     }
   },
@@ -23,39 +15,19 @@ export const medicationService = {
   // Get a specific medication by ID
   async getMedication(medicationId) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .select('*')
-        .eq('id', medicationId)
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { medication } = await apiClient.get(`/medications/${medicationId}`)
+      return { data: medication, error: null }
     } catch (error) {
-      console.error('Error fetching medication:', error)
       return { data: null, error: error.message }
     }
   },
 
   // Create a new medication
-  async createMedication(medicationData) {
+  async createMedication(patientId, medicationData) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('medications')
-        .insert({
-          ...medicationData,
-          created_by: user.id
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { medication } = await apiClient.post(`/patients/${patientId}/medications`, medicationData)
+      return { data: medication, error: null }
     } catch (error) {
-      console.error('Error creating medication:', error)
       return { data: null, error: error.message }
     }
   },
@@ -63,66 +35,62 @@ export const medicationService = {
   // Update a medication
   async updateMedication(medicationId, medicationData) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .update(medicationData)
-        .eq('id', medicationId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { medication } = await apiClient.put(`/medications/${medicationId}`, medicationData)
+      return { data: medication, error: null }
     } catch (error) {
-      console.error('Error updating medication:', error)
       return { data: null, error: error.message }
     }
   },
 
-  // Delete a medication (soft delete by setting is_active to false)
+  // Delete a medication (soft delete)
   async deleteMedication(medicationId) {
     try {
-      const { data, error } = await supabase
-        .from('medications')
-        .update({ is_active: false })
-        .eq('id', medicationId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      await apiClient.delete(`/medications/${medicationId}`)
+      return { data: true, error: null }
     } catch (error) {
-      console.error('Error deleting medication:', error)
       return { data: null, error: error.message }
     }
   },
 
   // Get medication schedule
   async getMedicationSchedule(medicationId) {
-    return supabase.from('medications').select('schedule').eq('id', medicationId).single()
+    try {
+      const { schedule } = await apiClient.get(`/medications/${medicationId}/schedule`)
+      return { data: schedule, error: null }
+    } catch (error) {
+      return { data: null, error: error.message }
+    }
   },
 
   // Update medication schedule
   async updateMedicationSchedule(medicationId, scheduleData) {
-    return supabase.from('medications').update({ schedule: scheduleData }).eq('id', medicationId).select().single()
+    try {
+      const { medication } = await apiClient.put(`/medications/${medicationId}/schedule`, { schedule: scheduleData })
+      return { data: medication, error: null }
+    } catch (error) {
+      return { data: null, error: error.message }
+    }
   },
 
   // Search medications
   async searchMedications(query, filters = {}) {
-    const params = {
-      name: query,
-      ...filters
-    }
-    return supabase.from('medications').select('*').ilike('name', `%${params.name}%`)
+    return apiClient.get('/patients/medications/search', { query, ...filters })
   },
 
   // Get medication history
   async getMedicationHistory(medicationId) {
-    return supabase.from('medications').select('history').eq('id', medicationId).single()
+    console.warn('getMedicationHistory: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get adherence data
   async getMedicationAdherence(medicationId, period = '30') {
-    return supabase.from('medications').select('adherence').eq('id', medicationId).single()
+    try {
+      const { adherence } = await apiClient.get(`/medications/${medicationId}/adherence`, { period })
+      return { data: adherence, error: null }
+    } catch (error) {
+      return { data: null, error: error.message }
+    }
   }
 }
 

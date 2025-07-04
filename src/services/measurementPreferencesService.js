@@ -1,4 +1,4 @@
-import { supabase } from '../lib/supabase'
+import apiClient from './api'
 
 /**
  * Measurement Preferences Service
@@ -8,39 +8,15 @@ class MeasurementPreferencesService {
   /**
    * Get measurement preferences for a patient
    * @param {string} patientId - Patient UUID
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Measurement preferences
    */
-  async getPreferences(patientId, userId = null) {
+  async getPreferences(patientId) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const targetUserId = userId || user.id
-
-      const { data, error } = await supabase
-        .from('measurement_preferences')
-        .select('*')
-        .eq('patient_id', patientId)
-        .eq('user_id', targetUserId)
-        .single()
-
-      if (error && error.code !== 'PGRST116') throw error // PGRST116 = no rows returned
-
-      return {
-        success: true,
-        data: data || this._getDefaultPreferences()
-      }
+      const { preferences } = await apiClient.get('/measurements/preferences', { patientId })
+      return { data: preferences, error: null }
     } catch (error) {
       console.error('Error getting measurement preferences:', error)
-      
-      // Return default preferences if API is not available
-      const defaultPreferences = this._getDefaultPreferences()
-      return {
-        success: true,
-        data: defaultPreferences,
-        isMockData: true
-      }
+      return { data: this._getDefaultPreferences(), error: error.message }
     }
   }
 
@@ -48,45 +24,15 @@ class MeasurementPreferencesService {
    * Update measurement preferences
    * @param {string} patientId - Patient UUID
    * @param {Object} preferences - Preferences object
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Updated preferences
    */
-  async updatePreferences(patientId, preferences, userId = null) {
+  async updatePreferences(patientId, preferences) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const targetUserId = userId || user.id
-
-      const requestData = {
-        patient_id: patientId,
-        user_id: targetUserId,
-        vital_signs_enabled: preferences.vitalSignsEnabled,
-        physical_measurements_enabled: preferences.physicalMeasurementsEnabled,
-        subjective_measurements_enabled: preferences.subjectiveMeasurementsEnabled,
-        enabled_measurements: preferences.enabledMeasurements,
-        preset_name: preferences.presetName || null,
-        is_custom: preferences.isCustom || true
-      }
-      
-      const { data, error } = await supabase
-        .from('measurement_preferences')
-        .upsert(requestData)
-        .select()
-        .single()
-      
-      if (error) throw error
-
-      return {
-        success: true,
-        data: data
-      }
+      const { preferences: updated } = await apiClient.post('/measurements/preferences', { patientId, ...preferences })
+      return { data: updated, error: null }
     } catch (error) {
       console.error('Error updating measurement preferences:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { data: null, error: error.message }
     }
   }
 
@@ -96,27 +42,11 @@ class MeasurementPreferencesService {
    */
   async getPresets() {
     try {
-      const { data, error } = await supabase
-        .from('measurement_presets')
-        .select('*')
-        .order('name')
-
-      if (error) throw error
-
-      return {
-        success: true,
-        data: data || this._getDefaultPresets()
-      }
+      const presets = await apiClient.get('/measurements/presets')
+      return { data: presets, error: null }
     } catch (error) {
       console.error('Error getting measurement presets:', error)
-      
-      // Return default presets if API is not available
-      const defaultPresets = this._getDefaultPresets()
-      return {
-        success: true,
-        data: defaultPresets,
-        isMockData: true
-      }
+      return { data: this._getDefaultPresets(), error: error.message }
     }
   }
 
@@ -124,89 +54,45 @@ class MeasurementPreferencesService {
    * Apply a preset to patient preferences
    * @param {string} patientId - Patient UUID
    * @param {string} presetName - Preset name to apply
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Updated preferences
    */
-  async applyPreset(patientId, presetName, userId = null) {
+  async applyPreset(patientId, presetName) {
     try {
-      // First get the preset
-      const { data: preset, error: presetError } = await supabase
-        .from('measurement_presets')
-        .select('*')
-        .eq('name', presetName)
-        .single()
-
-      if (presetError) throw presetError
-
-      // Apply the preset to preferences
-      const preferences = {
-        vitalSignsEnabled: preset.vital_signs_enabled,
-        physicalMeasurementsEnabled: preset.physical_measurements_enabled,
-        subjectiveMeasurementsEnabled: preset.subjective_measurements_enabled,
-        enabledMeasurements: preset.enabled_measurements,
-        presetName: presetName,
-        isCustom: false
-      }
-
-      return await this.updatePreferences(patientId, preferences, userId)
+      const { preferences } = await apiClient.post('/measurements/preferences/apply-preset', { patientId, presetName })
+      return { data: preferences, error: null }
     } catch (error) {
       console.error('Error applying measurement preset:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { data: null, error: error.message }
     }
   }
 
   /**
    * Reset preferences to default
    * @param {string} patientId - Patient UUID
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Reset preferences
    */
-  async resetToDefault(patientId, userId = null) {
+  async resetToDefault(patientId) {
     try {
-      const defaultPreferences = this._getDefaultPreferences()
-      return await this.updatePreferences(patientId, defaultPreferences, userId)
+      await this.deletePreferences(patientId)
+      return this.getPreferences(patientId)
     } catch (error) {
       console.error('Error resetting measurement preferences:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { data: null, error: error.message }
     }
   }
 
   /**
    * Delete measurement preferences
    * @param {string} patientId - Patient UUID
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Success status
    */
-  async deletePreferences(patientId, userId = null) {
+  async deletePreferences(patientId) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const targetUserId = userId || user.id
-
-      const { error } = await supabase
-        .from('measurement_preferences')
-        .delete()
-        .eq('patient_id', patientId)
-        .eq('user_id', targetUserId)
-      
-      if (error) throw error
-
-      return {
-        success: true
-      }
+      await apiClient.delete(`/measurements/preferences?patientId=${patientId}`)
+      return { data: true, error: null }
     } catch (error) {
       console.error('Error deleting measurement preferences:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { data: null, error: error.message }
     }
   }
 
@@ -215,21 +101,21 @@ class MeasurementPreferencesService {
    * @param {string} patientId - Patient UUID
    * @param {string} category - Measurement category ('vital_signs', 'physical', 'subjective')
    * @param {string} type - Measurement type
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<boolean>} True if measurement is enabled
    */
-  async isMeasurementEnabled(patientId, category, type, userId = null) {
+  async isMeasurementEnabled(patientId, category, type) {
     try {
-      const preferencesResult = await this.getPreferences(patientId, userId)
-      if (!preferencesResult.success) return false
+      const { data: preferences, error } = await this.getPreferences(patientId)
+      if (error || !preferences) return false
 
-      const preferences = preferencesResult.data
       const categoryEnabled = preferences[`${category}Enabled`] || false
-      
       if (!categoryEnabled) return false
 
       const enabledMeasurements = preferences.enabledMeasurements || {}
-      return enabledMeasurements[category]?.includes(type) || false
+      if (Array.isArray(enabledMeasurements[category])) {
+        return enabledMeasurements[category].includes(type)
+      }
+      return false
     } catch (error) {
       console.error('Error checking if measurement is enabled:', error)
       return false
@@ -240,91 +126,55 @@ class MeasurementPreferencesService {
    * Get filtered measurements based on preferences
    * @param {string} patientId - Patient UUID
    * @param {Object} allMeasurements - All measurement data
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Filtered measurements
    */
-  async getFilteredMeasurements(patientId, allMeasurements, userId = null) {
+  async getFilteredMeasurements(patientId, allMeasurements) {
     try {
-      const preferencesResult = await this.getPreferences(patientId, userId);
-      
-      if (!preferencesResult.success) {
-        return { success: false, error: preferencesResult.error };
-      }
-      
-      const preferences = preferencesResult.data;
-      const filteredMeasurements = {};
-      
-      // Filter categories
-      if (preferences.vital_signs_enabled && allMeasurements.vitalSigns) {
+      const { data: preferences, error } = await this.getPreferences(patientId)
+      if (error) return { error, data: null }
+
+      const filteredMeasurements = {}
+
+      if (preferences.vitalSignsEnabled && allMeasurements.vitalSigns) {
         filteredMeasurements.vitalSigns = this._filterMeasurementsByType(
           allMeasurements.vitalSigns,
-          preferences.enabled_measurements.vital_signs
-        );
+          preferences.enabledMeasurements.vital_signs || {}
+        )
       }
-      
-      if (preferences.physical_measurements_enabled && allMeasurements.physicalMeasurements) {
+
+      if (preferences.physicalMeasurementsEnabled && allMeasurements.physicalMeasurements) {
         filteredMeasurements.physicalMeasurements = this._filterMeasurementsByType(
           allMeasurements.physicalMeasurements,
-          preferences.enabled_measurements.physical
-        );
+          preferences.enabledMeasurements.physical || {}
+        )
       }
-      
-      if (preferences.subjective_measurements_enabled && allMeasurements.subjectiveMeasurements) {
+
+      if (preferences.subjectiveMeasurementsEnabled && allMeasurements.subjectiveMeasurements) {
         filteredMeasurements.subjectiveMeasurements = this._filterMeasurementsByType(
           allMeasurements.subjectiveMeasurements,
-          preferences.enabled_measurements.subjective
-        );
+          preferences.enabledMeasurements.subjective || {}
+        )
       }
-      
-      return {
-        success: true,
-        data: filteredMeasurements,
-        preferences: preferences
-      };
+
+      return { data: filteredMeasurements, error: null }
     } catch (error) {
-      console.error('Error filtering measurements:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Error filtering measurements:', error)
+      return { data: null, error: error.message }
     }
   }
 
   /**
    * Get measurement availability for UI rendering
    * @param {string} patientId - Patient UUID
-   * @param {string} userId - User UUID (optional, defaults to current user)
    * @returns {Promise<Object>} Measurement availability map
    */
-  async getMeasurementAvailability(patientId, userId = null) {
+  async getMeasurementAvailability(patientId) {
     try {
-      const preferencesResult = await this.getPreferences(patientId, userId);
-      
-      if (!preferencesResult.success) {
-        return { success: false, error: preferencesResult.error };
-      }
-      
-      const preferences = preferencesResult.data;
-      
-      return {
-        success: true,
-        data: {
-          categories: {
-            vitalSigns: preferences.vital_signs_enabled,
-            physicalMeasurements: preferences.physical_measurements_enabled,
-            subjectiveMeasurements: preferences.subjective_measurements_enabled
-          },
-          measurements: preferences.enabled_measurements,
-          presetName: preferences.preset_name,
-          isCustom: preferences.is_custom
-        }
-      };
+      const data = await apiClient.get('/measurements/availability', { patientId })
+      return { data, error: null }
     } catch (error) {
-      console.error('Error getting measurement availability:', error);
-      return {
-        success: false,
-        error: error.message
-      };
+      console.error('Error getting measurement availability:', error)
+      return { data: null, error: error.message }
     }
   }
 
@@ -374,14 +224,14 @@ class MeasurementPreferencesService {
   _getDefaultPreferences() {
     return {
       id: 'default',
-      patient_id: null,
-      user_id: null,
-      vital_signs_enabled: true,
-      physical_measurements_enabled: true,
-      subjective_measurements_enabled: true,
-      blood_tests_enabled: true,
-      urine_tests_enabled: true,
-      enabled_measurements: {
+      patientId: null,
+      userId: null,
+      vitalSignsEnabled: true,
+      physicalMeasurementsEnabled: true,
+      subjectiveMeasurementsEnabled: true,
+      bloodTestsEnabled: true,
+      urineTestsEnabled: true,
+      enabledMeasurements: {
         vital_signs: {
           blood_pressure: true,
           heart_rate: true,
@@ -436,8 +286,8 @@ class MeasurementPreferencesService {
           leukocytes: true
         }
       },
-      preset_name: 'comprehensive',
-      is_custom: false,
+      presetName: 'comprehensive',
+      isCustom: false,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
     };

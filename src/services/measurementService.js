@@ -1,38 +1,13 @@
 // Measurement service for health vitals and measurements
-import { supabase } from '../lib/supabase'
+import apiClient from './api'
 
 export const measurementService = {
   // Get measurements for a patient
   async getMeasurements(patientId, options = {}) {
     try {
-      let query = supabase
-        .from('measurements')
-        .select('*')
-        .eq('patient_id', patientId)
-        .order('recorded_at', { ascending: false })
-
-      if (options.type) {
-        query = query.eq('type', options.type)
-      }
-
-      if (options.startDate) {
-        query = query.gte('recorded_at', options.startDate)
-      }
-
-      if (options.endDate) {
-        query = query.lte('recorded_at', options.endDate)
-      }
-
-      if (options.limit) {
-        query = query.limit(options.limit)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
+      const data = await apiClient.get(`/patients/${patientId}/measurements`, options)
       return { data, error: null }
     } catch (error) {
-      console.error('Error fetching measurements:', error)
       return { data: null, error: error.message }
     }
   },
@@ -40,40 +15,19 @@ export const measurementService = {
   // Get single measurement
   async getMeasurement(measurementId) {
     try {
-      const { data, error } = await supabase
-        .from('measurements')
-        .select('*')
-        .eq('id', measurementId)
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { measurement } = await apiClient.get(`/measurements/${measurementId}`)
+      return { data: measurement, error: null }
     } catch (error) {
-      console.error('Error fetching measurement:', error)
       return { data: null, error: error.message }
     }
   },
 
   // Create a new measurement
-  async createMeasurement(measurementData) {
+  async createMeasurement(patientId, measurementData) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('measurements')
-        .insert({
-          ...measurementData,
-          recorded_by: user.id,
-          recorded_at: measurementData.recorded_at || new Date().toISOString()
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { measurement } = await apiClient.post(`/patients/${patientId}/measurements`, measurementData)
+      return { data: measurement, error: null }
     } catch (error) {
-      console.error('Error creating measurement:', error)
       return { data: null, error: error.message }
     }
   },
@@ -81,17 +35,9 @@ export const measurementService = {
   // Update a measurement
   async updateMeasurement(measurementId, measurementData) {
     try {
-      const { data, error } = await supabase
-        .from('measurements')
-        .update(measurementData)
-        .eq('id', measurementId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { measurement } = await apiClient.put(`/measurements/${measurementId}`, measurementData)
+      return { data: measurement, error: null }
     } catch (error) {
-      console.error('Error updating measurement:', error)
       return { data: null, error: error.message }
     }
   },
@@ -99,74 +45,65 @@ export const measurementService = {
   // Delete a measurement
   async deleteMeasurement(measurementId) {
     try {
-      const { error } = await supabase
-        .from('measurements')
-        .delete()
-        .eq('id', measurementId)
-
-      if (error) throw error
+      await apiClient.delete(`/measurements/${measurementId}`)
       return { data: true, error: null }
     } catch (error) {
-      console.error('Error deleting measurement:', error)
       return { data: null, error: error.message }
     }
   },
 
   // Get measurement trends
   async getMeasurementTrends(patientId, type, period = '30') {
-    return supabase.rpc('get_measurement_trends', { patient_id: patientId, type: type, period: period })
+    return this.getMeasurements(patientId, { type, period })
   },
 
   // Get measurement alerts
   async getMeasurementAlerts(patientId) {
-    return supabase.rpc('get_measurement_alerts', { patient_id: patientId })
+    console.warn('getMeasurementAlerts: endpoint not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Get measurements by type
   async getMeasurementsByType(patientId, type, limit = 50) {
-    return supabase.rpc('get_measurements_by_type', { patient_id: patientId, type: type, limit: limit })
+    return this.getMeasurements(patientId, { type, limit })
   },
 
   // Get latest measurements
   async getLatestMeasurements(patientId) {
-    return supabase.rpc('get_latest_measurements', { patient_id: patientId })
+    return this.getMeasurements(patientId, { limit: 1 })
   },
 
   // Get measurement statistics
   async getMeasurementStats(patientId, type, period = '30') {
-    return supabase.rpc('get_measurement_stats', { patient_id: patientId, type: type, period: period })
+    console.warn('getMeasurementStats: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Bulk create measurements
   async bulkCreateMeasurements(patientId, measurements) {
-    return supabase.rpc('bulk_create_measurements', { patient_id: patientId, measurements: measurements })
+    // Client-side batch: POST each; could use backend bulk endpoint when available
+    return Promise.all(measurements.map(m => this.createMeasurement(patientId, m)))
   },
 
   // Get measurement ranges for a patient
   async getMeasurementRanges(patientId, type) {
-    return supabase.rpc('get_measurement_ranges', { patient_id: patientId, type: type })
+    console.warn('getMeasurementRanges: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Update measurement ranges
   async updateMeasurementRanges(patientId, type, ranges) {
-    return supabase.rpc('update_measurement_ranges', { patient_id: patientId, type: type, ranges: ranges })
+    console.warn('updateMeasurementRanges: backend endpoint pending')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get measurement types for a patient
   async getMeasurementTypes(patientId) {
     try {
-      const { data, error } = await supabase
-        .from('measurements')
-        .select('type')
-        .eq('patient_id', patientId)
-
-      if (error) throw error
-      
-      // Get unique types
+      const data = await apiClient.get(`/patients/${patientId}/measurements`, { limit: 1000 })
       const uniqueTypes = [...new Set(data.map(m => m.type))]
       return { data: uniqueTypes, error: null }
     } catch (error) {
-      console.error('Error fetching measurement types:', error)
       return { data: null, error: error.message }
     }
   }

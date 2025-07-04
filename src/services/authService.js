@@ -1,40 +1,44 @@
 // Authentication service
-import { supabase } from '../lib/supabase'
+import apiClient, { setAuthToken, clearAuthToken } from './api'
+
+// Helper to persist and propagate JWT token
+const handleToken = (token) => {
+  if (token) {
+    setAuthToken(token)
+  } else {
+    clearAuthToken()
+  }
+}
 
 export const authService = {
-  // Sign up with email and password
+  // Sign up via backend
   async signUp(email, password, userData = {}) {
     try {
-      const { data, error } = await supabase.auth.signUp({
+      const payload = {
         email,
         password,
-        options: {
-          data: {
-            full_name: userData.fullName || userData.name,
-            phone: userData.phone,
-            date_of_birth: userData.dateOfBirth,
-            emergency_contact: userData.emergencyContact
-          }
-        }
-      })
+        name: userData.fullName || userData.name,
+      }
 
-      if (error) throw error
+      const response = await apiClient.post('/auth/register', payload)
+
+      // Backend may return token immediately or require verification
+      if (response.token) {
+        handleToken(response.token)
+      }
 
       return {
         success: true,
-        data: {
-          user: data.user,
-          session: data.session
-        },
-        message: data.user?.email_confirmed_at 
-          ? 'Account created successfully!' 
-          : 'Please check your email to confirm your account.'
+        data: response,
+        message: response.requiresVerification
+          ? 'Please check your email to confirm your account.'
+          : 'Account created successfully!'
       }
     } catch (error) {
       console.error('Sign up error:', error)
       return {
         success: false,
-        error: error.message
+        error: error.message || error
       }
     }
   },
@@ -42,25 +46,21 @@ export const authService = {
   // Sign in with email and password
   async signIn(email, password) {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password
-      })
+      const response = await apiClient.post('/auth/login', { email, password })
 
-      if (error) throw error
+      if (response.token) {
+        handleToken(response.token)
+      }
 
       return {
         success: true,
-        data: {
-          user: data.user,
-          session: data.session
-        }
+        data: response
       }
     } catch (error) {
       console.error('Sign in error:', error)
       return {
         success: false,
-        error: error.message
+        error: error.message || error
       }
     }
   },
@@ -68,146 +68,84 @@ export const authService = {
   // Sign out
   async signOut() {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      return {
-        success: true
-      }
+      await apiClient.post('/auth/logout')
+      handleToken(null)
+      return { success: true }
     } catch (error) {
       console.error('Sign out error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
     }
   },
 
   // Get current user
   async getCurrentUser() {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
-      if (error) throw error
-
-      return {
-        success: true,
-        data: user
-      }
+      const data = await apiClient.get('/auth/profile')
+      return { success: true, data }
     } catch (error) {
-      console.error('Get current user error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
     }
   },
 
   // Get current session
   async getCurrentSession() {
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession()
-      if (error) throw error
-
-      return {
-        success: true,
-        data: session
-      }
-    } catch (error) {
-      console.error('Get current session error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
-    }
+    // On our backend, we rely solely on JWT; return user profile if still valid
+    return this.getCurrentUser()
   },
 
   // Reset password
   async resetPassword(email) {
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      })
-
-      if (error) throw error
-
-      return {
-        success: true,
-        message: 'Password reset email sent. Please check your inbox.'
-      }
+      await apiClient.post('/auth/reset-password', { email })
+      return { success: true, message: 'Password reset email sent. Please check your inbox.' }
     } catch (error) {
-      console.error('Reset password error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
     }
   },
 
   // Update password
   async updatePassword(newPassword) {
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      })
-
-      if (error) throw error
-
-      return {
-        success: true,
-        message: 'Password updated successfully'
-      }
+      await apiClient.post('/auth/update-password', { password: newPassword })
+      return { success: true, message: 'Password updated successfully' }
     } catch (error) {
-      console.error('Update password error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
     }
   },
 
   // Update user profile
   async updateProfile(updates) {
     try {
-      const { error } = await supabase.auth.updateUser({
-        data: updates
-      })
-
-      if (error) throw error
-
-      return {
-        success: true,
-        message: 'Profile updated successfully'
-      }
+      const data = await apiClient.put('/auth/profile', updates)
+      return { success: true, data, message: 'Profile updated successfully' }
     } catch (error) {
-      console.error('Update profile error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
     }
   },
 
   // Listen to auth state changes
   onAuthStateChange(callback) {
-    return supabase.auth.onAuthStateChange(callback)
+    console.warn('[authService] onAuthStateChange is deprecated with the new backend auth flow.')
+    return { data: null, error: null }
   },
 
   // Refresh session
-  async refreshSession() {
+  async refreshSession(refreshToken) {
     try {
-      const { data, error } = await supabase.auth.refreshSession()
-      if (error) throw error
-
-      return {
-        success: true,
-        data: data.session
-      }
+      const data = await apiClient.post('/auth/refresh', { refreshToken })
+      if (data.token) handleToken(data.token)
+      return { success: true, data }
     } catch (error) {
-      console.error('Refresh session error:', error)
-      return {
-        success: false,
-        error: error.message
-      }
+      return { success: false, error: error.message || error }
+    }
+  },
+
+  async verifyEmail(token) {
+    try {
+      await apiClient.post('/auth/verify-email', { token })
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: error.message || error }
     }
   }
 }

@@ -1,28 +1,13 @@
 // Caregiver service for managing caregiver relationships and collaboration
-import { supabase } from '../lib/supabase'
+import apiClient from './api'
 
 export const caregiverService = {
-  // Get all caregivers for current user (patients they care for)
+  // Get all caregivers for current user
   async getCaregivers() {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select(`
-          *,
-          patient:patients(*),
-          caregiver:profiles(*)
-        `)
-        .eq('caregiver_id', user.id)
-        .eq('is_active', true)
-        .order('invited_at', { ascending: false })
-
-      if (error) throw error
+      const data = await apiClient.get('/caregivers')
       return { data, error: null }
     } catch (error) {
-      console.error('Error fetching caregivers:', error)
       return { data: null, error: error.message }
     }
   },
@@ -30,38 +15,19 @@ export const caregiverService = {
   // Get caregiver relationship by ID
   async getCaregiver(caregiverId) {
     try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select(`
-          *,
-          patient:patients(*),
-          caregiver:profiles(*)
-        `)
-        .eq('id', caregiverId)
-        .single()
-
-      if (error) throw error
+      const data = await apiClient.get(`/caregivers/${caregiverId}`)
       return { data, error: null }
     } catch (error) {
-      console.error('Error fetching caregiver:', error)
       return { data: null, error: error.message }
     }
   },
 
-  // Update caregiver relationship
+  // Update caregiver relationship (role/permissions)
   async updateCaregiver(caregiverId, caregiverData) {
     try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .update(caregiverData)
-        .eq('id', caregiverId)
-        .select()
-        .single()
-
-      if (error) throw error
+      const data = await apiClient.put(`/caregivers/${caregiverId}`, caregiverData)
       return { data, error: null }
     } catch (error) {
-      console.error('Error updating caregiver:', error)
       return { data: null, error: error.message }
     }
   },
@@ -69,15 +35,9 @@ export const caregiverService = {
   // Remove caregiver relationship
   async removeCaregiver(caregiverId) {
     try {
-      const { error } = await supabase
-        .from('patient_caregivers')
-        .update({ is_active: false })
-        .eq('id', caregiverId)
-
-      if (error) throw error
+      await apiClient.delete(`/caregivers/${caregiverId}`)
       return { data: true, error: null }
     } catch (error) {
-      console.error('Error removing caregiver:', error)
       return { data: null, error: error.message }
     }
   },
@@ -85,317 +45,140 @@ export const caregiverService = {
   // Invite caregiver
   async inviteCaregiver(invitationData) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      // Generate a unique invitation token
-      const invitationToken = `inv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
-
-      const { data, error } = await supabase
-        .from('caregiver_invitations')
-        .insert({
-          ...invitationData,
-          invited_by: user.id,
-          invitation_token: invitationToken,
-          status: 'pending'
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { invitation } = await apiClient.post('/caregivers/invite', invitationData)
+      return { data: invitation, error: null }
     } catch (error) {
-      console.error('Error inviting caregiver:', error)
       return { data: null, error: error.message }
     }
-  },
-
-  // Accept caregiver invitation
-  async acceptInvitation(token) {
-    // Implementation needed
-    throw new Error('Method not implemented')
-  },
-
-  // Decline caregiver invitation
-  async declineInvitation(token, reason = '') {
-    // Implementation needed
-    throw new Error('Method not implemented')
   },
 
   // Get pending invitations (sent by current user)
   async getPendingInvitations() {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
+    console.warn('getPendingInvitations: backend endpoint pending')
+    return { data: [], error: 'Not implemented' }
+  },
 
-      const { data, error } = await supabase
-        .from('caregiver_invitations')
-        .select(`
-          *,
-          patient:patients(*),
-          invited_by_profile:profiles!invited_by(*)
-        `)
-        .eq('invited_by', user.id)
-        .eq('status', 'pending')
-        .order('invited_at', { ascending: false })
+  // Accept caregiver invitation
+  async acceptInvitation(token) {
+    console.warn('acceptInvitation: not implemented')
+    return { data: null, error: 'Not implemented' }
+  },
 
-      if (error) throw error
-      return { data: data || [], error: null }
-    } catch (error) {
-      console.error('Error fetching pending invitations:', error)
-      return { data: [], error: error.message }
-    }
+  // Decline caregiver invitation
+  async declineInvitation(token, reason = '') {
+    console.warn('declineInvitation: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get received invitations (for current user)
   async getReceivedInvitations() {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('getReceivedInvitations: not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Cancel invitation
   async cancelInvitation(invitationId) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('cancelInvitation: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Resend invitation
   async resendInvitation(invitationId) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('resendInvitation: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get caregiver permissions
   async getCaregiverPermissions(caregiverId, patientId) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select('permissions')
-        .eq('caregiver_id', caregiverId)
-        .eq('patient_id', patientId)
-        .eq('is_active', true)
-        .single()
-
-      if (error) throw error
-      return { data: data.permissions || {}, error: null }
-    } catch (error) {
-      console.error('Error fetching caregiver permissions:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getCaregiverPermissions: not implemented')
+    return { data: {}, error: 'Not implemented' }
   },
 
   // Update caregiver permissions
   async updateCaregiverPermissions(caregiverId, patientId, permissions) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .update({ permissions })
-        .eq('caregiver_id', caregiverId)
-        .eq('patient_id', patientId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error updating caregiver permissions:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('updateCaregiverPermissions: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get caregiver activity
   async getCaregiverActivity(caregiverId, patientId = null, limit = 10) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('getCaregiverActivity: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get patients shared with caregiver
   async getSharedPatients(caregiverId) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select(`
-          *,
-          patient:patients(*)
-        `)
-        .eq('caregiver_id', caregiverId)
-        .eq('is_active', true)
-        .order('invited_at', { ascending: false })
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching shared patients:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getSharedPatients: not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Share patient with caregiver
   async sharePatientWithCaregiver(patientId, caregiverId, role, permissions = {}) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .insert({
-          patient_id: patientId,
-          caregiver_id: caregiverId,
-          role,
-          permissions,
-          is_active: true
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error sharing patient:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('sharePatientWithCaregiver: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Unshare patient from caregiver
   async unsharePatientFromCaregiver(patientId, caregiverId) {
-    try {
-      const { error } = await supabase
-        .from('patient_caregivers')
-        .update({ is_active: false })
-        .eq('patient_id', patientId)
-        .eq('caregiver_id', caregiverId)
-
-      if (error) throw error
-      return { data: true, error: null }
-    } catch (error) {
-      console.error('Error unsharing patient:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('unsharePatientFromCaregiver: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get caregiver notification preferences
   async getCaregiverNotificationPreferences(caregiverId) {
-    try {
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .select('*')
-        .eq('user_id', caregiverId)
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching notification preferences:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('getCaregiverNotificationPreferences: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Update caregiver notification preferences
   async updateCaregiverNotificationPreferences(caregiverId, preferences) {
-    try {
-      const { data, error } = await supabase
-        .from('notification_preferences')
-        .upsert({
-          user_id: caregiverId,
-          ...preferences
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error updating notification preferences:', error)
-      return { data: null, error: error.message }
-    }
+    console.warn('updateCaregiverNotificationPreferences: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Send message to caregiver
   async sendMessageToCaregiver(caregiverId, messageData) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('sendMessageToCaregiver: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get messages with caregiver
   async getMessagesWithCaregiver(caregiverId, limit = 50) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('getMessagesWithCaregiver: not implemented')
+    return { data: [], error: 'Not implemented' }
   },
 
   // Get care team for patient
   async getPatientCareTeam(patientId) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .select(`
-          *,
-          caregiver:profiles(*)
-        `)
-        .eq('patient_id', patientId)
-        .eq('is_active', true)
-        .order('invited_at', { ascending: false })
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error fetching care team:', error)
-      return { data: null, error: error.message }
-    }
+    return apiClient.get(`/patients/${patientId}/caregivers`)
   },
 
   // Add caregiver to care team
   async addToCareTeam(patientId, caregiverData) {
-    try {
-      const { data, error } = await supabase
-        .from('patient_caregivers')
-        .insert({
-          patient_id: patientId,
-          caregiver_id: caregiverData.caregiver_id,
-          role: caregiverData.role || 'caregiver',
-          permissions: caregiverData.permissions || {},
-          is_active: true
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error adding to care team:', error)
-      return { data: null, error: error.message }
-    }
+    return apiClient.post(`/patients/${patientId}/caregivers`, caregiverData)
   },
 
   // Remove from care team
   async removeFromCareTeam(patientId, caregiverId) {
-    try {
-      const { error } = await supabase
-        .from('patient_caregivers')
-        .update({ is_active: false })
-        .eq('patient_id', patientId)
-        .eq('caregiver_id', caregiverId)
-
-      if (error) throw error
-      return { data: true, error: null }
-    } catch (error) {
-      console.error('Error removing from care team:', error)
-      return { data: null, error: error.message }
-    }
+    return apiClient.delete(`/patients/${patientId}/caregivers/${caregiverId}`)
   },
 
   // Get caregiver schedule
   async getCaregiverSchedule(caregiverId, patientId = null) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('getCaregiverSchedule: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Update caregiver schedule
   async updateCaregiverSchedule(caregiverId, scheduleData) {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('updateCaregiverSchedule: not implemented')
+    return { data: null, error: 'Not implemented' }
   },
 
   // Get caregiver statistics
   async getCaregiverStats(caregiverId, period = '30') {
-    // Implementation needed
-    throw new Error('Method not implemented')
+    console.warn('getCaregiverStats: not implemented')
+    return { data: null, error: 'Not implemented' }
   }
 }
 

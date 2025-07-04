@@ -1,5 +1,5 @@
 // Appointment service for calendar and appointment management
-import { supabase } from '../lib/supabase'
+import apiClient, { buildQueryString } from './api'
 
 // Note: This service assumes an 'appointments' table exists in the database
 // If not implemented yet, these methods will return appropriate errors
@@ -7,38 +7,7 @@ export const appointmentService = {
   // Get all appointments
   async getAppointments(filters = {}) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      let query = supabase
-        .from('appointments')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('appointment_date', { ascending: true })
-
-      if (filters.patientId) {
-        query = query.eq('patient_id', filters.patientId)
-      }
-
-      if (filters.type) {
-        query = query.eq('type', filters.type)
-      }
-
-      if (filters.status) {
-        query = query.eq('status', filters.status)
-      }
-
-      if (filters.startDate) {
-        query = query.gte('appointment_date', filters.startDate)
-      }
-
-      if (filters.endDate) {
-        query = query.lte('appointment_date', filters.endDate)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
+      const data = await apiClient.get('/appointments', filters)
       return { data, error: null }
     } catch (error) {
       console.error('Error fetching appointments:', error)
@@ -49,14 +18,8 @@ export const appointmentService = {
   // Get appointment by ID
   async getAppointment(appointmentId) {
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .select('*')
-        .eq('id', appointmentId)
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { appointment } = await apiClient.get(`/appointments/${appointmentId}`)
+      return { data: appointment, error: null }
     } catch (error) {
       console.error('Error fetching appointment:', error)
       return { data: null, error: error.message }
@@ -66,21 +29,8 @@ export const appointmentService = {
   // Create new appointment
   async createAppointment(appointmentData) {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const { data, error } = await supabase
-        .from('appointments')
-        .insert({
-          ...appointmentData,
-          user_id: user.id,
-          status: appointmentData.status || 'scheduled'
-        })
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { appointment } = await apiClient.post('/appointments', appointmentData)
+      return { data: appointment, error: null }
     } catch (error) {
       console.error('Error creating appointment:', error)
       return { data: null, error: error.message }
@@ -90,15 +40,8 @@ export const appointmentService = {
   // Update appointment
   async updateAppointment(appointmentId, appointmentData) {
     try {
-      const { data, error } = await supabase
-        .from('appointments')
-        .update(appointmentData)
-        .eq('id', appointmentId)
-        .select()
-        .single()
-
-      if (error) throw error
-      return { data, error: null }
+      const { appointment } = await apiClient.put(`/appointments/${appointmentId}`, appointmentData)
+      return { data: appointment, error: null }
     } catch (error) {
       console.error('Error updating appointment:', error)
       return { data: null, error: error.message }
@@ -108,12 +51,7 @@ export const appointmentService = {
   // Delete appointment
   async deleteAppointment(appointmentId) {
     try {
-      const { error } = await supabase
-        .from('appointments')
-        .delete()
-        .eq('id', appointmentId)
-
-      if (error) throw error
+      await apiClient.delete(`/appointments/${appointmentId}`)
       return { data: true, error: null }
     } catch (error) {
       console.error('Error deleting appointment:', error)
@@ -156,33 +94,7 @@ export const appointmentService = {
 
   // Search appointments
   async searchAppointments(query, filters = {}) {
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      let supabaseQuery = supabase
-        .from('appointments')
-        .select('*')
-        .eq('user_id', user.id)
-        .or(`title.ilike.%${query}%,description.ilike.%${query}%,location.ilike.%${query}%`)
-        .order('appointment_date', { ascending: true })
-
-      if (filters.patientId) {
-        supabaseQuery = supabaseQuery.eq('patient_id', filters.patientId)
-      }
-
-      if (filters.type) {
-        supabaseQuery = supabaseQuery.eq('type', filters.type)
-      }
-
-      const { data, error } = await supabaseQuery
-
-      if (error) throw error
-      return { data, error: null }
-    } catch (error) {
-      console.error('Error searching appointments:', error)
-      return { data: null, error: error.message }
-    }
+    return this.getAppointments({ ...filters, search: query })
   },
 
   // Get appointment conflicts
@@ -257,33 +169,9 @@ export const appointmentService = {
   // Get appointment statistics
   async getAppointmentStats(patientId = null, period = '30') {
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) throw new Error('User not authenticated')
-
-      const startDate = new Date(Date.now() - parseInt(period) * 24 * 60 * 60 * 1000).toISOString()
-
-      let query = supabase
-        .from('appointments')
-        .select('status')
-        .eq('user_id', user.id)
-        .gte('appointment_date', startDate)
-
-      if (patientId) {
-        query = query.eq('patient_id', patientId)
-      }
-
-      const { data, error } = await query
-
-      if (error) throw error
-
-      const stats = {
-        total: data.length,
-        completed: data.filter(a => a.status === 'completed').length,
-        missed: data.filter(a => a.status === 'missed').length,
-        scheduled: data.filter(a => a.status === 'scheduled').length,
-        cancelled: data.filter(a => a.status === 'cancelled').length
-      }
-
+      const params = { period }
+      if (patientId) params.patientId = patientId
+      const { stats } = await apiClient.get('/appointments/stats', params)
       return { data: stats, error: null }
     } catch (error) {
       console.error('Error getting appointment stats:', error)

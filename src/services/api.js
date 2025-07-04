@@ -1,14 +1,16 @@
 // Base API configuration and utilities
 import { message } from 'antd'
 
-// API Configuration
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'
-const API_VERSION = 'v1'
+// Base URL for Express backend (defaults to localhost:4000) – can be overridden in env variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
+// If your backend exposes versioned routes (e.g., /v1), set the version via env. Leave blank for unversioned routes.
+const API_VERSION = import.meta.env.VITE_API_VERSION || ''
 
 // API Client class
 class ApiClient {
   constructor() {
-    this.baseURL = `${API_BASE_URL}/${API_VERSION}`
+    // Construct base URL gracefully, avoiding double slashes when API_VERSION is empty
+    this.baseURL = API_VERSION ? `${API_BASE_URL}/${API_VERSION}` : API_BASE_URL
     this.token = localStorage.getItem('auth_token')
   }
 
