@@ -1,0 +1,54 @@
+---
+alwaysApply: true
+---
+# Repository Structure Rules
+
+1. This workspace contains two distinct repositories:
+   - `medtrack/` - Frontend repository
+   - `medtrack-server/` - Backend repository
+
+2. When making changes:
+   - Frontend changes must only be made in the `medtrack/` directory
+   - Backend changes must only be made in the `medtrack-server/` directory
+   - Never mix frontend and backend code between repositories
+
+3. When adding new files:
+   - Frontend files must be created in the appropriate location under `medtrack/`
+   - Backend files must be created in the appropriate location under `medtrack-server/`
+   - Verify the correct repository before creating new files
+
+4. When fixing issues:
+   - Ensure fixes are applied to the correct repository based on whether it's a frontend or backend issue
+   - Double check the repository context before making any changes
+
+5. Repository boundaries must be strictly maintained to keep the codebase organized and prevent architectural issues
+
+6. Application Architecture:
+
+   Frontend (`medtrack/`):
+   - React Native mobile application
+   - Uses Supabase for authentication only
+   - Communicates with backend via REST APIs
+
+   Backend (`medtrack-server/`):
+   - ExpressJS/NodeJS REST API server
+   - PostgreSQL database
+      - Local Docker container for development/testing
+      - Managed service for production
+   - File Storage:
+      - MinIO for development/testing
+      - Wasabi for production
+   - Email Services:
+      - MailHog for development/testing
+      - Managed email service for production
+      - Handles authentication and general emails
+   - Push Notifications:
+      - Firebase Cloud Messaging for both development and production
+
+7. Service Integration Rules:
+   - Authentication code must only use Supabase services
+   - Database operations must only use PostgreSQL
+   - File operations must use MinIO (dev) or Wasabi (prod)
+   - Email sending must use MailHog (dev) or managed service (prod)
+   - Push notifications must use Firebase Cloud Messaging
+   - No mixing of service providers for the same functionality

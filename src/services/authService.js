@@ -40,6 +40,42 @@ export const authService = {
       if (data.session) {
         handleToken(data.session)
         console.log('User signed up and logged in automatically')
+        
+        // ADDED: Register the user in our backend database
+        try {
+          console.log('Attempting to register user in backend database with ID:', data.user.id);
+          
+          // Add a small delay to ensure Supabase auth is fully processed
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          
+          // Make API call to create a user in our database
+          const response = await fetch(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'}/auth/register`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.session.access_token}`
+            },
+            body: JSON.stringify({
+              email: email,
+              name: userData.fullName || userData.name || '',
+              role: userData.role || 'caregiver'
+              // No password as Supabase handles it
+              // No avatarUrl unless explicitly provided
+            })
+          })
+          
+          if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Failed to register user in backend database', errorData);
+            // Even if this fails, we should still proceed since the middleware will attempt to create the user
+          } else {
+            const responseData = await response.json();
+            console.log('User successfully registered in backend database', responseData);
+          }
+        } catch (backendError) {
+          console.error('Backend registration error:', backendError);
+          // Continue anyway since the middleware should create the user when needed
+        }
       } else {
         console.log('User signed up but no session returned - might need verification')
       }
