@@ -52,3 +52,34 @@ alwaysApply: true
    - Email sending must use MailHog (dev) or managed service (prod)
    - Push notifications must use Firebase Cloud Messaging
    - No mixing of service providers for the same functionality
+
+8. Code Quality and Issue Resolution:
+   - When fixing bugs, identify the root cause in either frontend or backend
+   - Fix issues at their source rather than adding defensive code in both places
+   - Frontend fixes:
+      - Fix React/React Native component logic
+      - Handle UI state management properly
+      - Validate form inputs before submission
+      - Use proper error boundaries
+      - Follow React best practices
+   
+   - Backend fixes:
+      - Fix API endpoint logic
+      - Handle database queries properly
+      - Validate incoming requests
+      - Follow REST API best practices
+      - Use proper error handling
+
+   - Do not:
+      - Add redundant validation in both frontend and backend
+      - Create workarounds in frontend for backend issues
+      - Mix concerns between frontend and backend
+      - Duplicate logic across repositories
+
+   - Best practices:
+      - Write clean, maintainable code
+      - Add proper error handling at the source
+      - Use TypeScript for better type safety
+      - Add relevant tests for new fixes
+      - Document significant changes
+      - Follow repository-specific coding standards

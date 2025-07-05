@@ -18,18 +18,21 @@ dayjs.extend(isSameOrBefore)
 const { Text, Title } = Typography
 
 const CalendarView = ({ 
-  appointments, 
+  appointments = [], 
   viewType, 
   currentDate, 
   onDateChange, 
   selectedPatient 
 }) => {
+  // Ensure appointments is always an array
+  const appts = Array.isArray(appointments) ? appointments : [];
+  
   const [selectedDate, setSelectedDate] = useState(currentDate)
 
   // Get appointments for a specific date
   const getAppointmentsForDate = (date) => {
     const dateStr = date.format('YYYY-MM-DD')
-    return appointments.filter(apt => {
+    return appts.filter(apt => {
       const aptDate = dayjs(apt.dateTime).format('YYYY-MM-DD')
       return aptDate === dateStr
     })
@@ -50,7 +53,7 @@ const CalendarView = ({
       endDate = currentDate.endOf('day')
     }
 
-    return appointments.filter(apt => {
+    return appts.filter(apt => {
       const aptDate = dayjs(apt.dateTime)
       return aptDate.isSameOrAfter(startDate) && aptDate.isSameOrBefore(endDate)
     })

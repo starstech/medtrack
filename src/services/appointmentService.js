@@ -7,11 +7,18 @@ export const appointmentService = {
   // Get all appointments
   async getAppointments(filters = {}) {
     try {
-      const data = await apiClient.get('/appointments', filters)
-      return { data, error: null }
+      const response = await apiClient.get('/appointments', filters);
+      
+      // API returns { appointments: [...] }, so we need to extract that
+      const appointments = response?.appointments || [];
+      
+      // Make sure it's always an array
+      const appointmentsArray = Array.isArray(appointments) ? appointments : [];
+      
+      return { data: appointmentsArray, error: null };
     } catch (error) {
-      console.error('Error fetching appointments:', error)
-      return { data: null, error: error.message }
+      console.error('Error fetching appointments:', error);
+      return { data: [], error: error.message };
     }
   },
 

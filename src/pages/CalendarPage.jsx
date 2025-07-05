@@ -49,10 +49,10 @@ const CalendarPage = () => {
           console.warn('Failed to load upcoming appointments:', upcomingErr)
           setUpcomingAppointments([])
         } else {
-          setUpcomingAppointments(upcoming || [])
+          setUpcomingAppointments(Array.isArray(upcoming) ? upcoming : [])
         }
 
-        setAppointments(allAppointments || [])
+        setAppointments(Array.isArray(allAppointments) ? allAppointments : [])
       } catch (error) {
         console.error('Error loading appointments:', error)
         setAppointmentsError(error.message)
@@ -86,8 +86,8 @@ const CalendarPage = () => {
             console.warn('Failed to load upcoming appointments for patient:', upcomingErr)
           }
 
-          setAppointments(patientAppointments || [])
-          setUpcomingAppointments(patientUpcoming || [])
+          setAppointments(Array.isArray(patientAppointments) ? patientAppointments : [])
+          setUpcomingAppointments(Array.isArray(patientUpcoming) ? patientUpcoming : [])
         } catch (error) {
           console.error('Error loading patient appointments:', error)
           setAppointmentsError(error.message)
@@ -114,8 +114,8 @@ const CalendarPage = () => {
             console.warn('Failed to load upcoming appointments:', upcomingErr)
           }
 
-          setAppointments(allAppointments || [])
-          setUpcomingAppointments(upcoming || [])
+          setAppointments(Array.isArray(allAppointments) ? allAppointments : [])
+          setUpcomingAppointments(Array.isArray(upcoming) ? upcoming : [])
         } catch (error) {
           console.error('Error loading all appointments:', error)
           setAppointmentsError(error.message)
